@@ -1,0 +1,55 @@
+mode:
+  dev
+
+server:
+  name: check-price
+  address: 3456
+  prefix: message
+
+
+token:
+  public_keys:
+    RETAIL: LS0tLS1CRUdJTiBQVUJMSUMgS0VZLS0tLS0KTUlJQklqQU5CZ2txaGtpRzl3MEJBUUVGQUFPQ0FROEFNSUlCQ2dLQ0FRRUFzQnhvaWV6b0xjRmlWUlBVNnI4UQpGdVVWSnNYSSs2aElsTVNFRHM5UmdxSy9oMDdJMzZIL2Z1MDk5YUdRMkVjdUgzM3BUcjg1SWc4blFoMEcwc3BHCmdRcFdienBwWEpJTHpJdHhyQ3pmRHZYSUo0QXlXOXp1T0VYOGhrWHkrYWdxOHg4bDVsSUsyYkVCTU9KMmZ6dVcKNG03WW5sZng4TWZTMFBxdEFTd2NTOVIwbERSMUhDWFZQZU1yamZSMmI1cGNXZTJjY29PUlBiMm5LNythYm5BYQpRR2F5Y3lLdFlyaTRyUG40M3d1RmsyWHNkZUIxa0Q5K0JVS1EvRlc1N3YwQkxqVDdPTUNhbnhZTHRlczZxVDRhCnlJTHlNL2pBRG1VbHV5MkQ4anRZVkwvNGpTVGkwVjJmV3J0NVZ3ZXo1QVAxZFBZK0lFWXFSdUNhU1ZOVFJyOTgKendJREFRQUIKLS0tLS1FTkQgUFVCTElDIEtFWS0tLS0t
+    FNB: LS0tLS1CRUdJTiBQVUJMSUMgS0VZLS0tLS0KTUlJQklqQU5CZ2txaGtpRzl3MEJBUUVGQUFPQ0FROEFNSUlCQ2dLQ0FRRUFzQnhvaWV6b0xjRmlWUlBVNnI4UQpGdVVWSnNYSSs2aElsTVNFRHM5UmdxSy9oMDdJMzZIL2Z1MDk5YUdRMkVjdUgzM3BUcjg1SWc4blFoMEcwc3BHCmdRcFdienBwWEpJTHpJdHhyQ3pmRHZYSUo0QXlXOXp1T0VYOGhrWHkrYWdxOHg4bDVsSUsyYkVCTU9KMmZ6dVcKNG03WW5sZng4TWZTMFBxdEFTd2NTOVIwbERSMUhDWFZQZU1yamZSMmI1cGNXZTJjY29PUlBiMm5LNythYm5BYQpRR2F5Y3lLdFlyaTRyUG40M3d1RmsyWHNkZUIxa0Q5K0JVS1EvRlc1N3YwQkxqVDdPTUNhbnhZTHRlczZxVDRhCnlJTHlNL2pBRG1VbHV5MkQ4anRZVkwvNGpTVGkwVjJmV3J0NVZ3ZXo1QVAxZFBZK0lFWXFSdUNhU1ZOVFJyOTgKendJREFRQUIKLS0tLS1FTkQgUFVCTElDIEtFWS0tLS0t
+    BOOKING: LS0tLS1CRUdJTiBQVUJMSUMgS0VZLS0tLS0KTUlJQklqQU5CZ2txaGtpRzl3MEJBUUVGQUFPQ0FROEFNSUlCQ2dLQ0FRRUFyb21STzJzeHd6d2J6SUlmWWhjdgo1QkNYZGxHREFEckkxT0xiM0ZSY1U3dUhXNVI1djd0TklJMEY4R0k0ZVBoWllCNis4SU1JaTBVUGYwQnl6WGd4CkVGc2lxTkNMVTBVUTJRZGhHNzJoV2p6cVpCUzJ1aEZIblNMUWJLc2dGRk96TDV3YmlscUNFMi85dTRrd3I1SVgKSWxZWHhLOU1BZGYyNGtFYUVCNWtJdlgvQW41dDIwTWNTSW04Y3lyUStEcjBSNXRacUdMOVZCZmpSNi92R0F4egpEZUpvM2crTmxTZzd0UWpYbldzT1NrNTl0eVkzblhLa29qM2ZIL2xXV0F3YmNaSHBZTDBoVXI5a1dkOWtpdWZCClNKWGUvSGZkNUNCR2dRQXhiOTlXTVJHakczTlJVRGFEUGhTTFpWdjlqMUJTQUo0Q203bjlJQjV6SGh3eGI5OGgKMlFJREFRQUIKLS0tLS1FTkQgUFVCTElDIEtFWS0tLS0t
+
+postgresql:
+  host: 10.24.32.11
+  port: 5432
+  user: message
+  password: tG0w5BXO83
+  db_name: message
+  ssl_mode: disable
+  auto_migrate: false
+  max_life_time: 300
+
+mongo:
+  uri: mongodb://admin:f6XPinsVTx@10.24.22.32:27017/?readPreference=primary&directConnection=true&ssl=false
+  db: messages
+
+redis:
+  expire_duration: 600
+  hosts: 10.24.32.11:6379
+  username: ""
+  password: ""
+
+ext_service:
+  zalo:
+    host_auth: https://oauth.zaloapp.com
+    host_open: https://openapi.zalo.me
+    host_business: https://business.openapi.zalo.me
+    app_id: 3612785874375008341
+    secret_key: KLWaRy6RW6BC66mmEEw6
+  k_wallet:
+    host: https://payment-private-dev.kiotfinance.vn/api-sdk/v1.0.0
+    partner_key: kms_message
+    x_api_key: 3e96141c21704e96af6257ea41c0fc690ce0504c8529dc424dc8b245b6343c0f
+
+swagger:
+  enabled: true
+
+tracer:
+  enabled: false
+  jaeger:
+    endpoint: http://localhost:14268/api/traces
+    active: true
