@@ -17,39 +17,14 @@ const (
 	ErrorCodeNotFound     ErrorCode = 404
 	ErrorCodeUnauthorized ErrorCode = 401
 	ErrorCodeSystemError  ErrorCode = 500
-
-	ErrorCodeMessageHasSent ErrorCode = 1001
-	ErrorCodeMessageIsNew   ErrorCode = 1002
-
-	//external
-	ErrorZALOUnauthorized ErrorCode = 1401
-
-	ErrorInvalidParam            ErrorCode = 1004
-	ErrorPhoneNumberInvalid      ErrorCode = 1108
-	ErrorZaloAccountNotExisted   ErrorCode = 1404
-	ErrorTemplateIdInvalid       ErrorCode = 1400
-	ErrorOADoesNotHavePermission ErrorCode = 1403
-	ErrorDailyQuotaExceeded      ErrorCode = 1144
-
-	ErrorTemplateNotApproved ErrorCode = 1131
-	ErrorUserRefused         ErrorCode = 1141
-	ErrorOutOfQuota          ErrorCode = 1115
-	ErrorBodyDataEmpty       ErrorCode = 1121
-	ErrorUnknownErrorZalo    ErrorCode = 1500
-
-	ErrorKWalletNotFound                              ErrorCode = 2000
-	ErrorKWalletNotEnoughMoney                        ErrorCode = 2001
-	ErrorKWalletTotalRefundExceedsOriginalTransaction ErrorCode = 2002
-	ErrorCodeSystemErrorKWallet                       ErrorCode = 2500
 )
 
 type Source string
 
 const (
-	SourceAPIService     Source = "API_Service"
-	SourceZALOService    Source = "ZALO_service"
-	SourceInfraService   Source = "Infra_Service"
-	SourceKWalletService Source = "KWallet_Service"
+	SourceAPIService   Source = "API_Service"
+	SourceZALOService  Source = "ZALO_service"
+	SourceInfraService Source = "Infra_Service"
 )
 
 type Error struct {

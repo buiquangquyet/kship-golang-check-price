@@ -11,8 +11,10 @@ import (
 )
 
 type PriceService struct {
-	shopRepo  domain.ShopRepo
-	priceRepo domain.PriceRepo
+	shopRepo          domain.ShopRepo
+	priceRepo         domain.PriceRepo
+	clientRepo        domain.ClientRepo
+	clientDisableShop domain.ClientDisableShopRepo
 }
 
 func NewPriceService(shopRepo domain.ShopRepo) *PriceService {
@@ -28,9 +30,9 @@ func (p *PriceService) GetPrice(ctx context.Context, req *request.GetPriceReRequ
 		return nil, err
 	}
 	//tai sao dk nhu nay moi vao cache check
-	if shop == nil || req.ActiveKShip {
+	if shop == nil || !req.ActiveKShip {
 		// response từ cache
-		prices, err := p.priceRepo.GetResponse(ctx)
+		prices, err := p.priceRepo.GetResponse(ctx, req.ClientCode, req.SenderWardId, req.ReceiverWardId)
 		if err != nil {
 			log.Error(ctx, err.Error())
 			return nil, err
@@ -39,17 +41,74 @@ func (p *PriceService) GetPrice(ctx context.Context, req *request.GetPriceReRequ
 			return prices, nil
 		}
 		// get shop default, từ cache hay cả db phai hỏi lại
-		shop, err := p.shopRepo.GetByCode(ctx, constant.ShopDefaultTrial)
+		shop, err = p.shopRepo.GetByCode(ctx, constant.ShopDefaultTrial)
 		if err != nil {
 			log.Error(ctx, err.Error())
 			return nil, err
 		}
-
 	}
 
 	return nil, nil
 }
 
-func (p *PriceService) GetShopDefault(ctx context.Context, req *request.GetPriceReRequest) ([]*domain.Price, *common.Error) {
-	return nil, nil
+func (p *PriceService) validate(ctx context.Context, shop *domain.Shop, req *request.GetPriceReRequest) *common.Error {
+
+	return nil
+}
+
+func (p *PriceService) validateShop(ctx context.Context, shop *domain.Shop, clientCode string) *common.Error {
+	ierr := common.ErrBadRequest(ctx)
+	switch clientCode {
+	case constant.VTPFWDeliveryCode:
+		if shop.VtpUsername == "" || shop.VtpPassword == "" {
+			return ierr.SetCode(3005)
+		}
+	case constant.VNPDeliveryCode:
+		if shop.VnpCmsCode == "" {
+			return ierr.SetCode(3008)
+		}
+	case constant.GHTKDeliveryCode:
+		if shop.GhtkUsername == "" || shop.GhtkPassword == "" {
+			return ierr.SetCode(3012)
+		}
+	case constant.JTFWDeliveryCode:
+		//code cu bi duplicate
+		if shop.JtCustomerId == "" {
+			return ierr.SetCode(3005)
+		}
+	case constant.GHNFWDeliveryCode:
+		if shop.GhnfwShopId == "" || shop.GhnfwPhone == "" {
+			return ierr.SetCode(3005)
+		}
+	case constant.BESTFWDeliveryCode:
+		if shop.UsernameBestfw == "" || shop.PasswordBestfw == "" {
+			return ierr.SetCode(3005)
+		}
+	}
+	return nil
+}
+
+func (p *PriceService) validateClient(ctx context.Context, clientCode string, retailerId string) *common.Error {
+	client, err := p.clientRepo.GetByCode(ctx, clientCode)
+	if helpers.IsInternalError(err) {
+		log.IErr(ctx, err)
+		return err
+	}
+	ierr := common.ErrBadRequest(ctx)
+	if client == nil {
+		log.Warn(ctx, "client is null")
+		return ierr.SetCode(3001)
+	}
+	if client.Status == constant.DisableStatus {
+		return ierr.SetCode(3002)
+	}
+	clientUnallowedShop, err := p.clientDisableShop.GetByRetailerId(ctx, retailerId)
+	if err != nil {
+		log.IErr(ctx, err)
+		return err
+	}
+	if helpers.InArray(clientUnallowedShop, clientCode) {
+		return ierr.SetCode(3004)
+	}
+	return nil
 }
