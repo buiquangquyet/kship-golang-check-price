@@ -6,7 +6,7 @@ type GetPriceReRequest struct {
 	SenderLocationId   string          `json:"SENDER_LOCATION_ID"`
 	SenderWardId       string          `json:"SENDER_WARD_ID"`
 	SenderAddress      string          `json:"SENDER_ADDRESS"`
-	ReceiverLocationId string          `json:"RECEIVER_LOCATION_ID"`
+	ReceiverLocationId int64           `json:"RECEIVER_LOCATION_ID"`
 	ReceiverWardId     string          `json:"RECEIVER_WARD_ID"`
 	ReceiverAddress    string          `json:"RECEIVER_ADDRESS"`
 	ProductWidth       string          `json:"PRODUCT_WIDTH"`
@@ -18,6 +18,7 @@ type GetPriceReRequest struct {
 	MoneyCollection    string          `json:"MONEY_COLLECTION"`
 	Services           []*Service      `json:"SERVICES"`
 	ExtraService       []*ExtraService `json:"SERVICE_EXTRA"`
+	VersionLocation    int             `json:"version_location"`
 }
 
 type Service struct {

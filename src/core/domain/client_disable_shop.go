@@ -9,5 +9,5 @@ type ClientDisableShop struct {
 }
 
 type ClientDisableShopRepo interface {
-	GetByRetailerId(ctx context.Context, retailerId string) ([]string, *common.Error)
+	GetByRetailerId(ctx context.Context, retailerId int64) ([]int64, *common.Error)
 }

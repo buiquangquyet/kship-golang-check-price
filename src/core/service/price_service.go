@@ -15,6 +15,8 @@ type PriceService struct {
 	priceRepo         domain.PriceRepo
 	clientRepo        domain.ClientRepo
 	clientDisableShop domain.ClientDisableShopRepo
+	clientSettingShop domain.ClientSettingShopRepo
+	districtRepo      domain.DistrictRepo
 }
 
 func NewPriceService(shopRepo domain.ShopRepo) *PriceService {
@@ -88,7 +90,7 @@ func (p *PriceService) validateShop(ctx context.Context, shop *domain.Shop, clie
 	return nil
 }
 
-func (p *PriceService) validateClient(ctx context.Context, clientCode string, retailerId string) *common.Error {
+func (p *PriceService) validateClient(ctx context.Context, clientCode string, retailerId int64) *common.Error {
 	client, err := p.clientRepo.GetByCode(ctx, clientCode)
 	if helpers.IsInternalError(err) {
 		log.IErr(ctx, err)
@@ -102,13 +104,44 @@ func (p *PriceService) validateClient(ctx context.Context, clientCode string, re
 	if client.Status == constant.DisableStatus {
 		return ierr.SetCode(3002)
 	}
-	clientUnallowedShop, err := p.clientDisableShop.GetByRetailerId(ctx, retailerId)
+	clientUnAllowedShop, err := p.clientDisableShop.GetByRetailerId(ctx, retailerId)
 	if err != nil {
 		log.IErr(ctx, err)
 		return err
 	}
-	if helpers.InArray(clientUnallowedShop, clientCode) {
+	if helpers.InArray(clientUnAllowedShop, client.Id) {
 		return ierr.SetCode(3004)
+	}
+
+	if client.OnBoardingStatus == constant.OnboardingDisable {
+		clientSettingShop, err := p.clientSettingShop.GetEnableShopByRetailerId(ctx, retailerId)
+		if err != nil {
+			log.IErr(ctx, err)
+			return err
+		}
+		if helpers.InArray(clientSettingShop, client.Id) {
+			return ierr.SetCode(3004)
+		}
+	}
+	return nil
+}
+
+func (p *PriceService) validateLocation(ctx context.Context, req *request.GetPriceReRequest) *common.Error {
+	ierr := common.ErrBadRequest(ctx)
+	if req.SenderLocationId != "" {
+		return ierr.SetCode(4003)
+	}
+	if req.VersionLocation == constant.VersionLocation2 {
+		_, ierr = p.districtRepo.GetByKmsId(ctx, req.ReceiverLocationId)
+	} else {
+		_, ierr = p.districtRepo.GetByKvId(ctx, req.ReceiverLocationId)
+	}
+	if ierr != nil {
+		return ierr.SetCode(4005)
+	}
+	ierr = common.ErrBadRequest(ctx)
+	if !helpers.InArray(constant.ReceiverWardIdClientCode, req.ClientCode) && req.ReceiverWardId != "" {
+		return ierr.SetCode(4006)
 	}
 	return nil
 }
