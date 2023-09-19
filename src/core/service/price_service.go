@@ -17,6 +17,7 @@ type PriceService struct {
 	clientDisableShop domain.ClientDisableShopRepo
 	clientSettingShop domain.ClientSettingShopRepo
 	districtRepo      domain.DistrictRepo
+	serviceRepo       domain.ServiceRepo
 }
 
 func NewPriceService(shopRepo domain.ShopRepo) *PriceService {
@@ -143,5 +144,29 @@ func (p *PriceService) validateLocation(ctx context.Context, req *request.GetPri
 	if !helpers.InArray(constant.ReceiverWardIdClientCode, req.ClientCode) && req.ReceiverWardId != "" {
 		return ierr.SetCode(4006)
 	}
+	//validate width, height, ...
+	return nil
+}
+
+func (p *PriceService) validateService(ctx context.Context, req *request.GetPriceReRequest) *common.Error {
+	ierr := common.ErrBadRequest(ctx)
+	if req.Services == nil {
+		return ierr.SetCode(4001)
+	}
+	serviceEnable, ierr := p.serviceRepo.GetServicesPluckCodeByClientCode(ctx, req.ClientCode)
+	if ierr != nil {
+		log.IErr(ctx, ierr)
+		return ierr
+	}
+	for _, service := range req.Services {
+		serviceCode := service.Code
+		if helpers.InArray(serviceEnable, serviceCode) {
+			return common.ErrBadRequest(ctx).SetCode(4009)
+		}
+	}
+	return nil
+}
+
+func (p *PriceService) validateExtraService(ctx context.Context) *common.Error {
 	return nil
 }
