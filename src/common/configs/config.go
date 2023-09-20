@@ -40,8 +40,7 @@ type Config struct {
 	} `mapstructure:"redis"`
 
 	ExtService struct {
-		Zalo    *Zalo    `mapstructure:"zalo"`
-		KWallet *KWallet `mapstructure:"k_wallet"`
+		GHTK *GHTK `mapstructure:"k_wallet"`
 	} `mapstructure:"ext_service"`
 
 	Tracer struct {
@@ -53,19 +52,11 @@ type Config struct {
 	} `mapstructure:"tracer"`
 }
 
-type Zalo struct {
-	HostAuth         string `mapstructure:"host_auth"`
-	HostOpen         string `mapstructure:"host_open"`
-	HostBusiness     string `mapstructure:"host_business"`
-	AppId            string `mapstructure:"app_id"`
-	SecretKey        string `mapstructure:"secret_key"`
-	CallbackLoginUrl string `mapstructure:"callback_login_url"`
-}
-
-type KWallet struct {
-	Host       string `mapstructure:"host"`
-	PartnerKey string `mapstructure:"partner_key"`
-	XAPIKey    string `mapstructure:"x_api_key"`
+type GHTK struct {
+	Host     string `mapstructure:"host"`
+	Token    string `mapstructure:"token"`
+	Username string `mapstructure:"username"`
+	Password string `mapstructure:"password"`
 }
 
 var common *Config

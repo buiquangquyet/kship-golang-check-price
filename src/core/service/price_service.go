@@ -50,6 +50,7 @@ func (p *PriceService) GetPrice(ctx context.Context, req *request.GetPriceReRequ
 			return nil, err
 		}
 	}
+	//validate client allow
 
 	return nil, nil
 }
@@ -168,5 +169,6 @@ func (p *PriceService) validateService(ctx context.Context, req *request.GetPric
 }
 
 func (p *PriceService) validateExtraService(ctx context.Context) *common.Error {
+	//
 	return nil
 }
