@@ -8,5 +8,6 @@ import (
 func BuildExtServicesModules() fx.Option {
 	return fx.Options(
 		fx.Provide(external.NewBaseClient),
+		fx.Provide(external.NewGHTKExtService),
 	)
 }

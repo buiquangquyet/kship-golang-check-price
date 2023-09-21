@@ -32,6 +32,10 @@ func (b *BaseController) ErrorData(c *gin.Context, err *common.Error) {
 }
 
 func (b *BaseController) BindAndValidateRequest(c *gin.Context, req interface{}) *common.Error {
+	if err := c.BindUri(req); err != nil {
+		log.Warn(c, "bind uri request err, err:[%s]", err)
+		return common.ErrBadRequest(c).SetDetail(err.Error())
+	}
 	if err := c.Bind(req); err != nil {
 		log.Warn(c, "bind request err, err:[%s]", err)
 		return common.ErrBadRequest(c).SetDetail(err.Error())

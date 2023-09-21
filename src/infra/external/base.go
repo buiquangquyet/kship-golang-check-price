@@ -2,13 +2,6 @@ package external
 
 import (
 	"check-price/src/common/configs"
-	"check-price/src/common/log"
-	"context"
-	"crypto"
-	"crypto/rand"
-	"crypto/rsa"
-	"crypto/sha1"
-	"encoding/base64"
 	"github.com/go-redis/redis/v8"
 	"github.com/imroc/req/v3"
 	"go.opentelemetry.io/otel"
@@ -23,16 +16,14 @@ const (
 )
 
 type baseClient struct {
-	tracer        trace.Tracer
-	cache         redis.UniversalClient
-	rsaPrivateKey *rsa.PrivateKey
+	tracer trace.Tracer
+	cache  redis.UniversalClient
 }
 
-func NewBaseClient(cache redis.UniversalClient, rsaPrivateKey *rsa.PrivateKey) *baseClient {
+func NewBaseClient(cache redis.UniversalClient) *baseClient {
 	return &baseClient{
-		tracer:        otel.Tracer(configs.Get().Server.Name),
-		cache:         cache,
-		rsaPrivateKey: rsaPrivateKey,
+		tracer: otel.Tracer(configs.Get().Server.Name),
+		cache:  cache,
 	}
 }
 
@@ -71,14 +62,4 @@ func (b *baseClient) SetTracer(c *req.Client) {
 			return
 		}
 	})
-}
-
-func (b *baseClient) SignBody(ctx context.Context, body []byte) (string, error) {
-	hashed := sha1.Sum(body)
-	sign, err := rsa.SignPKCS1v15(rand.Reader, b.rsaPrivateKey, crypto.SHA1, hashed[:])
-	if err != nil {
-		log.Error(ctx, "sign body error, body:[%s]", string(body))
-		return "", err
-	}
-	return base64.StdEncoding.EncodeToString(sign), nil
 }

@@ -39,6 +39,5 @@ func (g *GHTKExtService) Connect(ctx context.Context, shopCode string) string {
 }
 
 func (g *GHTKExtService) GetPriceFromDelivery(ctx context.Context, service string) (*domain.Price, *common.Error) {
-
-	return nil, nil
+	return &domain.Price{}, nil
 }

@@ -5,54 +5,68 @@ import (
 	"check-price/src/common/log"
 	"check-price/src/core/constant"
 	"check-price/src/core/domain"
+	"check-price/src/core/strategy"
 	"check-price/src/helpers"
 	"check-price/src/present/httpui/request"
 	"context"
 )
 
 type PriceService struct {
-	shopRepo          domain.ShopRepo
-	priceRepo         domain.PriceRepo
-	clientRepo        domain.ClientRepo
-	clientDisableShop domain.ClientDisableShopRepo
-	clientSettingShop domain.ClientSettingShopRepo
-	districtRepo      domain.DistrictRepo
-	serviceRepo       domain.ServiceRepo
+	shopRepo             domain.ShopRepo
+	priceRepo            domain.PriceRepo
+	clientRepo           domain.ClientRepo
+	clientDisableShop    domain.ClientDisableShopRepo
+	clientSettingShop    domain.ClientSettingShopRepo
+	districtRepo         domain.DistrictRepo
+	serviceRepo          domain.ServiceRepo
+	shipStrategyResolver *strategy.ShipStrategyFilterResolver
 }
 
-func NewPriceService(shopRepo domain.ShopRepo) *PriceService {
+func NewPriceService(shipStrategyResolver *strategy.ShipStrategyFilterResolver) *PriceService {
 	return &PriceService{
-		shopRepo: shopRepo,
+		shipStrategyResolver: shipStrategyResolver,
 	}
 }
 
-func (p *PriceService) GetPrice(ctx context.Context, req *request.GetPriceReRequest) ([]*domain.Price, *common.Error) {
-	shop, err := p.shopRepo.GetByRetailerId(ctx, "")
-	if helpers.IsInternalError(err) {
-		log.Error(ctx, err.Error())
+func (p *PriceService) GetPrice(ctx context.Context, clientCode string, req *request.GetPriceReRequest) ([]*domain.Price, *common.Error) {
+	//validate + cache
+	//shop, err := p.shopRepo.GetByRetailerId(ctx, "")
+	//if helpers.IsInternalError(err) {
+	//	log.Error(ctx, err.Error())
+	//	return nil, err
+	//}
+	//tai sao dk nhu nay moi vao cache check
+	//if shop == nil || !req.ActiveKShip {
+	//	// response từ cache
+	//	prices, err := p.priceRepo.GetResponse(ctx, req.ClientCode, req.SenderWardId, req.ReceiverWardId)
+	//	if err != nil {
+	//		log.Error(ctx, err.Error())
+	//		return nil, err
+	//	}
+	//	if prices != nil {
+	//		return prices, nil
+	//	}
+	//	// get shop default, từ cache hay cả db phai hỏi lại
+	//	shop, err = p.shopRepo.GetByCode(ctx, constant.ShopDefaultTrial)
+	//	if err != nil {
+	//		log.Error(ctx, err.Error())
+	//		return nil, err
+	//	}
+	//}
+	//validate client allow
+	shipStrategy, exist := p.shipStrategyResolver.Resolve(clientCode)
+	if !exist {
+		log.Warn(ctx, "not support with partner:[%s]", clientCode)
+		return nil, common.ErrBadRequest(ctx).SetDetail("partner not support").SetSource(common.SourceAPIService)
+	}
+	//example multi services
+	services := []string{"service_1", "service_2", "service_3"}
+	prices, err := shipStrategy.GetMultiplePriceV3(ctx, "shop_code", services)
+	if err != nil {
+		log.IErr(ctx, err)
 		return nil, err
 	}
-	//tai sao dk nhu nay moi vao cache check
-	if shop == nil || !req.ActiveKShip {
-		// response từ cache
-		prices, err := p.priceRepo.GetResponse(ctx, req.ClientCode, req.SenderWardId, req.ReceiverWardId)
-		if err != nil {
-			log.Error(ctx, err.Error())
-			return nil, err
-		}
-		if prices != nil {
-			return prices, nil
-		}
-		// get shop default, từ cache hay cả db phai hỏi lại
-		shop, err = p.shopRepo.GetByCode(ctx, constant.ShopDefaultTrial)
-		if err != nil {
-			log.Error(ctx, err.Error())
-			return nil, err
-		}
-	}
-	//validate client allow
-
-	return nil, nil
+	return prices, nil
 }
 
 func (p *PriceService) validate(ctx context.Context, shop *domain.Shop, req *request.GetPriceReRequest) *common.Error {
@@ -130,7 +144,7 @@ func (p *PriceService) validateClient(ctx context.Context, clientCode string, re
 
 func (p *PriceService) validateLocation(ctx context.Context, req *request.GetPriceReRequest) *common.Error {
 	ierr := common.ErrBadRequest(ctx)
-	if req.SenderLocationId != "" {
+	if req.SenderLocationId != 0 {
 		return ierr.SetCode(4003)
 	}
 	if req.VersionLocation == constant.VersionLocation2 {
@@ -142,7 +156,7 @@ func (p *PriceService) validateLocation(ctx context.Context, req *request.GetPri
 		return ierr.SetCode(4005)
 	}
 	ierr = common.ErrBadRequest(ctx)
-	if !helpers.InArray(constant.ReceiverWardIdClientCode, req.ClientCode) && req.ReceiverWardId != "" {
+	if !helpers.InArray(constant.ReceiverWardIdClientCode, req.ClientCode) && req.ReceiverWardId != 0 {
 		return ierr.SetCode(4006)
 	}
 	//validate width, height, ...

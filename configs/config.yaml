@@ -4,7 +4,7 @@ mode:
 server:
   name: check-price
   address: 3456
-  prefix: message
+  prefix: api/v3
 
 
 token:

@@ -21,13 +21,13 @@ func NewPriceController(
 	}
 }
 
-func (m *PriceController) Get(c *gin.Context) {
+func (m *PriceController) GetPrice(c *gin.Context) {
 	req := new(request.GetPriceReRequest)
 	if ierr := m.BindAndValidateRequest(c, req); ierr != nil {
 		m.ErrorData(c, ierr)
 		return
 	}
-	data, err := m.priceService.GetPrice(c, req)
+	data, err := m.priceService.GetPrice(c, req.ClientCode, req)
 	if err != nil {
 		m.ErrorData(c, err)
 		return

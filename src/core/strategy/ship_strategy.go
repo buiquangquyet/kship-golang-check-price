@@ -1,16 +1,18 @@
 package strategy
 
 import (
+	"check-price/src/common"
+	"check-price/src/core/domain"
 	"context"
 	"go.uber.org/fx"
 )
 
 type ShipStrategy interface {
 	Code() string
-	GetMultiplePriceV3(ctx context.Context)
+	GetMultiplePriceV3(ctx context.Context, shopCode string, services []string) ([]*domain.Price, *common.Error)
 }
 
-func ProvideEInvoiceStrategyFilterStrategy(constructor interface{}) fx.Option {
+func ProvideShipStrategyFilterStrategy(constructor interface{}) fx.Option {
 	return fx.Provide(fx.Annotated{
 		Group:  "ship_strategy",
 		Target: constructor,
