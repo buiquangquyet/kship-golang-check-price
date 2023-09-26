@@ -27,7 +27,12 @@ func (m *PriceController) GetPrice(c *gin.Context) {
 		m.ErrorData(c, ierr)
 		return
 	}
-	data, err := m.priceService.GetPrice(c, req.ClientCode, req)
+	tokenInfo, ierr := m.getTokenInfo(c)
+	if ierr != nil {
+		m.ErrorData(c, ierr)
+		return
+	}
+	data, err := m.priceService.GetPrice(c, req, tokenInfo)
 	if err != nil {
 		m.ErrorData(c, err)
 		return

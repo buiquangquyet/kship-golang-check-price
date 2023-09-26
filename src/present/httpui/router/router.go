@@ -12,12 +12,13 @@ type RoutersIn struct {
 	fx.In
 	Engine          *gin.Engine
 	PriceController *controllers.PriceController
+	AuthMiddleware  *middlewares.AuthMiddleware
 }
 
 func RegisterRouters(in RoutersIn) {
 	group := in.Engine.Group(configs.Get().Server.Prefix)
 	group.GET("/ping", middlewares.HealthCheckEndpoint)
-	group.Use(middlewares.Authenticate())
+	group.Use(in.AuthMiddleware.Authenticate())
 	{
 		group.POST("/check-price/:client", in.PriceController.GetPrice)
 	}

@@ -6,6 +6,7 @@ require (
 	github.com/gin-gonic/gin v1.9.1
 	github.com/go-playground/validator/v10 v10.15.4
 	github.com/go-redis/redis/v8 v8.11.5
+	github.com/golang-jwt/jwt/v5 v5.0.0
 	github.com/grpc-ecosystem/go-grpc-middleware v1.4.0
 	github.com/imroc/req/v3 v3.42.0
 	github.com/rs/cors/wrapper/gin v0.0.0-20230905230807-20a76bd635d3

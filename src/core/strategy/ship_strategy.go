@@ -12,6 +12,8 @@ type ShipStrategy interface {
 	GetMultiplePriceV3(ctx context.Context, shopCode string, services []string) ([]*domain.Price, *common.Error)
 }
 
+//chia folder theo các hãng
+
 func ProvideShipStrategyFilterStrategy(constructor interface{}) fx.Option {
 	return fx.Provide(fx.Annotated{
 		Group:  "ship_strategy",

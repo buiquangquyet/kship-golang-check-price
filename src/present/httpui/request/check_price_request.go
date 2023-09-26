@@ -1,5 +1,10 @@
 package request
 
+import (
+	"check-price/src/common"
+	"context"
+)
+
 type GetPriceReRequest struct {
 	ClientCode         string          `uri:"client" binding:"required"`
 	ActiveKShip        bool            `json:"ACTIVE_KSHIP"`
@@ -7,7 +12,7 @@ type GetPriceReRequest struct {
 	SenderWardId       int             `json:"SENDER_WARD_ID"`
 	SenderAddress      string          `json:"SENDER_ADDRESS"`
 	ReceiverLocationId int64           `json:"RECEIVER_LOCATION_ID"`
-	ReceiverWardId     int             `json:"RECEIVER_WARD_ID"`
+	ReceiverWardId     int64           `json:"RECEIVER_WARD_ID"`
 	ReceiverAddress    string          `json:"RECEIVER_ADDRESS"`
 	ProductWidth       int             `json:"PRODUCT_WIDTH"`
 	ProductHeight      int             `json:"PRODUCT_HEIGHT"`
@@ -31,4 +36,15 @@ type ExtraService struct {
 	Value    string `json:"Value"`
 	ViewType string `json:"ViewType"`
 	Name     string `json:"Name"`
+}
+
+func (g *GetPriceReRequest) validate(ctx context.Context) *common.Error {
+	ierr := common.ErrBadRequest(ctx)
+	if g.ReceiverLocationId == 0 {
+		return ierr.SetCode(4005)
+	}
+	if g.ProductWidth == 0 || g.ProductHeight == 0 || g.ProductLength == 0 || g.ProductWeight == 0 {
+		return ierr.SetCode(4007)
+	}
+	return nil
 }

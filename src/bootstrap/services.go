@@ -3,6 +3,7 @@ package bootstrap
 import (
 	"check-price/src/core/service"
 	"check-price/src/core/strategy"
+	"check-price/src/core/strategy/ghtk"
 	"go.uber.org/fx"
 )
 
@@ -12,6 +13,6 @@ func BuildServiceModule() fx.Option {
 		fx.Provide(service.NewPriceService),
 
 		fx.Provide(strategy.NewShipStrategyFilterResolver),
-		strategy.ProvideShipStrategyFilterStrategy(strategy.NewGHTKStrategy),
+		strategy.ProvideShipStrategyFilterStrategy(ghtk.NewGHTKStrategy),
 	)
 }

@@ -1,10 +1,11 @@
-package strategy
+package ghtk
 
 import (
 	"check-price/src/common"
 	"check-price/src/common/log"
 	"check-price/src/core/constant"
 	"check-price/src/core/domain"
+	"check-price/src/core/strategy"
 	"check-price/src/infra/external"
 	"context"
 	"sync"
@@ -14,7 +15,7 @@ type GHTKStrategy struct {
 	ghtkExtService *external.GHTKExtService
 }
 
-func NewGHTKStrategy(ghtkExtService *external.GHTKExtService) ShipStrategy {
+func NewGHTKStrategy(ghtkExtService *external.GHTKExtService) strategy.ShipStrategy {
 	return &GHTKStrategy{
 		ghtkExtService: ghtkExtService,
 	}

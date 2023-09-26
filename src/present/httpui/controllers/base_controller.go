@@ -3,7 +3,9 @@ package controllers
 import (
 	"check-price/src/common"
 	"check-price/src/common/log"
+	"check-price/src/core/constant"
 	"check-price/src/core/dto"
+	"check-price/src/present/httpui/request"
 	"context"
 	"errors"
 	"fmt"
@@ -63,4 +65,12 @@ func (b *BaseController) ValidateRequest(ctx context.Context, req interface{}) *
 		return common.ErrBadRequest(ctx).SetDetail(fmt.Sprintf("field invalidate [%s]", str))
 	}
 	return nil
+}
+
+func (b *BaseController) getTokenInfo(c *gin.Context) (*request.TokenInfo, *common.Error) {
+	data, exist := c.Get(constant.TokenInfo)
+	if !exist {
+		return nil, common.ErrSystemError(c, "token info not exist ")
+	}
+	return data.(*request.TokenInfo), nil
 }

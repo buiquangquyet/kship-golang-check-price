@@ -28,7 +28,8 @@ func NewPriceService(shipStrategyResolver *strategy.ShipStrategyFilterResolver) 
 	}
 }
 
-func (p *PriceService) GetPrice(ctx context.Context, clientCode string, req *request.GetPriceReRequest) ([]*domain.Price, *common.Error) {
+func (p *PriceService) GetPrice(ctx context.Context, req *request.GetPriceReRequest, tokenInfo *request.TokenInfo) ([]*domain.Price, *common.Error) {
+	clientCode := req.ClientCode
 	//validate + cache
 	//shop, err := p.shopRepo.GetByRetailerId(ctx, "")
 	//if helpers.IsInternalError(err) {
@@ -86,7 +87,7 @@ func (p *PriceService) validateShop(ctx context.Context, shop *domain.Shop, clie
 			return ierr.SetCode(3008)
 		}
 	case constant.GHTKDeliveryCode:
-		if shop.GhtkUsername == "" || shop.GhtkPassword == "" {
+		if shop.GHTKUsername == "" || shop.GHTKPassword == "" {
 			return ierr.SetCode(3012)
 		}
 	case constant.JTFWDeliveryCode:
@@ -95,11 +96,11 @@ func (p *PriceService) validateShop(ctx context.Context, shop *domain.Shop, clie
 			return ierr.SetCode(3005)
 		}
 	case constant.GHNFWDeliveryCode:
-		if shop.GhnfwShopId == "" || shop.GhnfwPhone == "" {
+		if shop.GHNGWShopId == "" || shop.GHNFWPhone == "" {
 			return ierr.SetCode(3005)
 		}
 	case constant.BESTFWDeliveryCode:
-		if shop.UsernameBestfw == "" || shop.PasswordBestfw == "" {
+		if shop.UsernameBestFw == "" || shop.PasswordBestFw == "" {
 			return ierr.SetCode(3005)
 		}
 	}
