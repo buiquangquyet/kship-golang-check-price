@@ -16,7 +16,7 @@ type priceRepo struct {
 	*baseRepo
 }
 
-func (p *priceRepo) GetResponse(ctx context.Context, clientCode string, senderWardId string, receiverWardId string) ([]*domain.Price, *common.Error) {
+func (p *priceRepo) GetResponse(ctx context.Context, clientCode string, senderWardId int64, receiverWardId int64) ([]*domain.Price, *common.Error) {
 	//TODO implement me
 	panic("implement me")
 }

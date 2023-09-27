@@ -25,8 +25,6 @@ const (
 func init() {
 	var pathConfig string
 	flag.StringVar(&pathConfig, "config", "configs/config.yaml", "path to config file")
-	var activeInstanceArg string
-	flag.StringVar(&activeInstanceArg, "env", "public", "public | private")
 	flag.Parse()
 	err := configs.LoadConfig(pathConfig)
 	if err != nil {
@@ -55,6 +53,8 @@ func main() {
 		//build http server
 		bootstrap.BuildServiceModule(),
 
+		//auth
+		bootstrap.BuildAuthModules(),
 		//http servuc
 		bootstrap.BuildControllerModule(),
 		bootstrap.BuildValidator(),
