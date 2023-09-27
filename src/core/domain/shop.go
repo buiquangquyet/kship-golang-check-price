@@ -24,6 +24,6 @@ type Shop struct {
 }
 
 type ShopRepo interface {
-	GetByRetailerId(ctx context.Context, retailerId string) (*Shop, *common.Error)
+	GetByRetailerId(ctx context.Context, retailerId int64) (*Shop, *common.Error)
 	GetByCode(ctx context.Context, shopCode string) (*Shop, *common.Error)
 }

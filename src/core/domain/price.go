@@ -29,7 +29,7 @@ type Price struct {
 
 type PriceRepo interface {
 	GetById(ctx context.Context, id int64) (*Price, *common.Error)
-	GetResponse(ctx context.Context, clientCode string, senderWardId string, receiverWardId string) ([]*Price, *common.Error)
+	GetResponse(ctx context.Context, clientCode string, senderWardId int64, receiverWardId int64) ([]*Price, *common.Error)
 }
 
 func (a *Price) TableName() string {

@@ -31,29 +31,29 @@ func NewPriceService(shipStrategyResolver *strategy.ShipStrategyFilterResolver) 
 func (p *PriceService) GetPrice(ctx context.Context, req *request.GetPriceReRequest, tokenInfo *request.TokenInfo) ([]*domain.Price, *common.Error) {
 	clientCode := req.ClientCode
 	//validate + cache
-	//shop, err := p.shopRepo.GetByRetailerId(ctx, "")
-	//if helpers.IsInternalError(err) {
-	//	log.Error(ctx, err.Error())
-	//	return nil, err
-	//}
+	shop, err := p.shopRepo.GetByRetailerId(ctx, tokenInfo.RetailerId)
+	if helpers.IsInternalError(err) {
+		log.Error(ctx, err.Error())
+		return nil, err
+	}
 	//tai sao dk nhu nay moi vao cache check
-	//if shop == nil || !req.ActiveKShip {
-	//	// response từ cache
-	//	prices, err := p.priceRepo.GetResponse(ctx, req.ClientCode, req.SenderWardId, req.ReceiverWardId)
-	//	if err != nil {
-	//		log.Error(ctx, err.Error())
-	//		return nil, err
-	//	}
-	//	if prices != nil {
-	//		return prices, nil
-	//	}
-	//	// get shop default, từ cache hay cả db phai hỏi lại
-	//	shop, err = p.shopRepo.GetByCode(ctx, constant.ShopDefaultTrial)
-	//	if err != nil {
-	//		log.Error(ctx, err.Error())
-	//		return nil, err
-	//	}
-	//}
+	if shop == nil || !req.ActiveKShip {
+		// response từ cache
+		prices, err := p.priceRepo.GetResponse(ctx, req.ClientCode, req.SenderWardId, req.ReceiverWardId)
+		if err != nil {
+			log.Error(ctx, err.Error())
+			return nil, err
+		}
+		if prices != nil {
+			return prices, nil
+		}
+		//	// get shop default, từ cache hay cả db phai hỏi lại
+		shop, err = p.shopRepo.GetByCode(ctx, constant.ShopDefaultTrial)
+		if err != nil {
+			log.Error(ctx, err.Error())
+			return nil, err
+		}
+	}
 	//validate client allow
 	shipStrategy, exist := p.shipStrategyResolver.Resolve(clientCode)
 	if !exist {

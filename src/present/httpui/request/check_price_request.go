@@ -9,7 +9,7 @@ type GetPriceReRequest struct {
 	ClientCode         string          `uri:"client" binding:"required"`
 	ActiveKShip        bool            `json:"ACTIVE_KSHIP"`
 	SenderLocationId   int             `json:"SENDER_LOCATION_ID"`
-	SenderWardId       int             `json:"SENDER_WARD_ID"`
+	SenderWardId       int64           `json:"SENDER_WARD_ID"`
 	SenderAddress      string          `json:"SENDER_ADDRESS"`
 	ReceiverLocationId int64           `json:"RECEIVER_LOCATION_ID"`
 	ReceiverWardId     int64           `json:"RECEIVER_WARD_ID"`
