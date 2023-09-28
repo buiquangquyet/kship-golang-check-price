@@ -46,5 +46,11 @@ func (g *GetPriceReRequest) validate(ctx context.Context) *common.Error {
 	if g.ProductWidth == 0 || g.ProductHeight == 0 || g.ProductLength == 0 || g.ProductWeight == 0 {
 		return ierr.SetCode(4007)
 	}
+	if g.SenderLocationId == 0 {
+		return ierr.SetCode(4003)
+	}
+	if len(g.ExtraService) == 0 {
+		return ierr.SetCode(4013)
+	}
 	return nil
 }
