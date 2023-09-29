@@ -18,3 +18,7 @@ type Client struct {
 type ClientRepo interface {
 	GetByCode(ctx context.Context, clientCode string) (*Client, *common.Error)
 }
+
+func (Client) TableName() string {
+	return "clients"
+}

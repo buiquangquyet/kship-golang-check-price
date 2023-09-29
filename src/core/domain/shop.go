@@ -27,3 +27,7 @@ type ShopRepo interface {
 	GetByRetailerId(ctx context.Context, retailerId int64) (*Shop, *common.Error)
 	GetByCode(ctx context.Context, shopCode string) (*Shop, *common.Error)
 }
+
+func (Shop) TableName() string {
+	return "shops"
+}

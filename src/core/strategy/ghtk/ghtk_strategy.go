@@ -6,16 +6,16 @@ import (
 	"check-price/src/core/constant"
 	"check-price/src/core/domain"
 	"check-price/src/core/strategy"
-	"check-price/src/infra/external"
+	"check-price/src/infra/external/ghtk"
 	"context"
 	"sync"
 )
 
 type GHTKStrategy struct {
-	ghtkExtService *external.GHTKExtService
+	ghtkExtService *ghtk.GHTKExtService
 }
 
-func NewGHTKStrategy(ghtkExtService *external.GHTKExtService) strategy.ShipStrategy {
+func NewGHTKStrategy(ghtkExtService *ghtk.GHTKExtService) strategy.ShipStrategy {
 	return &GHTKStrategy{
 		ghtkExtService: ghtkExtService,
 	}

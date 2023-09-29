@@ -15,19 +15,19 @@ const (
 	keyZOALoginStatusFormat = "%s.%s.%s.zoa_status"
 )
 
-type baseClient struct {
+type BaseClient struct {
 	tracer trace.Tracer
 	cache  redis.UniversalClient
 }
 
-func NewBaseClient(cache redis.UniversalClient) *baseClient {
-	return &baseClient{
+func NewBaseClient(cache redis.UniversalClient) *BaseClient {
+	return &BaseClient{
 		tracer: otel.Tracer(configs.Get().Server.Name),
 		cache:  cache,
 	}
 }
 
-func (b *baseClient) SetTracer(c *req.Client) {
+func (b *BaseClient) SetTracer(c *req.Client) {
 	c.WrapRoundTripFunc(func(rt req.RoundTripper) req.RoundTripFunc {
 		return func(req *req.Request) (resp *req.Response, err error) {
 			apiName := req.URL.Path

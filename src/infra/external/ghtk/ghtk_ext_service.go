@@ -1,9 +1,10 @@
-package external
+package ghtk
 
 import (
 	"check-price/src/common"
 	"check-price/src/common/configs"
 	"check-price/src/core/domain"
+	"check-price/src/infra/external"
 	"context"
 	"github.com/imroc/req/v3"
 	"time"
@@ -14,12 +15,12 @@ const (
 )
 
 type GHTKExtService struct {
-	*baseClient
+	*external.BaseClient
 	client *req.Client
 	cf     *configs.GHTK
 }
 
-func NewGHTKExtService(base *baseClient) *GHTKExtService {
+func NewGHTKExtService(base *external.BaseClient) *GHTKExtService {
 	cf := configs.Get().ExtService.GHTK
 	cli := req.C().SetBaseURL(cf.Host).SetTimeout(timeoutGHTK)
 	cli.SetCommonHeaders(map[string]string{
@@ -27,7 +28,7 @@ func NewGHTKExtService(base *baseClient) *GHTKExtService {
 	})
 	base.SetTracer(cli)
 	return &GHTKExtService{
-		baseClient: base,
+		BaseClient: base,
 		client:     cli,
 		cf:         cf,
 	}
