@@ -6,41 +6,38 @@ import (
 	"check-price/src/core/domain"
 	"check-price/src/infra/repo"
 	"context"
-	"fmt"
 	"github.com/go-redis/redis/v8"
 	"time"
 )
 
 const (
-	keyCacheShopByCode   = "cache_shop_by_code"
 	expirationShopByCode = 24 * time.Hour
 
-	keyCacheShopByRetailerId   = "cache_shop_by_retailer_id"
 	expirationShopByRetailerId = 24 * time.Hour
 )
 
 type ShopRepoDecorator struct {
+	*baseDecorator
 	cache    redis.UniversalClient
 	shopRepo *repo.ShopRepo
 }
 
-func NewShopRepoDecorator(shopRepo *repo.ShopRepo, cache redis.UniversalClient) domain.ShopRepo {
+func NewShopRepoDecorator(base *baseDecorator, shopRepo *repo.ShopRepo, cache redis.UniversalClient) domain.ShopRepo {
 	return &ShopRepoDecorator{
-		cache:    cache,
-		shopRepo: shopRepo,
+		baseDecorator: base,
+		cache:         cache,
+		shopRepo:      shopRepo,
 	}
 }
 
 func (s *ShopRepoDecorator) GetByRetailerId(ctx context.Context, retailerId int64) (*domain.Shop, *common.Error) {
-	key := s.genKeyCacheGetByRetailerId(retailerId)
+	key := s.genKeyCacheGetShopByRetailerId(retailerId)
 	var shop domain.Shop
 	err := s.cache.Get(ctx, key).Scan(&shop)
 	if err != nil {
 		return &shop, nil
 	}
-	if err != redis.Nil {
-		log.Error(ctx, "get redis error")
-	}
+	s.handleRedisError(ctx, err)
 	shopDB, ierr := s.shopRepo.GetByRetailerId(ctx, retailerId)
 	if ierr != nil {
 		return nil, ierr
@@ -51,12 +48,8 @@ func (s *ShopRepoDecorator) GetByRetailerId(ctx context.Context, retailerId int6
 	return shopDB, nil
 }
 
-func (s *ShopRepoDecorator) genKeyCacheGetByRetailerId(retailerId int64) string {
-	return fmt.Sprintf("%s_%v", keyCacheShopByRetailerId, retailerId)
-}
-
 func (s *ShopRepoDecorator) GetByCode(ctx context.Context, code string) (*domain.Shop, *common.Error) {
-	key := s.genKeyCacheGetByCode(code)
+	key := s.genKeyCacheGetShopByCode(code)
 	var shop domain.Shop
 	err := s.cache.Get(ctx, key).Scan(&shop)
 	if err != nil {
@@ -73,8 +66,4 @@ func (s *ShopRepoDecorator) GetByCode(ctx context.Context, code string) (*domain
 		s.cache.Set(ctx, key, shopDB, expirationShopByCode)
 	}()
 	return shopDB, nil
-}
-
-func (s *ShopRepoDecorator) genKeyCacheGetByCode(code string) string {
-	return fmt.Sprintf("%s_%s", keyCacheShopByCode, code)
 }

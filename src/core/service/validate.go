@@ -178,19 +178,87 @@ func (p *PriceService) validateExtraService(ctx context.Context, clientCode stri
 			}
 			clientExtraServicesPaymentByAllow = append(clientExtraServicesPaymentByAllow, serviceExtraValue)
 		}
-		//Todo consider
-		if servicesExtraByClientCode.OnBoardingStatus == 1 {
+		if servicesExtraByClientCode.OnBoardingStatus == constant.OnboardingEnable {
 			clientExtraServicesAllow = append(clientExtraServicesAllow, servicesExtraByClientCode.Code)
 			continue
 		}
-		serviceExtraEnableShop, ierr := p.settingShopRepo.GetServiceExtraEnableShop(ctx, retailerId)
-		if ierr != nil {
-			log.IErr(ctx, ierr)
-			return ierr
-		}
-		if serviceExtraEnableShop {
-			clientExtraServicesAllow = append(clientExtraServicesAllow, servicesExtraByClientCode.Code)
+		if servicesExtraByClientCode.OnBoardingStatus == constant.OnboardingDisable {
+			serviceExtraEnableShop, ierr := p.settingShopRepo.GetServiceExtraEnableShop(ctx, retailerId)
+			if ierr != nil {
+				log.IErr(ctx, ierr)
+				return ierr
+			}
+			if serviceExtraEnableShop {
+				clientExtraServicesAllow = append(clientExtraServicesAllow, servicesExtraByClientCode.Code)
+			}
 		}
 	}
+	for _, extraService := range extraServices {
+		extraServiceCode := extraService.Code
+		if extraServiceCode == constant.ServiceExtraPickShift && !helpers.InArray(constant.PickShiftExtraClientCode, extraServiceCode) {
+			return ierr.SetCode(4545)
+		}
+		if extraServiceCode == constant.ServiceExtraXmg && clientCode != constant.VTPFWDeliveryCode {
+			return ierr.SetCode(4546)
+		}
+		if !helpers.InArray(clientExtraServicesAllow, extraServiceCode) {
+			switch extraServiceCode {
+			case constant.ServiceExtraBulky:
+				return ierr.SetCode(4044)
+			case constant.ServiceExtraCODST:
+				return ierr.SetCode(4010)
+			case constant.ServiceExtraConn:
+				return ierr.SetCode(4011)
+			case constant.ServiceExtraPartSign:
+				return ierr.SetCode(4016)
+			case constant.ServiceExtraThermalBag:
+				return ierr.SetCode(4017)
+			case constant.ServiceExtraGbh:
+				return ierr.SetCode(4018)
+			case constant.ServiceExtraShipperNote:
+				return ierr.SetCode(4019)
+			case constant.ServiceExtraGnG:
+				return ierr.SetCode(4020)
+			case constant.ServiceExtraRoundTrip:
+				return ierr.SetCode(4021)
+			case constant.ServiceExtraPrepaid:
+				return ierr.SetCode(4022)
+			case constant.ServiceExtraBaoPhat:
+				return ierr.SetCode(4023)
+			case constant.ServiceExtraPtt:
+				return ierr.SetCode(4024)
+			case constant.ServiceExtraDk:
+				return ierr.SetCode(4025)
+			case constant.ServiceExtraGHTK1:
+				return ierr.SetCode(4402)
+			case constant.ServiceExtraGHTK7:
+				return ierr.SetCode(4403)
+			case constant.ServiceExtraGHTKXFAST:
+				return ierr.SetCode(4404)
+			case constant.ServiceExtraGHTK2:
+				return ierr.SetCode(4412)
+			case constant.ServiceExtraGHTK3:
+				return ierr.SetCode(4411)
+			case constant.ServiceExtraGHTK4:
+				return ierr.SetCode(4410)
+			case constant.ServiceExtraGHTK5:
+				return ierr.SetCode(4409)
+			}
+		}
+		if extraServiceCode == constant.ServiceExtraCodePayment {
+			serviceExtraValue := constant.PaymentByFrom
+			if extraService.Value != "" {
+				serviceExtraValue = extraService.Value
+			}
+			notAllow := !helpers.InArray(clientExtraServicesAllow, serviceExtraValue)
+			if serviceExtraValue == constant.PaymentByFrom && notAllow {
+				return ierr.SetCode(4001)
+			}
+			if serviceExtraValue == constant.PaymentByTo && notAllow {
+				return ierr.SetCode(4002)
+			}
+		}
+	}
+
 	return nil
 }

@@ -26,10 +26,11 @@ func BuildStorageModules() fx.Option {
 		fx.Provide(newPostgresqlDB),
 		fx.Provide(newCacheRedis),
 		fx.Provide(newMongoDB),
-		fx.Provide(repo.NewBaseRepo),
 
+		fx.Provide(repo.NewBaseRepo),
 		fx.Provide(repo.NewShopRepo),
 
+		fx.Provide(decorators.NewBaseDecorator),
 		fx.Provide(decorators.NewShopRepoDecorator),
 	)
 }

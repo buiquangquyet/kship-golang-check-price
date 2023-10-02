@@ -52,5 +52,10 @@ func (g *GetPriceReRequest) validate(ctx context.Context) *common.Error {
 	if len(g.ExtraService) == 0 {
 		return ierr.SetCode(4013)
 	}
+	for _, extraService := range g.ExtraService {
+		if extraService.Code == "" {
+			return ierr.SetCode(4012)
+		}
+	}
 	return nil
 }
