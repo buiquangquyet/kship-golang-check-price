@@ -8,7 +8,12 @@ import (
 
 type Client struct {
 	Id               int64     `json:"id"`
+	Name             string    `json:"name"`
+	Code             string    `json:"code"`
 	Status           int       `json:"status"`
+	Image            string    `json:"image"`
+	ShopsPossible    string    `json:"shops_possible"`
+	LinkTracking     string    `json:"link_tracking"`
 	OnBoardingStatus int       `json:"on_boarding_status"`
 	CreatedAt        time.Time `json:"created_at"`
 	UpdatedAt        time.Time `json:"updated_at"`
