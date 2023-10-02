@@ -178,7 +178,8 @@ func (p *PriceService) validateExtraService(ctx context.Context, clientCode stri
 			}
 			clientExtraServicesPaymentByAllow = append(clientExtraServicesPaymentByAllow, serviceExtraValue)
 		}
-		if servicesExtraByClientCode.OnBoardingStatus {
+		//Todo consider
+		if servicesExtraByClientCode.OnBoardingStatus == 1 {
 			clientExtraServicesAllow = append(clientExtraServicesAllow, servicesExtraByClientCode.Code)
 			continue
 		}
