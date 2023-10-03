@@ -4,6 +4,7 @@ import (
 	"check-price/src/common/configs"
 	"check-price/src/common/log"
 	"check-price/src/core/constant"
+	"check-price/src/infra/decorators"
 	"check-price/src/infra/repo"
 	"context"
 	"fmt"
@@ -25,10 +26,12 @@ func BuildStorageModules() fx.Option {
 		fx.Provide(newPostgresqlDB),
 		fx.Provide(newCacheRedis),
 		fx.Provide(newMongoDB),
-		fx.Provide(repo.NewBaseRepo),
 
-		fx.Provide(repo.NewPriceRepo),
+		fx.Provide(repo.NewBaseRepo),
 		fx.Provide(repo.NewShopRepo),
+
+		fx.Provide(decorators.NewBaseDecorator),
+		fx.Provide(decorators.NewShopRepoDecorator),
 	)
 }
 

@@ -1,10 +1,5 @@
 package domain
 
-import (
-	"check-price/src/common"
-	"context"
-)
-
 type Price struct {
 	Id            int64  `json:"id,omitempty"`
 	Code          string `json:"code,omitempty"`
@@ -25,13 +20,4 @@ type Price struct {
 	OldTotalPrice int    `json:"oldTotalPrice,omitempty"`
 	Status        bool   `json:"status"`
 	Msg           string `json:"msg,omitempty"`
-}
-
-type PriceRepo interface {
-	GetById(ctx context.Context, id int64) (*Price, *common.Error)
-	GetResponse(ctx context.Context, clientCode string, senderWardId int64, receiverWardId int64) ([]*Price, *common.Error)
-}
-
-func (a *Price) TableName() string {
-	return "account"
 }

@@ -3,19 +3,16 @@ package repo
 import (
 	"check-price/src/common"
 	"context"
-	"github.com/go-redis/redis/v8"
 	"gorm.io/gorm"
 )
 
 type baseRepo struct {
-	db    *gorm.DB
-	cache redis.UniversalClient
+	db *gorm.DB
 }
 
-func NewBaseRepo(db *gorm.DB, cache redis.UniversalClient) *baseRepo {
+func NewBaseRepo(db *gorm.DB) *baseRepo {
 	return &baseRepo{
-		db:    db,
-		cache: cache,
+		db: db,
 	}
 }
 

@@ -13,9 +13,14 @@ const (
 	GRABDeliveryCode        = "GRAB"
 	EMSDeliveryCode         = "EMS"
 	VIETTELPostDeliveryCode = "VTP"
+
+	GHNDeliveryCode = "GHN"
+	SpxDeliveryCode = "SPX"
 )
 
 var (
 	ReceiverWardIdClientCode = []string{AHAMOVEDeliveryCode, VNPOSTDeliveryCode, GRABDeliveryCode,
 		EMSDeliveryCode, VTPFWDeliveryCode, VIETTELPostDeliveryCode, GHTKDeliveryCode}
+
+	PickShiftExtraClientCode = []string{GHNDeliveryCode, GHNFWDeliveryCode, SpxDeliveryCode}
 )
