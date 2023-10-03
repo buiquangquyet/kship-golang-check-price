@@ -14,16 +14,29 @@ import (
 
 type PriceService struct {
 	shopRepo             domain.ShopRepo
-	clientRepo           domain.ClientRepo
-	settingShopRepo      domain.SettingShopRepo
 	districtRepo         domain.DistrictRepo
 	wardRepo             domain.WardRepo
 	serviceRepo          domain.ServiceRepo
+	settingShopRepo      domain.SettingShopRepo
+	clientRepo           domain.ClientRepo
 	shipStrategyResolver *strategy.ShipStrategyFilterResolver
 }
 
-func NewPriceService(shipStrategyResolver *strategy.ShipStrategyFilterResolver) *PriceService {
+func NewPriceService(
+	shopRepo domain.ShopRepo,
+	districtRepo domain.DistrictRepo,
+	wardRepo domain.WardRepo,
+	serviceRepo domain.ServiceRepo,
+	settingShopRepo domain.SettingShopRepo,
+	clientRepo domain.ClientRepo,
+	shipStrategyResolver *strategy.ShipStrategyFilterResolver) *PriceService {
 	return &PriceService{
+		shopRepo:             shopRepo,
+		districtRepo:         districtRepo,
+		wardRepo:             wardRepo,
+		serviceRepo:          serviceRepo,
+		settingShopRepo:      settingShopRepo,
+		clientRepo:           clientRepo,
 		shipStrategyResolver: shipStrategyResolver,
 	}
 }
@@ -51,7 +64,7 @@ func (p *PriceService) GetPrice(ctx context.Context, req *request.GetPriceReRequ
 		return nil, common.ErrBadRequest(ctx).SetDetail("partner not support").SetSource(common.SourceAPIService)
 	}
 	services := []string{"service_1", "service_2", "service_3"}
-	prices, err := shipStrategy.GetMultiplePriceV3(ctx, "shop_code", services)
+	prices, err := shipStrategy.GetMultiplePriceV3(ctx, shop, services)
 	if err != nil {
 		log.IErr(ctx, err)
 		return nil, err

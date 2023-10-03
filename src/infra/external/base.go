@@ -2,17 +2,21 @@ package external
 
 import (
 	"check-price/src/common/configs"
+	"check-price/src/common/log"
+	"check-price/src/core/domain"
+	"context"
+	"fmt"
 	"github.com/go-redis/redis/v8"
 	"github.com/imroc/req/v3"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/codes"
 	"go.opentelemetry.io/otel/trace"
+	"time"
 )
 
 const (
-	keyTokenFormat          = "%s.%s.%s.token"
-	keyZOALoginStatusFormat = "%s.%s.%s.zoa_status"
+	keyTokenFormat = "%s-token-%s"
 )
 
 type BaseClient struct {
@@ -62,4 +66,21 @@ func (b *BaseClient) SetTracer(c *req.Client) {
 			return
 		}
 	})
+}
+
+func (b *BaseClient) GetTokenFromCache(ctx context.Context, deliveryCode string, shop *domain.Shop) (string, error) {
+	keyOfToken := fmt.Sprintf(keyTokenFormat, deliveryCode, shop.Code)
+	var token string
+	if err := b.cache.Get(ctx, keyOfToken).Scan(&token); err != nil {
+		return "", err
+	}
+	return token, nil
+}
+
+func (b *BaseClient) StoreToken(ctx context.Context, deliveryCode string, shop *domain.Shop, newToken string, expire time.Duration) {
+	keyOfToken := fmt.Sprintf(keyTokenFormat, deliveryCode, shop.Code)
+	if err := b.cache.Set(ctx, keyOfToken, newToken, expire).Err(); err != nil {
+		log.Warn(ctx, "Cache Token failed, delivery: [%s], err: [%s]", deliveryCode, err.Error())
+	}
+	return
 }

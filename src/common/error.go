@@ -23,7 +23,7 @@ type Source string
 
 const (
 	SourceAPIService   Source = "API_Service"
-	SourceZALOService  Source = "ZALO_service"
+	SourceGHTKService  Source = "GHTK_service"
 	SourceInfraService Source = "Infra_Service"
 )
 

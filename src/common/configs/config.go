@@ -53,10 +53,8 @@ type Config struct {
 }
 
 type GHTK struct {
-	Host     string `mapstructure:"host"`
-	Token    string `mapstructure:"token"`
-	Username string `mapstructure:"username"`
-	Password string `mapstructure:"password"`
+	Host  string `mapstructure:"host"`
+	Token string `mapstructure:"token"`
 }
 
 var common *Config

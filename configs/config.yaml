@@ -34,16 +34,9 @@ redis:
   password: ""
 
 ext_service:
-  zalo:
-    host_auth: https://oauth.zaloapp.com
-    host_open: https://openapi.zalo.me
-    host_business: https://business.openapi.zalo.me
-    app_id: 3612785874375008341
-    secret_key: KLWaRy6RW6BC66mmEEw6
-  k_wallet:
-    host: https://payment-private-dev.kiotfinance.vn/api-sdk/v1.0.0
-    partner_key: kms_message
-    x_api_key: 3e96141c21704e96af6257ea41c0fc690ce0504c8529dc424dc8b245b6343c0f
+  ghtk:
+    host: https://services.giaohangtietkiem.vn
+    token: 88cFcAB40657e1AA1EBf852c4060E6d257a02EFf
 
 swagger:
   enabled: true
