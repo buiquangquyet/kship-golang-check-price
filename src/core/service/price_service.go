@@ -14,11 +14,29 @@ import (
 
 type PriceService struct {
 	shopRepo             domain.ShopRepo
+	districtRepo         domain.DistrictRepo
+	wardRepo             domain.WardRepo
+	serviceRepo          domain.ServiceRepo
+	settingShopRepo      domain.SettingShopRepo
+	clientRepo           domain.ClientRepo
 	shipStrategyResolver *strategy.ShipStrategyFilterResolver
 }
 
-func NewPriceService(shipStrategyResolver *strategy.ShipStrategyFilterResolver) *PriceService {
+func NewPriceService(
+	shopRepo domain.ShopRepo,
+	districtRepo domain.DistrictRepo,
+	wardRepo domain.WardRepo,
+	serviceRepo domain.ServiceRepo,
+	settingShopRepo domain.SettingShopRepo,
+	clientRepo domain.ClientRepo,
+	shipStrategyResolver *strategy.ShipStrategyFilterResolver) *PriceService {
 	return &PriceService{
+		shopRepo:             shopRepo,
+		districtRepo:         districtRepo,
+		wardRepo:             wardRepo,
+		serviceRepo:          serviceRepo,
+		settingShopRepo:      settingShopRepo,
+		clientRepo:           clientRepo,
 		shipStrategyResolver: shipStrategyResolver,
 	}
 }

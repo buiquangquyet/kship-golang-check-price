@@ -5,9 +5,11 @@ import (
 	"check-price/src/common/configs"
 	"check-price/src/common/log"
 	"check-price/src/core/domain"
+	"check-price/src/helpers"
 	"check-price/src/infra/external"
 	"context"
 	"fmt"
+	"github.com/go-redis/redis/v8"
 	"github.com/imroc/req/v3"
 	"time"
 )
@@ -16,6 +18,7 @@ const (
 	deliveryCode = "GHTK"
 	codeSuccess  = "SUCCESS"
 	timeoutGHTK  = 5 * time.Second
+	expireToken  = 24 * 30 * time.Hour
 
 	loginPath = "/services/shops/token"
 )
@@ -41,39 +44,49 @@ func NewGHTKExtService(base *external.BaseClient) *GHTKExtService {
 }
 
 func (g *GHTKExtService) GetPriceFromDelivery(ctx context.Context, shop *domain.Shop, service string) (*domain.Price, *common.Error) {
-	return &domain.Price{}, nil
-}
+	token, fromCache, err := g.getToken(ctx, shop, true)
+	if err != nil {
+		return nil, err
+	}
 
-//func (z *GHTKExtService) getToken(ctx context.Context, shop *domain.Shop, allowFromCache bool) (string, bool, *common.Error) {
-//	if allowFromCache {
-//		token, err := z.getTokenFromCache(ctx, merchant)
-//		if err == nil && token != "" {
-//			return token, true, nil
-//		}
-//		if err != nil && err != redis.Nil {
-//			log.Warn(ctx, "Get ZALO Token of merchant %d %s, error: %s", merchant.MerchantId, merchant.MerchantCode.ToString(), err.Error())
-//		}
-//	}
-//	refreshToken, err := z.refreshTokenRepo.Get(ctx, merchant)
-//	if err != nil {
-//		if helpers.IsNotFoundError(err) {
-//			return "", false, common.ErrUnauthorized(ctx).SetCode(common.ErrorZALOUnauthorized).SetDetail(err.Detail)
-//		}
-//		log.Error(ctx, "get token")
-//		return "", false, err
-//	}
-//	if time.Now().After(refreshToken.ExpireIn) {
-//		return "", false, common.ErrBadRequest(ctx)
-//	}
-//	newToken, err := z.newToken(ctx, refreshToken.Token)
-//	if err != nil {
-//		return "", false, err
-//	}
-//
-//	//Todo go routine
-//	z.storeToken(common.Detach(ctx), merchant, refreshToken.Id, newToken)
-//	return newToken.AccessToken, false, nil
-//}
+	result, ierr := g.getPriceFromDelivery(ctx, shop, service, token)
+	if ierr != nil {
+		if fromCache && helpers.IsUnauthorizedError(err) {
+			// retry once
+			newToken, _, err := g.getToken(ctx, shop, false)
+			if err != nil {
+				return nil, err
+			}
+			return g.getPriceFromDelivery(ctx, shop, service, newToken)
+		} else {
+			return nil, ierr
+		}
+	}
+	return result, nil
+}
+func (g *GHTKExtService) getPriceFromDelivery(ctx context.Context, shop *domain.Shop, service string, token string) (*domain.Price, *common.Error) {
+
+	return nil, nil
+}
+func (g *GHTKExtService) getToken(ctx context.Context, shop *domain.Shop, allowFromCache bool) (string, bool, *common.Error) {
+	if allowFromCache {
+		token, err := g.GetTokenFromCache(ctx, deliveryCode, shop)
+		if err == nil && token != "" {
+			return token, true, nil
+		}
+		if err != nil && err != redis.Nil {
+			log.Warn(ctx, "Get GHTK Token of shop %s, error: %s", shop.Code, err.Error())
+		}
+	}
+	newToken, err := g.newToken(ctx, shop)
+	if err != nil {
+		return "", false, err
+	}
+	go func() {
+		g.StoreToken(common.Detach(ctx), deliveryCode, shop, newToken, expireToken)
+	}()
+	return newToken, false, nil
+}
 
 func (g *GHTKExtService) newToken(ctx context.Context, shop *domain.Shop) (string, *common.Error) {
 	var output LoginOutput
