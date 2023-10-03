@@ -9,7 +9,7 @@ import (
 
 type ShipStrategy interface {
 	Code() string
-	GetMultiplePriceV3(ctx context.Context, shopCode string, services []string) ([]*domain.Price, *common.Error)
+	GetMultiplePriceV3(ctx context.Context, shop *domain.Shop, services []string) ([]*domain.Price, *common.Error)
 }
 
 //chia folder theo các hãng

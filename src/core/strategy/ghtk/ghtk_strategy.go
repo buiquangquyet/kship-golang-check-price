@@ -26,16 +26,14 @@ func (g *GHTKStrategy) Code() string {
 }
 
 // tam thoi de services []string
-func (g *GHTKStrategy) GetMultiplePriceV3(ctx context.Context, shopCode string, services []string) ([]*domain.Price, *common.Error) {
-	_ = g.ghtkExtService.Connect(ctx, shopCode)
-	//call ghtk
+func (g *GHTKStrategy) GetMultiplePriceV3(ctx context.Context, shop *domain.Shop, services []string) ([]*domain.Price, *common.Error) {
 	var wg sync.WaitGroup
 	mapPrices := make(map[string]*domain.Price)
 	for _, service := range services {
 		wg.Add(1)
 		go func(service string) {
 			defer wg.Done()
-			price, err := g.ghtkExtService.GetPriceFromDelivery(ctx, service)
+			price, err := g.ghtkExtService.GetPriceFromDelivery(ctx, shop, service)
 			if err != nil {
 				log.Error(ctx, err.Error())
 				return
