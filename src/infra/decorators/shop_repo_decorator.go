@@ -42,9 +42,7 @@ func (s *ShopRepoDecorator) GetByRetailerId(ctx context.Context, retailerId int6
 	if ierr != nil {
 		return nil, ierr
 	}
-	go func() {
-		s.cache.Set(ctx, key, shopDB, expirationShopByRetailerId)
-	}()
+	go s.cache.Set(ctx, key, shopDB, expirationShopByRetailerId)
 	return shopDB, nil
 }
 
@@ -62,8 +60,6 @@ func (s *ShopRepoDecorator) GetByCode(ctx context.Context, code string) (*domain
 	if ierr != nil {
 		return nil, ierr
 	}
-	go func() {
-		s.cache.Set(ctx, key, shopDB, expirationShopByCode)
-	}()
+	go s.cache.Set(ctx, key, shopDB, expirationShopByCode)
 	return shopDB, nil
 }

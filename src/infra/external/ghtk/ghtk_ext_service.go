@@ -106,9 +106,7 @@ func (g *GHTKExtService) getToken(ctx context.Context, shop *domain.Shop, allowF
 	if err != nil {
 		return "", false, err
 	}
-	go func() {
-		g.StoreToken(common.Detach(ctx), deliveryCode, shop, newToken, expireToken)
-	}()
+	go g.StoreToken(common.Detach(ctx), deliveryCode, shop, newToken, expireToken)
 	return newToken, false, nil
 }
 
