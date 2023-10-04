@@ -20,7 +20,9 @@ const (
 	timeoutGHTK  = 5 * time.Second
 	expireToken  = 24 * 30 * time.Hour
 
-	loginPath = "/services/shops/token"
+	loginPath           = "/services/shops/token"
+	getPriceUnder20Path = "/services/shipment/fee"
+	getPriceOver20Path  = "/services/shipment/3pl/fee"
 )
 
 type GHTKExtService struct {
@@ -65,9 +67,31 @@ func (g *GHTKExtService) GetPriceFromDelivery(ctx context.Context, shop *domain.
 	return result, nil
 }
 func (g *GHTKExtService) getPriceFromDelivery(ctx context.Context, shop *domain.Shop, service string, token string) (*domain.Price, *common.Error) {
+	var output GetPriceUnder20Output
+	resp, err := g.api(ctx, token).
+		SetSuccessResult(&output).
+		SetErrorResult(&output).
+		Get(getPriceUnder20Path)
+	if err != nil {
+		return nil, common.ErrSystemError(ctx, err.Error()).SetSource(common.SourceGHTKService)
+	}
 
-	return nil, nil
+	if !output.Success || resp.IsErrorState() {
+		log.Debug(ctx, "Call GetCompany MISA failed with body: %+v", output)
+		//Todo consider error code
+		//detail := fmt.Sprintf("http: [%d], resp: [%s]", resp.StatusCode, resp.String())
+		//return nil, g.handleError(ctx, resp.StatusCode, &output).SetSource(common.SourceGHTKService).SetDetail(detail)
+	}
+
+	return &domain.Price{}, nil
+
 }
+
+func (g *GHTKExtService) api(ctx context.Context, token string) *req.Request {
+	return g.client.R().SetContext(ctx).
+		SetHeader("token", token)
+}
+
 func (g *GHTKExtService) getToken(ctx context.Context, shop *domain.Shop, allowFromCache bool) (string, bool, *common.Error) {
 	if allowFromCache {
 		token, err := g.GetTokenFromCache(ctx, deliveryCode, shop)
