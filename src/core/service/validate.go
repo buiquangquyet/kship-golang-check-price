@@ -5,29 +5,30 @@ import (
 	"check-price/src/common/log"
 	"check-price/src/core/constant"
 	"check-price/src/core/domain"
-	"check-price/src/core/dto"
 	"check-price/src/helpers"
+	"check-price/src/present/httpui/request"
 	"context"
 )
 
-func (p *PriceService) validate(ctx context.Context, v *dto.ValidatePrice) *common.Error {
-	ierr := p.validateShop(ctx, v.Shop, v.ClientCode)
+func (p *PriceService) validate(ctx context.Context, shop *domain.Shop, retailerId int64, req *request.GetPriceReRequest) *common.Error {
+	clientCode := req.ClientCode
+	ierr := p.validateShop(ctx, shop, clientCode)
 	if ierr != nil {
 		return ierr
 	}
-	ierr = p.validateClient(ctx, v.ClientCode, v.RetailerId)
+	ierr = p.validateClient(ctx, clientCode, retailerId)
 	if ierr != nil {
 		return ierr
 	}
-	ierr = p.validateLocation(ctx, v.ClientCode, v.ValidateLocation)
+	ierr = p.validateLocation(ctx, clientCode, req)
 	if ierr != nil {
 		return ierr
 	}
-	ierr = p.validateService(ctx, v.ClientCode, v.Services)
+	ierr = p.validateService(ctx, clientCode, req.Services)
 	if ierr != nil {
 		return ierr
 	}
-	ierr = p.validateExtraService(ctx, v.ClientCode, v.RetailerId, v.ExtraServices)
+	ierr = p.validateExtraService(ctx, clientCode, retailerId, req.ExtraService)
 	if ierr != nil {
 		return ierr
 	}
@@ -103,7 +104,7 @@ func (p *PriceService) validateClient(ctx context.Context, clientCode string, re
 	return nil
 }
 
-func (p *PriceService) validateLocation(ctx context.Context, clientCode string, req *dto.ValidateLocation) *common.Error {
+func (p *PriceService) validateLocation(ctx context.Context, clientCode string, req *request.GetPriceReRequest) *common.Error {
 	ierr := common.ErrBadRequest(ctx)
 	if req.VersionLocation == constant.VersionLocation2 {
 		_, ierr = p.districtRepo.GetByKmsId(ctx, req.ReceiverLocationId)
@@ -135,7 +136,7 @@ func (p *PriceService) validateLocation(ctx context.Context, clientCode string, 
 	return nil
 }
 
-func (p *PriceService) validateService(ctx context.Context, clientCode string, services []*dto.ValidateService) *common.Error {
+func (p *PriceService) validateService(ctx context.Context, clientCode string, services []*request.Service) *common.Error {
 	ierr := common.ErrBadRequest(ctx)
 	if services == nil {
 		return ierr.SetCode(4001)
@@ -154,7 +155,7 @@ func (p *PriceService) validateService(ctx context.Context, clientCode string, s
 	return nil
 }
 
-func (p *PriceService) validateExtraService(ctx context.Context, clientCode string, retailerId int64, extraServices []*dto.ValidateExtraService) *common.Error {
+func (p *PriceService) validateExtraService(ctx context.Context, clientCode string, retailerId int64, extraServices []*request.ExtraService) *common.Error {
 	ierr := common.ErrBadRequest(ctx)
 	extraServiceRequestCodes := make([]string, len(extraServices))
 	for i, service := range extraServices {

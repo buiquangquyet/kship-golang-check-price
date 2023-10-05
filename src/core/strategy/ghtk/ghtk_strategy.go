@@ -49,7 +49,6 @@ func (g *GHTKStrategy) Validate(ctx context.Context, req *request.GetPriceReRequ
 	return nil
 }
 
-// tam thoi de services []string
 func (g *GHTKStrategy) GetMultiplePriceV3(ctx context.Context, shop *domain.Shop, req *request.GetPriceReRequest) ([]*domain.Price, *common.Error) {
 	var wg sync.WaitGroup
 	mapPrices := make(map[string]*domain.Price)

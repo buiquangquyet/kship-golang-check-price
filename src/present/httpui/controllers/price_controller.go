@@ -1,6 +1,8 @@
 package controllers
 
 import (
+	"check-price/src/common"
+	"check-price/src/core/constant"
 	"check-price/src/core/service"
 	"check-price/src/present/httpui/request"
 	"github.com/gin-gonic/gin"
@@ -27,12 +29,13 @@ func (m *PriceController) GetPrice(c *gin.Context) {
 		m.ErrorData(c, ierr)
 		return
 	}
-	tokenInfo, ierr := m.getTokenInfo(c)
-	if ierr != nil {
+	retailerId, exist := c.Get(constant.RetailerIdKey)
+	if !exist {
+		ierr := common.ErrSystemError(c, "token info not exist ")
 		m.ErrorData(c, ierr)
 		return
 	}
-	data, err := m.priceService.GetPrice(c, req, tokenInfo)
+	data, err := m.priceService.GetPrice(c, req, retailerId.(int64))
 	if err != nil {
 		m.ErrorData(c, err)
 		return
