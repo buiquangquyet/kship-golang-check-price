@@ -30,12 +30,12 @@ type Receiver struct {
 }
 
 type Product struct {
-	ProductWidth    int    `json:"PRODUCT_WIDTH"`
-	ProductHeight   int    `json:"PRODUCT_HEIGHT"`
-	ProductLength   int    `json:"PRODUCT_LENGTH"`
-	ProductWeight   int    `json:"PRODUCT_WEIGHT"`
-	ProductQuantity int    `json:"PRODUCT_QUANTITY"`
-	ProductPrice    string `json:"PRODUCT_PRICE"`
+	ProductWidth    int   `json:"PRODUCT_WIDTH"`
+	ProductHeight   int   `json:"PRODUCT_HEIGHT"`
+	ProductLength   int   `json:"PRODUCT_LENGTH"`
+	ProductWeight   int   `json:"PRODUCT_WEIGHT"`
+	ProductQuantity int   `json:"PRODUCT_QUANTITY"`
+	ProductPrice    int64 `json:"PRODUCT_PRICE"`
 }
 
 type Service struct {

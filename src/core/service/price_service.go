@@ -63,8 +63,11 @@ func (p *PriceService) GetPrice(ctx context.Context, req *request.GetPriceReRequ
 		log.Warn(ctx, "not support with partner:[%s]", clientCode)
 		return nil, common.ErrBadRequest(ctx).SetDetail("partner not support").SetSource(common.SourceAPIService)
 	}
-	services := []string{"service_1", "service_2", "service_3"}
-	prices, err := shipStrategy.GetMultiplePriceV3(ctx, shop, services)
+	ierr := shipStrategy.Validate(ctx, req)
+	if ierr != nil {
+		return nil, ierr
+	}
+	prices, err := shipStrategy.GetMultiplePriceV3(ctx, shop, req)
 	if err != nil {
 		log.IErr(ctx, err)
 		return nil, err

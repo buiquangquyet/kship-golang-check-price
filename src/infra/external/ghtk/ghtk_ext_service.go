@@ -45,13 +45,13 @@ func NewGHTKExtService(base *external.BaseClient) *GHTKExtService {
 	}
 }
 
-func (g *GHTKExtService) GetPriceFromDelivery(ctx context.Context, shop *domain.Shop, service string) (*domain.Price, *common.Error) {
+func (g *GHTKExtService) GetPriceUnder20(ctx context.Context, shop *domain.Shop, service string) (*domain.Price, *common.Error) {
 	token, fromCache, err := g.getToken(ctx, shop, true)
 	if err != nil {
 		return nil, err
 	}
 
-	result, ierr := g.getPriceFromDelivery(ctx, shop, service, token)
+	result, ierr := g.getPriceUnder20(ctx, shop, service, token)
 	if ierr != nil {
 		if fromCache && helpers.IsUnauthorizedError(err) {
 			// retry once
@@ -59,19 +59,63 @@ func (g *GHTKExtService) GetPriceFromDelivery(ctx context.Context, shop *domain.
 			if err != nil {
 				return nil, err
 			}
-			return g.getPriceFromDelivery(ctx, shop, service, newToken)
+			return g.getPriceUnder20(ctx, shop, service, newToken)
 		} else {
 			return nil, ierr
 		}
 	}
 	return result, nil
 }
-func (g *GHTKExtService) getPriceFromDelivery(ctx context.Context, shop *domain.Shop, service string, token string) (*domain.Price, *common.Error) {
+
+func (g *GHTKExtService) getPriceUnder20(ctx context.Context, shop *domain.Shop, service string, token string) (*domain.Price, *common.Error) {
 	var output GetPriceUnder20Output
 	resp, err := g.api(ctx, token).
 		SetSuccessResult(&output).
 		SetErrorResult(&output).
 		Get(getPriceUnder20Path)
+	if err != nil {
+		return nil, common.ErrSystemError(ctx, err.Error()).SetSource(common.SourceGHTKService)
+	}
+
+	if !output.Success || resp.IsErrorState() {
+		log.Debug(ctx, "Call GetCompany MISA failed with body: %+v", output)
+		//Todo consider error code
+		//detail := fmt.Sprintf("http: [%d], resp: [%s]", resp.StatusCode, resp.String())
+		//return nil, g.handleError(ctx, resp.StatusCode, &output).SetSource(common.SourceGHTKService).SetDetail(detail)
+	}
+
+	return &domain.Price{}, nil
+
+}
+
+func (g *GHTKExtService) GetPriceOver20(ctx context.Context, shop *domain.Shop, service string) (*domain.Price, *common.Error) {
+	token, fromCache, err := g.getToken(ctx, shop, true)
+	if err != nil {
+		return nil, err
+	}
+
+	result, ierr := g.getPriceOver20(ctx, shop, service, token)
+	if ierr != nil {
+		if fromCache && helpers.IsUnauthorizedError(err) {
+			// retry once
+			newToken, _, err := g.getToken(ctx, shop, false)
+			if err != nil {
+				return nil, err
+			}
+			return g.getPriceOver20(ctx, shop, service, newToken)
+		} else {
+			return nil, ierr
+		}
+	}
+	return result, nil
+}
+
+func (g *GHTKExtService) getPriceOver20(ctx context.Context, shop *domain.Shop, service string, token string) (*domain.Price, *common.Error) {
+	var output GetPriceUnder20Output
+	resp, err := g.api(ctx, token).
+		SetSuccessResult(&output).
+		SetErrorResult(&output).
+		Get(getPriceOver20Path)
 	if err != nil {
 		return nil, common.ErrSystemError(ctx, err.Error()).SetSource(common.SourceGHTKService)
 	}
