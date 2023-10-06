@@ -9,10 +9,14 @@ import (
 	"check-price/src/infra/external/ghtk"
 	"check-price/src/present/httpui/request"
 	"context"
+	"fmt"
 	"sync"
 )
 
 type GHTKStrategy struct {
+	wardRepo       domain.WardRepo
+	districtRepo   domain.DistrictRepo
+	cityRepo       domain.CityRepo
 	ghtkExtService *ghtk.GHTKExtService
 }
 
@@ -61,6 +65,11 @@ func (g *GHTKStrategy) GetMultiplePriceV3(ctx context.Context, shop *domain.Shop
 	if weight > 20000 {
 		isBBS = true
 	}
+
+	getPriceInputUnder20, getPriceInputOver20, err := g.getPriceInput(ctx, isBBS, req)
+	if err != nil {
+		return nil, err
+	}
 	for _, service := range req.Services {
 		wg.Add(1)
 		go func(service *request.Service) {
@@ -68,9 +77,9 @@ func (g *GHTKStrategy) GetMultiplePriceV3(ctx context.Context, shop *domain.Shop
 			var price *domain.Price
 			var err *common.Error
 			if isBBS {
-				price, err = g.ghtkExtService.GetPriceOver20(ctx, shop, service.Code)
+				price, err = g.ghtkExtService.GetPriceOver20(ctx, shop, getPriceInputOver20)
 			} else {
-				price, err = g.ghtkExtService.GetPriceUnder20(ctx, shop, service.Code)
+				price, err = g.ghtkExtService.GetPriceUnder20(ctx, shop, getPriceInputUnder20)
 			}
 			if err != nil {
 				log.Error(ctx, err.Error())
@@ -86,4 +95,26 @@ func (g *GHTKStrategy) GetMultiplePriceV3(ctx context.Context, shop *domain.Shop
 		prices = append(prices, price)
 	}
 	return prices, nil
+}
+
+func (g *GHTKStrategy) getPriceInput(ctx context.Context, isBBS bool, req *request.GetPriceReRequest) (*ghtk.GetPriceUnder20Input, *ghtk.GetPriceOver20Input, *common.Error) {
+	//Todo duplicate o validate
+	//Todo join table
+	pickWard, err := g.wardRepo.GetByKvId(ctx, req.SenderWardId)
+	if err != nil {
+		log.Error(ctx, err.Error())
+		return nil, nil, err
+	}
+	pickDistrict, err := g.districtRepo.GetById(ctx, pickWard.DistrictId)
+	if err != nil {
+		log.Error(ctx, err.Error())
+		return nil, nil, err
+	}
+	pickProvince, err := g.cityRepo.GetById(ctx, pickDistrict.CityId)
+	if err != nil {
+		log.Error(ctx, err.Error())
+		return nil, nil, err
+	}
+	fmt.Println(pickProvince)
+	return nil, nil, nil
 }
