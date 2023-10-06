@@ -3,13 +3,15 @@ package strategy
 import (
 	"check-price/src/common"
 	"check-price/src/core/domain"
+	"check-price/src/present/httpui/request"
 	"context"
 	"go.uber.org/fx"
 )
 
 type ShipStrategy interface {
 	Code() string
-	GetMultiplePriceV3(ctx context.Context, shop *domain.Shop, services []string) ([]*domain.Price, *common.Error)
+	Validate(ctx context.Context, req *request.GetPriceReRequest) *common.Error
+	GetMultiplePriceV3(ctx context.Context, shop *domain.Shop, req *request.GetPriceReRequest) ([]*domain.Price, *common.Error)
 }
 
 //chia folder theo các hãng

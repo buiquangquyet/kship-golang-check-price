@@ -2,7 +2,6 @@ package decorators
 
 import (
 	"check-price/src/common"
-	"check-price/src/common/log"
 	"check-price/src/core/domain"
 	"check-price/src/infra/repo"
 	"context"
@@ -11,8 +10,7 @@ import (
 )
 
 const (
-	expirationShopByCode = 24 * time.Hour
-
+	expirationShopByCode       = 24 * time.Hour
 	expirationShopByRetailerId = 24 * time.Hour
 )
 
@@ -42,9 +40,7 @@ func (s *ShopRepoDecorator) GetByRetailerId(ctx context.Context, retailerId int6
 	if ierr != nil {
 		return nil, ierr
 	}
-	go func() {
-		s.cache.Set(ctx, key, shopDB, expirationShopByRetailerId)
-	}()
+	go s.cache.Set(ctx, key, shopDB, expirationShopByRetailerId)
 	return shopDB, nil
 }
 
@@ -55,15 +51,11 @@ func (s *ShopRepoDecorator) GetByCode(ctx context.Context, code string) (*domain
 	if err != nil {
 		return &shop, nil
 	}
-	if err != redis.Nil {
-		log.Error(ctx, "get redis error")
-	}
+	s.handleRedisError(ctx, err)
 	shopDB, ierr := s.shopRepo.GetByCode(ctx, code)
 	if ierr != nil {
 		return nil, ierr
 	}
-	go func() {
-		s.cache.Set(ctx, key, shopDB, expirationShopByCode)
-	}()
+	go s.cache.Set(ctx, key, shopDB, expirationShopByCode)
 	return shopDB, nil
 }
