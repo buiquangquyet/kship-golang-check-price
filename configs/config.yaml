@@ -4,7 +4,7 @@ mode:
 server:
   name: check-price
   address: 3456
-  prefix: api/v3
+  prefix: api/v4
 
 
 token:
@@ -29,7 +29,7 @@ mongo:
 
 redis:
   expire_duration: 600
-  hosts: 10.24.32.11:6379
+  hosts: 127.0.0.1:6381
   username: ""
   password: ""
 
