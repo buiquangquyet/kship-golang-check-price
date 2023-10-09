@@ -28,7 +28,13 @@ func BuildStorageModules() fx.Option {
 		fx.Provide(newMongoDB),
 
 		fx.Provide(repo.NewBaseRepo),
+		fx.Provide(repo.NewCityRepo),
+		fx.Provide(repo.NewClientRepo),
+		fx.Provide(repo.NewDistrictRepo),
+		fx.Provide(repo.NewService),
+		fx.Provide(repo.NewSettingShopRepo),
 		fx.Provide(repo.NewShopRepo),
+		fx.Provide(repo.NewWardRepo),
 
 		fx.Provide(decorators.NewBaseDecorator),
 		fx.Provide(decorators.NewShopRepoDecorator),
