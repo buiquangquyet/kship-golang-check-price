@@ -5,11 +5,11 @@ import (
 	"check-price/src/common/log"
 	"check-price/src/core/constant"
 	"check-price/src/core/domain"
+	"check-price/src/core/dto"
 	"check-price/src/core/strategy"
 	"check-price/src/infra/external/ghtk"
 	"check-price/src/present/httpui/request"
 	"context"
-	"fmt"
 	"sync"
 )
 
@@ -55,7 +55,7 @@ func (g *GHTKStrategy) GetMultiplePriceV3(ctx context.Context, shop *domain.Shop
 	mapPrices := make(map[string]*domain.Price)
 	isBBS := false
 	product := req.Product
-	weight := product.ProductLength * product.ProductWidth * product.ProductHeight / 6
+	weight := int64(product.ProductLength * product.ProductWidth * product.ProductHeight / 6)
 	if weight < product.ProductWeight {
 		weight = product.ProductWeight
 	}
@@ -63,7 +63,7 @@ func (g *GHTKStrategy) GetMultiplePriceV3(ctx context.Context, shop *domain.Shop
 		isBBS = true
 	}
 
-	getPriceInputUnder20, getPriceInputOver20, err := g.getPriceInput(ctx, isBBS, req)
+	getPriceParam, err := g.getPriceInput(ctx, isBBS, weight, req)
 	if err != nil {
 		return nil, err
 	}
@@ -74,9 +74,9 @@ func (g *GHTKStrategy) GetMultiplePriceV3(ctx context.Context, shop *domain.Shop
 			var price *domain.Price
 			var err *common.Error
 			if isBBS {
-				price, err = g.ghtkExtService.GetPriceOver20(ctx, shop, getPriceInputOver20)
+				price, err = g.ghtkExtService.GetPriceOver20(ctx, shop, getPriceParam)
 			} else {
-				price, err = g.ghtkExtService.GetPriceUnder20(ctx, shop, getPriceInputUnder20)
+				price, err = g.ghtkExtService.GetPriceUnder20(ctx, shop, getPriceParam)
 			}
 			if err != nil {
 				log.Error(ctx, err.Error())
@@ -94,24 +94,75 @@ func (g *GHTKStrategy) GetMultiplePriceV3(ctx context.Context, shop *domain.Shop
 	return prices, nil
 }
 
-func (g *GHTKStrategy) getPriceInput(ctx context.Context, isBBS bool, req *request.GetPriceReRequest) (*ghtk.GetPriceUnder20Input, *ghtk.GetPriceOver20Input, *common.Error) {
+func (g *GHTKStrategy) getPriceInput(ctx context.Context, isBBS bool, weight int64, req *request.GetPriceReRequest) (*dto.GetPriceInputDto, *common.Error) {
 	//Todo duplicate o validate
 	//Todo join table
-	pickWard, err := g.wardRepo.GetByKvId(ctx, req.SenderWardId)
-	if err != nil {
-		log.Error(ctx, err.Error())
-		return nil, nil, err
+	var pickWard *domain.Ward
+	var receiverWard *domain.Ward
+	var err *common.Error
+	if req.VersionLocation == constant.VersionLocation2 {
+		if pickWard, err = g.wardRepo.GetByKmsId(ctx, req.SenderWardId); err != nil {
+			log.Error(ctx, err.Error())
+			return nil, err
+		}
+		if receiverWard, err = g.wardRepo.GetByKmsId(ctx, req.ReceiverWardId); err != nil {
+			log.Error(ctx, err.Error())
+			return nil, err
+		}
+	} else {
+		if pickWard, err = g.wardRepo.GetByKvId(ctx, req.SenderWardId); err != nil {
+			log.Error(ctx, err.Error())
+			return nil, err
+		}
+		if receiverWard, err = g.wardRepo.GetByKmsId(ctx, req.ReceiverWardId); err != nil {
+			log.Error(ctx, err.Error())
+			return nil, err
+		}
 	}
 	pickDistrict, err := g.districtRepo.GetById(ctx, pickWard.DistrictId)
 	if err != nil {
 		log.Error(ctx, err.Error())
-		return nil, nil, err
+		return nil, err
 	}
 	pickProvince, err := g.cityRepo.GetById(ctx, pickDistrict.CityId)
 	if err != nil {
 		log.Error(ctx, err.Error())
-		return nil, nil, err
+		return nil, err
 	}
-	fmt.Println(pickProvince)
-	return nil, nil, nil
+	receiverDistrict, err := g.districtRepo.GetById(ctx, receiverWard.DistrictId)
+	if err != nil {
+		log.Error(ctx, err.Error())
+		return nil, err
+	}
+	receiverProvince, err := g.cityRepo.GetById(ctx, receiverDistrict.CityId)
+	if err != nil {
+		log.Error(ctx, err.Error())
+		return nil, err
+	}
+	products := make([]*dto.Product, 0)
+	if isBBS {
+		products = append(products, &dto.Product{
+			Name:     "kiện hàng",
+			Quantity: 1,
+			Weight:   req.ProductWeight / 1000,
+			Width:    req.ProductWidth,
+			Length:   req.ProductLength,
+			Height:   req.ProductHeight,
+		})
+	}
+	//Todo value, transport check lai
+	return &dto.GetPriceInputDto{
+		PickProvince:     pickProvince.Name,
+		PickDistrict:     pickDistrict.Name,
+		PickWard:         pickWard.Name,
+		ReceiverProvince: receiverProvince.Name,
+		ReceiverDistrict: receiverDistrict.Name,
+		ReceiverWard:     receiverWard.Name,
+		Address:          req.ReceiverAddress,
+		Products:         products,
+		Weight:           weight,
+		Value:            0,
+		Transport:        "",
+		OrderService:     "",
+	}, nil
 }

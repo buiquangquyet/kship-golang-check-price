@@ -35,7 +35,7 @@ type Product struct {
 	ProductWidth    int   `json:"PRODUCT_WIDTH"`
 	ProductHeight   int   `json:"PRODUCT_HEIGHT"`
 	ProductLength   int   `json:"PRODUCT_LENGTH"`
-	ProductWeight   int   `json:"PRODUCT_WEIGHT"`
+	ProductWeight   int64 `json:"PRODUCT_WEIGHT"`
 	ProductQuantity int   `json:"PRODUCT_QUANTITY"`
 	ProductPrice    int64 `json:"PRODUCT_PRICE"`
 }

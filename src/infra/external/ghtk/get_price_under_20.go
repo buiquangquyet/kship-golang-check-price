@@ -1,18 +1,39 @@
 package ghtk
 
+import (
+	"check-price/src/core/dto"
+)
+
 type GetPriceUnder20Input struct {
-	PickAddress  string `json:"pick_address"`
+	Address      string `json:"address"`
 	PickProvince string `json:"pick_province"`
 	PickDistrict string `json:"pick_district"`
 	PickWard     string `json:"pick_ward"`
 	Province     string `json:"province"`
 	District     string `json:"district"`
 	Ward         string `json:"ward"`
-	Address      string `json:"address"`
 	Weight       int64  `json:"weight"`
 	Value        int64  `json:"value"`
 	Transport    string `json:"transport"`
 	Tags         []int  `json:"tags"`
+	OrderService string `json:"ORDER_SERVICE"`
+}
+
+func newGetPriceUnder20Input(p *dto.GetPriceInputDto) *GetPriceUnder20Input {
+	return &GetPriceUnder20Input{
+		Address:      p.Address,
+		PickProvince: p.PickProvince,
+		PickDistrict: p.PickDistrict,
+		PickWard:     p.PickWard,
+		Province:     p.ReceiverProvince,
+		District:     p.ReceiverDistrict,
+		Ward:         p.ReceiverWard,
+		Weight:       p.Weight,
+		Value:        p.Value,
+		Transport:    p.Transport,
+		Tags:         p.Tags,
+		OrderService: p.OrderService,
+	}
 }
 
 type GetPriceUnder20Output struct {
