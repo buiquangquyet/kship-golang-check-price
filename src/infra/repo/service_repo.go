@@ -1,11 +1,11 @@
 package repo
 
-func NewService(base *baseRepo) *Service {
-	return &Service{
+func NewServiceRepo(base *baseRepo) *ServiceRepo {
+	return &ServiceRepo{
 		base,
 	}
 }
 
-type Service struct {
+type ServiceRepo struct {
 	*baseRepo
 }

@@ -21,6 +21,7 @@ func NewCityRepoDecorator(base *baseDecorator, cityRepo *repo.CityRepo, cache re
 		cityRepo:      cityRepo,
 	}
 }
+
 func (c CityRepoDecorator) GetById(ctx context.Context, id int64) (*domain.City, *common.Error) {
 	//TODO implement me
 	panic("implement me")

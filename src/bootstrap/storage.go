@@ -15,7 +15,7 @@ import (
 	"go.opentelemetry.io/contrib/instrumentation/go.mongodb.org/mongo-driver/mongo/otelmongo"
 	"go.uber.org/fx"
 	"go.uber.org/zap"
-	"gorm.io/driver/postgres"
+	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
 	"gorm.io/gorm/logger"
 	"time"
@@ -31,13 +31,19 @@ func BuildStorageModules() fx.Option {
 		fx.Provide(repo.NewCityRepo),
 		fx.Provide(repo.NewClientRepo),
 		fx.Provide(repo.NewDistrictRepo),
-		fx.Provide(repo.NewService),
+		fx.Provide(repo.NewServiceRepo),
 		fx.Provide(repo.NewSettingShopRepo),
 		fx.Provide(repo.NewShopRepo),
 		fx.Provide(repo.NewWardRepo),
 
 		fx.Provide(decorators.NewBaseDecorator),
+		fx.Provide(decorators.NewCityRepoDecorator),
+		fx.Provide(decorators.NewClientRepoDecorator),
+		fx.Provide(decorators.NewDistrictRepoDecorator),
+		fx.Provide(decorators.NewServiceRepoDecorator),
+		fx.Provide(decorators.NewSettingShopRepoDecorator),
 		fx.Provide(decorators.NewShopRepoDecorator),
+		fx.Provide(decorators.NewWardRepoDecorator),
 	)
 }
 
@@ -49,14 +55,14 @@ func newPostgresqlDB(lc fx.Lifecycle, log *zap.SugaredLogger) *gorm.DB {
 	if constant.IsProdEnv() {
 		logMode = logger.Silent
 	}
-	db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{
+	db, err := gorm.Open(mysql.Open(dsn), &gorm.Config{
 		Logger: logger.Default.LogMode(logMode),
 	})
 	//if configs.Get().Postgresql.AutoMigrate {
 	//	_ = db.AutoMigrate(domain.Account{}, domain.RefreshToken{}, domain.Template{}, domain.QuotaZns{}, domain.Message{}, domain.AccountTemplateLogo{}, domain.Transaction{})
 	//}
 	if err != nil {
-		panic(err)
+		log.Fatal(err)
 	}
 	if configs.Get().Tracer.Enabled {
 		if err := db.Use(otelgorm.NewPlugin()); err != nil {
