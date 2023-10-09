@@ -6,7 +6,6 @@ import (
 	"check-price/src/common/log"
 	"check-price/src/core/constant"
 	"check-price/src/core/dto"
-	"check-price/src/present/httpui/request"
 	"crypto/rsa"
 	"encoding/base64"
 	"fmt"
@@ -82,46 +81,12 @@ func (a *AuthMiddleware) ValidateTokenClient(c *gin.Context, token string) *comm
 	}
 	c.Set(constant.MerchantCodeKey, strings.ToUpper(source.(string)))
 	c.Set(constant.MerchantIdKey, retailerId)
-	kvrCode, ok := claims["kvrcode"]
-	if !ok {
-		return ierr.SetDetail("kvrcode not found")
-	}
-	kvuadmin, ok := claims["kvuadmin"]
-	if !ok {
-		return ierr.SetDetail("kvuadmin not found")
-	}
-	kvuid, ok := claims["kvuid"]
-	if !ok {
-		return ierr.SetDetail("kvuid not found")
-	}
-	preferredUsername, ok := claims["preferred_username"]
-	if !ok {
-		return ierr.SetDetail("preferred_username not found")
-	}
-	branchId := 0
-	branchIdString := c.GetHeader("branch-id")
-	if branchIdString != "" {
-		branchId, _ = strconv.Atoi(branchIdString)
-	} else {
-		branchId = claims["kvbid"].(int)
-	}
 	versionLocation := 1
 	versionLocationString := c.GetHeader("version-location")
 	if versionLocationString == "" {
 		versionLocation, _ = strconv.Atoi(versionLocationString)
 	}
-	tokenInfo := &request.TokenInfo{
-		ShopCode:        kvrCode.(string),
-		IsAdmin:         kvuadmin.(bool),
-		RetailerId:      retailerId,
-		RetailerUserId:  kvuid.(int64),
-		RetailerUser:    preferredUsername.(string),
-		UsernameUser:    preferredUsername.(string),
-		Token:           token,
-		BranchId:        branchId,
-		VersionLocation: versionLocation,
-	}
-	c.Set(constant.TokenInfo, tokenInfo)
+	c.Set(constant.VersionLocation, versionLocation)
 	return nil
 }
 

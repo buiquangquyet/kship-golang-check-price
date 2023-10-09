@@ -40,9 +40,9 @@ func NewPriceService(
 	}
 }
 
-func (p *PriceService) GetPrice(ctx context.Context, req *request.GetPriceReRequest, retailerId int64) ([]*domain.Price, *common.Error) {
+func (p *PriceService) GetPrice(ctx context.Context, req *request.GetPriceReRequest) ([]*domain.Price, *common.Error) {
 	clientCode := req.ClientCode
-	shop, err := p.shopRepo.GetByRetailerId(ctx, retailerId)
+	shop, err := p.shopRepo.GetByRetailerId(ctx, req.RetailerId)
 	if helpers.IsInternalError(err) {
 		log.Error(ctx, err.Error())
 		return nil, err
@@ -54,7 +54,7 @@ func (p *PriceService) GetPrice(ctx context.Context, req *request.GetPriceReRequ
 			return nil, err
 		}
 	}
-	if ierr := p.validate(ctx, shop, retailerId, req); ierr != nil {
+	if ierr := p.validate(ctx, shop, req.RetailerId, req); ierr != nil {
 		return nil, ierr
 	}
 	shipStrategy, exist := p.shipStrategyResolver.Resolve(clientCode)

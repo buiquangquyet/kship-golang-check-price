@@ -29,13 +29,21 @@ func (m *PriceController) GetPrice(c *gin.Context) {
 		m.ErrorData(c, ierr)
 		return
 	}
-	retailerId, exist := c.Get(constant.RetailerIdKey)
+	retailerId, exist := c.Get(constant.MerchantIdKey)
 	if !exist {
-		ierr := common.ErrSystemError(c, "token info not exist ")
+		ierr := common.ErrSystemError(c, "retailer id not exist ")
 		m.ErrorData(c, ierr)
 		return
 	}
-	data, err := m.priceService.GetPrice(c, req, retailerId.(int64))
+	versionLocation, exist := c.Get(constant.MerchantIdKey)
+	if !exist {
+		ierr := common.ErrSystemError(c, "version location not exist ")
+		m.ErrorData(c, ierr)
+		return
+	}
+	req.RetailerId = retailerId.(int64)
+	req.VersionLocation = versionLocation.(int)
+	data, err := m.priceService.GetPrice(c, req)
 	if err != nil {
 		m.ErrorData(c, err)
 		return

@@ -32,9 +32,6 @@ func (g *GHTKStrategy) Code() string {
 
 func (g *GHTKStrategy) Validate(ctx context.Context, req *request.GetPriceReRequest) *common.Error {
 	ierr := common.ErrBadRequest(ctx)
-	if req.SenderWardId == 0 {
-		return ierr.SetMessage("Vui lòng nhập xã phường người gửi")
-	}
 	if req.ReceiverWardId == 0 {
 		return ierr.SetMessage("Vui lòng nhập xã phường người nhận")
 	}
