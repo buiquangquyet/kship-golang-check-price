@@ -40,7 +40,7 @@ type Config struct {
 	} `mapstructure:"redis"`
 
 	ExtService struct {
-		GHTK *GHTK `mapstructure:"k_wallet"`
+		GHTK *GHTK `mapstructure:"ghtk"`
 	} `mapstructure:"ext_service"`
 
 	Tracer struct {
