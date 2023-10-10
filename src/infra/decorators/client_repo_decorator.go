@@ -21,7 +21,8 @@ func NewClientRepoDecorator(base *baseDecorator, clientRepo *repo.ClientRepo, ca
 		clientRepo:    clientRepo,
 	}
 }
-func (c ClientRepoDecorator) GetById(ctx context.Context, id int64) (*domain.City, *common.Error) {
+
+func (c ClientRepoDecorator) GetById(ctx context.Context, id int64) (*domain.Client, *common.Error) {
 	//TODO implement me
 	panic("implement me")
 }

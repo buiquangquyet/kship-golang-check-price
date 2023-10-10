@@ -5,6 +5,7 @@ import (
 	"check-price/src/common/log"
 	"check-price/src/core/constant"
 	"check-price/src/core/domain"
+	"check-price/src/core/enums"
 	"check-price/src/helpers"
 	"check-price/src/present/httpui/request"
 	"context"
@@ -82,22 +83,30 @@ func (p *PriceService) validateClient(ctx context.Context, clientCode string, re
 	if client.Status == constant.DisableStatus {
 		return ierr.SetCode(3002)
 	}
-	clientUnAllowedShop, err := p.settingShopRepo.GetByRetailerId(ctx, retailerId)
+	clientUnAllowedShop, err := p.settingShopRepo.GetByRetailerId(ctx, enums.ModelTypeClientDisableShop, retailerId)
 	if err != nil {
 		log.IErr(ctx, err)
 		return err
 	}
-	if helpers.InArray(clientUnAllowedShop, client.Id) {
+	clientUnAllowedShopIds := make([]int64, len(clientUnAllowedShop))
+	for i, shop := range clientUnAllowedShop {
+		clientUnAllowedShopIds[i] = shop.ModelId
+	}
+	if helpers.InArray(clientUnAllowedShopIds, client.Id) {
 		return ierr.SetCode(3004)
 	}
 
 	if client.OnBoardingStatus == constant.OnboardingDisable {
-		clientSettingShop, err := p.settingShopRepo.GetEnableShopByRetailerId(ctx, retailerId)
+		clientSettingShops, err := p.settingShopRepo.GetByRetailerId(ctx, enums.ModelTypeClientSettingShop, retailerId)
 		if err != nil {
 			log.IErr(ctx, err)
 			return err
 		}
-		if !helpers.InArray(clientSettingShop, client.Id) {
+		modelIds := make([]int64, len(clientSettingShops))
+		for i, shop := range clientSettingShops {
+			modelIds[i] = shop.ModelId
+		}
+		if !helpers.InArray(modelIds, client.Id) {
 			return ierr.SetCode(3004)
 		}
 	}
@@ -184,12 +193,12 @@ func (p *PriceService) validateExtraService(ctx context.Context, clientCode stri
 			continue
 		}
 		if servicesExtraByClientCode.OnBoardingStatus == constant.OnboardingDisable {
-			serviceExtraEnableShop, ierr := p.settingShopRepo.GetServiceExtraEnableShop(ctx, retailerId)
+			serviceExtraEnableShop, ierr := p.settingShopRepo.GetByRetailerId(ctx, enums.ModelTypeServiceExtraSettingShop, retailerId)
 			if ierr != nil {
 				log.IErr(ctx, ierr)
 				return ierr
 			}
-			if serviceExtraEnableShop {
+			if len(serviceExtraEnableShop) > 0 {
 				clientExtraServicesAllow = append(clientExtraServicesAllow, servicesExtraByClientCode.Code)
 			}
 		}

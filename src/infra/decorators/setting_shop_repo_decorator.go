@@ -27,9 +27,8 @@ func (s SettingShopRepoDecorator) GetByRetailerId(ctx context.Context, retailerI
 	panic("implement me")
 }
 
-func (s SettingShopRepoDecorator) GetEnableShopByRetailerId(ctx context.Context, retailerId int64) ([]int64, *common.Error) {
-	//TODO implement me
-	panic("implement me")
+func (s SettingShopRepoDecorator) GetEnableShopByRetailerId(ctx context.Context, retailerId int64) ([]*domain.SettingShop, *common.Error) {
+	return nil, nil
 }
 
 func (s SettingShopRepoDecorator) GetServiceExtraEnableShop(ctx context.Context, retailerId int64) (bool, *common.Error) {
