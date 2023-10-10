@@ -7,6 +7,11 @@ import (
 	"check-price/src/infra/repo"
 	"context"
 	"github.com/go-redis/redis/v8"
+	"time"
+)
+
+const (
+	expirationSettingShopByRetailerId = 12 * time.Hour
 )
 
 type SettingShopRepoDecorator struct {
@@ -24,6 +29,17 @@ func NewSettingShopRepoDecorator(base *baseDecorator, settingShop *repo.SettingS
 }
 
 func (s SettingShopRepoDecorator) GetByRetailerId(ctx context.Context, modelType enums.ModelTypeSettingShop, retailerId int64) ([]*domain.SettingShop, *common.Error) {
-	//TODO implement me
-	panic("implement me")
+	key := s.genKeyCacheGetSettingShopByRetailerId(modelType, retailerId)
+	var settingShops []*domain.SettingShop
+	err := s.cache.Get(ctx, key).Scan(&settingShops)
+	if err != nil {
+		return settingShops, nil
+	}
+	s.handleRedisError(ctx, err)
+	settingShopDB, ierr := s.settingShop.GetByRetailerId(ctx, modelType, retailerId)
+	if ierr != nil {
+		return nil, ierr
+	}
+	go s.cache.Set(ctx, key, settingShopDB, expirationSettingShopByRetailerId)
+	return settingShopDB, nil
 }

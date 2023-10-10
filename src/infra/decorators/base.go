@@ -2,6 +2,7 @@ package decorators
 
 import (
 	"check-price/src/common/log"
+	"check-price/src/core/enums"
 	"context"
 	"fmt"
 	"github.com/go-redis/redis/v8"
@@ -10,6 +11,8 @@ import (
 const (
 	keyCacheShopByCode       = "cache_shop_by_code"
 	keyCacheShopByRetailerId = "cache_shop_by_retailer_id"
+
+	keyCacheSettingShopByRetailerId = "cache_setting_shop"
 )
 
 type baseDecorator struct {
@@ -34,4 +37,6 @@ func (b *baseDecorator) genKeyCacheGetShopByCode(code string) string {
 	return fmt.Sprintf("%s_%s", keyCacheShopByCode, code)
 }
 
-//
+func (b *baseDecorator) genKeyCacheGetSettingShopByRetailerId(modelType enums.ModelTypeSettingShop, retailerId int64) string {
+	return fmt.Sprintf("%s_%s_%v", keyCacheSettingShopByRetailerId, modelType.ToString(), retailerId)
+}
