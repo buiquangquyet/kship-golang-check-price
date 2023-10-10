@@ -23,7 +23,7 @@ import (
 
 func BuildStorageModules() fx.Option {
 	return fx.Options(
-		fx.Provide(newPostgresqlDB),
+		fx.Provide(newMysqlDB),
 		fx.Provide(newCacheRedis),
 		fx.Provide(newMongoDB),
 
@@ -47,10 +47,10 @@ func BuildStorageModules() fx.Option {
 	)
 }
 
-func newPostgresqlDB(lc fx.Lifecycle, log *zap.SugaredLogger) *gorm.DB {
-	cf := configs.Get().Postgresql
-	dsn := fmt.Sprintf("host=%s port=%s user=%s dbname=%s sslmode=%s password=%s", cf.Host,
-		cf.Port, cf.User, cf.DbName, cf.SslMode, cf.Password)
+func newMysqlDB(lc fx.Lifecycle, log *zap.SugaredLogger) *gorm.DB {
+	cf := configs.Get().Mysql
+	dsn := fmt.Sprintf("%s:%s@tcp(%s:%s)/%s?charset=utf8mb4&parseTime=True&loc=Local", cf.User, cf.Password,
+		cf.Host, cf.Port, cf.DbName)
 	logMode := logger.Info
 	if constant.IsProdEnv() {
 		logMode = logger.Silent
@@ -58,9 +58,6 @@ func newPostgresqlDB(lc fx.Lifecycle, log *zap.SugaredLogger) *gorm.DB {
 	db, err := gorm.Open(mysql.Open(dsn), &gorm.Config{
 		Logger: logger.Default.LogMode(logMode),
 	})
-	//if configs.Get().Postgresql.AutoMigrate {
-	//	_ = db.AutoMigrate(domain.Account{}, domain.RefreshToken{}, domain.Template{}, domain.QuotaZns{}, domain.Message{}, domain.AccountTemplateLogo{}, domain.Transaction{})
-	//}
 	if err != nil {
 		log.Fatal(err)
 	}

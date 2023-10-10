@@ -15,9 +15,9 @@ type Config struct {
 
 	Token struct {
 		PublicKeys map[string]string `mapstructure:"public_keys"`
-	}
+	} `mapstructure:"token"`
 
-	Postgresql struct {
+	Mysql struct {
 		Host        string `mapstructure:"host"`
 		Port        string `mapstructure:"port"`
 		User        string `mapstructure:"user"`
@@ -26,7 +26,7 @@ type Config struct {
 		Password    string `mapstructure:"password"`
 		AutoMigrate bool   `mapstructure:"auto_migrate"`
 		MaxLifeTime int    `mapstructure:"max_life_time"`
-	}
+	} `mapstructure:"mysql"`
 
 	Mongo struct {
 		Uri string `mapstructure:"uri"`
