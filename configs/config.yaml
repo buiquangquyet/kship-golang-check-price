@@ -29,7 +29,7 @@ mongo:
 
 redis:
   expire_duration: 600
-  hosts: 127.0.0.1:6381
+  hosts: 10.24.22.236:6379
   username: ""
   password: ""
 
