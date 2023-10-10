@@ -3,6 +3,7 @@ package decorators
 import (
 	"check-price/src/common"
 	"check-price/src/core/domain"
+	"check-price/src/core/enums"
 	"check-price/src/infra/repo"
 	"context"
 	"github.com/go-redis/redis/v8"
@@ -22,16 +23,7 @@ func NewSettingShopRepoDecorator(base *baseDecorator, settingShop *repo.SettingS
 	}
 }
 
-func (s SettingShopRepoDecorator) GetByRetailerId(ctx context.Context, retailerId int64) ([]int64, *common.Error) {
-	//TODO implement me
-	panic("implement me")
-}
-
-func (s SettingShopRepoDecorator) GetEnableShopByRetailerId(ctx context.Context, retailerId int64) ([]*domain.SettingShop, *common.Error) {
-	return nil, nil
-}
-
-func (s SettingShopRepoDecorator) GetServiceExtraEnableShop(ctx context.Context, retailerId int64) (bool, *common.Error) {
+func (s SettingShopRepoDecorator) GetByRetailerId(ctx context.Context, modelType enums.ModelTypeSettingShop, retailerId int64) ([]*domain.SettingShop, *common.Error) {
 	//TODO implement me
 	panic("implement me")
 }
