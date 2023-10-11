@@ -15,6 +15,9 @@ const (
 	keyCacheSettingShopByRetailerId = "cache_setting_shop"
 
 	keyCacheClientByCode = "cache_client_by_code"
+
+	keyCacheDistrictByKmsId = "cache_district_by_kms_id"
+	keyCacheDistrictByKvId  = "cache_district_by_kv_id"
 )
 
 type baseDecorator struct {
@@ -45,4 +48,12 @@ func (b *baseDecorator) genKeyCacheGetSettingShopByRetailerId(modelType enums.Mo
 
 func (b *baseDecorator) genKeyCacheGetClientByCode(code string) string {
 	return fmt.Sprintf("%s_%s", keyCacheClientByCode, code)
+}
+
+func (b *baseDecorator) genKeyCacheGetDistrictByKmsId(kmsId int64) string {
+	return fmt.Sprintf("%s_%v", keyCacheDistrictByKmsId, kmsId)
+}
+
+func (b *baseDecorator) genKeyCacheGetDistrictByKvId(kvId int64) string {
+	return fmt.Sprintf("%s_%v", keyCacheDistrictByKvId, kvId)
 }

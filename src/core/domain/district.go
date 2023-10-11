@@ -25,8 +25,8 @@ type District struct {
 }
 
 type DistrictRepo interface {
-	GetByKmsId(ctx context.Context, senderLocationId int64) (*District, *common.Error)
-	GetByKvId(ctx context.Context, senderLocationId int64) (*District, *common.Error)
+	GetByKmsId(ctx context.Context, kmsId int64) (*District, *common.Error)
+	GetByKvId(ctx context.Context, kvId int64) (*District, *common.Error)
 	GetById(ctx context.Context, id int64) (*District, *common.Error)
 }
 
