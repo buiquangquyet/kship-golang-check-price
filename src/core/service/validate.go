@@ -121,6 +121,7 @@ func (p *PriceService) validateLocation(ctx context.Context, clientCode string, 
 		_, ierr = p.districtRepo.GetByKvId(ctx, req.SenderLocationId)
 	}
 	if helpers.IsClientError(ierr) {
+		log.Error(ctx, ierr.Error())
 		return ierr
 	}
 	if ierr != nil {
@@ -135,6 +136,10 @@ func (p *PriceService) validateLocation(ctx context.Context, clientCode string, 
 			_, ierr = p.wardRepo.GetByKmsId(ctx, req.SenderWardId)
 		} else {
 			_, ierr = p.wardRepo.GetByKvId(ctx, req.SenderWardId)
+		}
+		if helpers.IsInternalError(ierr) {
+			log.Error(ctx, ierr.Error())
+			return ierr
 		}
 		if ierr != nil {
 			return ierr.SetCode(4004)
