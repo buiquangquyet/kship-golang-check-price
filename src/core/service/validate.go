@@ -17,7 +17,7 @@ func (p *PriceService) validate(ctx context.Context, shop *domain.Shop, retailer
 	if ierr != nil {
 		return ierr
 	}
-	ierr = p.validateClient(ctx, clientCode, retailerId)
+	client, ierr := p.validateClient(ctx, clientCode, retailerId)
 	if ierr != nil {
 		return ierr
 	}
@@ -25,7 +25,7 @@ func (p *PriceService) validate(ctx context.Context, shop *domain.Shop, retailer
 	if ierr != nil {
 		return ierr
 	}
-	ierr = p.validateService(ctx, clientCode, req.Services)
+	ierr = p.validateService(ctx, client, req.Services)
 	if ierr != nil {
 		return ierr
 	}
@@ -69,48 +69,48 @@ func (p *PriceService) validateShop(ctx context.Context, shop *domain.Shop, clie
 }
 
 // done
-func (p *PriceService) validateClient(ctx context.Context, clientCode string, retailerId int64) *common.Error {
+func (p *PriceService) validateClient(ctx context.Context, clientCode string, retailerId int64) (*domain.Client, *common.Error) {
 	client, err := p.clientRepo.GetByCode(ctx, clientCode)
 	if helpers.IsInternalError(err) {
 		log.IErr(ctx, err)
-		return err
+		return nil, err
 	}
 	ierr := common.ErrBadRequest(ctx)
 	if client == nil {
 		log.Warn(ctx, "client is null")
-		return ierr.SetCode(3001)
+		return nil, ierr.SetCode(3001)
 	}
 	if client.Status == constant.DisableStatus {
-		return ierr.SetCode(3002)
+		return nil, ierr.SetCode(3002)
 	}
 	clientUnAllowedShop, err := p.settingShopRepo.GetByRetailerId(ctx, enums.ModelTypeClientDisableShop, retailerId)
 	if err != nil {
 		log.IErr(ctx, err)
-		return err
+		return nil, err
 	}
 	clientUnAllowedShopIds := make([]int64, len(clientUnAllowedShop))
 	for i, shop := range clientUnAllowedShop {
 		clientUnAllowedShopIds[i] = shop.ModelId
 	}
 	if helpers.InArray(clientUnAllowedShopIds, client.Id) {
-		return ierr.SetCode(3004)
+		return nil, ierr.SetCode(3004)
 	}
 
 	if client.OnBoardingStatus == constant.OnboardingDisable {
 		clientSettingShops, err := p.settingShopRepo.GetByRetailerId(ctx, enums.ModelTypeClientSettingShop, retailerId)
 		if err != nil {
 			log.IErr(ctx, err)
-			return err
+			return nil, err
 		}
 		modelIds := make([]int64, len(clientSettingShops))
 		for i, shop := range clientSettingShops {
 			modelIds[i] = shop.ModelId
 		}
 		if !helpers.InArray(modelIds, client.Id) {
-			return ierr.SetCode(3004)
+			return nil, ierr.SetCode(3004)
 		}
 	}
-	return nil
+	return client, nil
 }
 
 func (p *PriceService) validateLocation(ctx context.Context, clientCode string, req *request.GetPriceReRequest) *common.Error {
@@ -153,19 +153,24 @@ func (p *PriceService) validateLocation(ctx context.Context, clientCode string, 
 	return nil
 }
 
-func (p *PriceService) validateService(ctx context.Context, clientCode string, services []*request.Service) *common.Error {
+func (p *PriceService) validateService(ctx context.Context, client *domain.Client, services []*request.Service) *common.Error {
 	ierr := common.ErrBadRequest(ctx)
 	if services == nil {
 		return ierr.SetCode(4001)
 	}
-	serviceEnable, ierr := p.serviceRepo.GetServicesPluckCodeByClientCode(ctx, clientCode)
+	servicesEnable, ierr := p.serviceRepo.GetByClientId(ctx, client.Id)
 	if ierr != nil {
 		log.IErr(ctx, ierr)
 		return ierr
 	}
+	//Todo xu li lai
+	servicesEnableCode := make([]string, len(servicesEnable))
+	for i, service := range servicesEnable {
+		servicesEnableCode[i] = service.Code
+	}
 	for _, service := range services {
 		serviceCode := service.Code
-		if helpers.InArray(serviceEnable, serviceCode) {
+		if helpers.InArray(servicesEnableCode, serviceCode) {
 			return common.ErrBadRequest(ctx).SetCode(4009)
 		}
 	}

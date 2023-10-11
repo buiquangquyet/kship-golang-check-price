@@ -35,6 +35,7 @@ type Service struct {
 type ServiceRepo interface {
 	GetServicesPluckCodeByClientCode(ctx context.Context, clientCode string) ([]string, *common.Error)
 	GetByServiceCode(ctx context.Context, clientCode string) ([]*Service, *common.Error)
+	GetByClientId(ctx context.Context, clientId int64) ([]*Service, *common.Error)
 }
 
 func (Service) TableName() string {
