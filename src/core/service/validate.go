@@ -116,9 +116,12 @@ func (p *PriceService) validateClient(ctx context.Context, clientCode string, re
 func (p *PriceService) validateLocation(ctx context.Context, clientCode string, req *request.GetPriceReRequest) *common.Error {
 	ierr := common.ErrBadRequest(ctx)
 	if req.VersionLocation == constant.VersionLocation2 {
-		_, ierr = p.districtRepo.GetByKmsId(ctx, req.ReceiverLocationId)
+		_, ierr = p.districtRepo.GetByKmsId(ctx, req.SenderLocationId)
 	} else {
-		_, ierr = p.districtRepo.GetByKvId(ctx, req.ReceiverLocationId)
+		_, ierr = p.districtRepo.GetByKvId(ctx, req.SenderLocationId)
+	}
+	if helpers.IsClientError(ierr) {
+		return ierr
 	}
 	if ierr != nil {
 		return ierr.SetCode(4003)

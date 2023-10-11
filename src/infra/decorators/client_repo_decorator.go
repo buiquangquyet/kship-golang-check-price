@@ -6,6 +6,11 @@ import (
 	"check-price/src/infra/repo"
 	"context"
 	"github.com/go-redis/redis/v8"
+	"time"
+)
+
+const (
+	expirationClientByCode = 12 * time.Hour
 )
 
 type ClientRepoDecorator struct {
@@ -28,6 +33,17 @@ func (c ClientRepoDecorator) GetById(ctx context.Context, id int64) (*domain.Cli
 }
 
 func (c ClientRepoDecorator) GetByCode(ctx context.Context, clientCode string) (*domain.Client, *common.Error) {
-	//TODO implement me
-	panic("implement me")
+	key := c.genKeyCacheGetClientByCode(clientCode)
+	var client domain.Client
+	err := c.cache.Get(ctx, key).Scan(&client)
+	if err != nil {
+		return &client, nil
+	}
+	c.handleRedisError(ctx, err)
+	clientDB, ierr := c.clientRepo.GetByCode(ctx, clientCode)
+	if ierr != nil {
+		return nil, ierr
+	}
+	go c.cache.Set(ctx, key, clientDB, expirationClientByCode)
+	return clientDB, nil
 }

@@ -20,7 +20,7 @@ type GetPriceReRequest struct {
 }
 
 type Sender struct {
-	SenderLocationId int    `json:"SENDER_LOCATION_ID"`
+	SenderLocationId int64  `json:"SENDER_LOCATION_ID"`
 	SenderWardId     int64  `json:"SENDER_WARD_ID"`
 	SenderAddress    string `json:"SENDER_ADDRESS"`
 }
