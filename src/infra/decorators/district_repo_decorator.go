@@ -11,6 +11,7 @@ import (
 const (
 	expirationDistrictByKmsId = 30 * 24 * time.Hour
 	expirationDistrictByKvId  = 30 * 24 * time.Hour
+	expirationDistrictById    = 30 * 24 * time.Hour
 )
 
 type DistrictRepoDecorator struct {
@@ -49,15 +50,26 @@ func (d DistrictRepoDecorator) GetByKvId(ctx context.Context, kvId int64) (*doma
 		return &district, nil
 	}
 	d.handleRedisError(ctx, err)
-	shopDB, ierr := d.districtRepo.GetByKvId(ctx, kvId)
+	districtDB, ierr := d.districtRepo.GetByKvId(ctx, kvId)
 	if ierr != nil {
 		return nil, ierr
 	}
-	go d.set(ctx, key, shopDB, expirationDistrictByKvId)
-	return shopDB, nil
+	go d.set(ctx, key, districtDB, expirationDistrictByKvId)
+	return districtDB, nil
 }
 
 func (d DistrictRepoDecorator) GetById(ctx context.Context, id int64) (*domain.District, *common.Error) {
-	//TODO implement me
-	panic("implement me")
+	key := d.genKeyCacheGetDistrictById(id)
+	var district domain.District
+	err := d.get(ctx, key).Scan(&district)
+	if err != nil {
+		return &district, nil
+	}
+	d.handleRedisError(ctx, err)
+	districtDB, ierr := d.districtRepo.GetById(ctx, id)
+	if ierr != nil {
+		return nil, ierr
+	}
+	go d.set(ctx, key, districtDB, expirationDistrictByKvId)
+	return districtDB, nil
 }

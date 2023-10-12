@@ -20,6 +20,7 @@ const (
 
 	keyCacheDistrictByKmsId = "cache_district_by_kms_id"
 	keyCacheDistrictByKvId  = "cache_district_by_kv_id"
+	keyCacheDistrictById    = "cache_district_by_id"
 
 	keyCacheWardByKmsId = "cache_ward_by_kms_id"
 	keyCacheWardByKvId  = "cache_ward_by_kv_id"
@@ -78,6 +79,10 @@ func (b *baseDecorator) genKeyCacheGetDistrictByKmsId(kmsId int64) string {
 
 func (b *baseDecorator) genKeyCacheGetDistrictByKvId(kvId int64) string {
 	return fmt.Sprintf("%s_%v", keyCacheDistrictByKvId, kvId)
+}
+
+func (b *baseDecorator) genKeyCacheGetDistrictById(id int64) string {
+	return fmt.Sprintf("%s_%v", keyCacheDistrictById, id)
 }
 
 func (b *baseDecorator) genKeyCacheGetWardByKmsId(kmsId int64) string {
