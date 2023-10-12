@@ -19,7 +19,8 @@ const (
 )
 
 var (
-	ReceiverWardIdClientCode = []string{AHAMOVEDeliveryCode, VNPOSTDeliveryCode, GRABDeliveryCode,
+	SenderWardIdDeliveryCode   = []string{GHTKDeliveryCode}
+	ReceiverWardIdDeliveryCode = []string{AHAMOVEDeliveryCode, VNPOSTDeliveryCode, GRABDeliveryCode,
 		EMSDeliveryCode, VTPFWDeliveryCode, VIETTELPostDeliveryCode, GHTKDeliveryCode}
 
 	PickShiftExtraClientCode = []string{GHNDeliveryCode, GHNFWDeliveryCode, SpxDeliveryCode}

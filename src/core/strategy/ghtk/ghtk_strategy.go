@@ -35,9 +35,6 @@ func (g *GHTKStrategy) Validate(ctx context.Context, req *request.GetPriceReRequ
 	if req.ReceiverWardId == 0 {
 		return ierr.SetMessage("Vui lòng nhập xã phường người nhận")
 	}
-	if req.SenderLocationId == 0 {
-		return ierr.SetMessage("Vui lòng nhập quận huyện người gửi")
-	}
 	if req.ReceiverLocationId == 0 {
 		return ierr.SetMessage("Vui lòng nhập quận huyện người nhận")
 	}
@@ -50,7 +47,7 @@ func (g *GHTKStrategy) Validate(ctx context.Context, req *request.GetPriceReRequ
 	return nil
 }
 
-func (g *GHTKStrategy) GetMultiplePriceV3(ctx context.Context, shop *domain.Shop, req *request.GetPriceReRequest) ([]*domain.Price, *common.Error) {
+func (g *GHTKStrategy) GetMultiplePriceV3(ctx context.Context, shop *domain.Shop, req *request.GetPriceReRequest, pickWard, receiverWard *domain.Ward) ([]*domain.Price, *common.Error) {
 	var wg sync.WaitGroup
 	mapPrices := make(map[string]*domain.Price)
 	isBBS := false
@@ -63,7 +60,7 @@ func (g *GHTKStrategy) GetMultiplePriceV3(ctx context.Context, shop *domain.Shop
 		isBBS = true
 	}
 
-	getPriceParam, err := g.getPriceInput(ctx, isBBS, weight, req)
+	getPriceParam, err := g.getPriceInput(ctx, isBBS, weight, req, pickWard, receiverWard)
 	if err != nil {
 		return nil, err
 	}
@@ -94,31 +91,7 @@ func (g *GHTKStrategy) GetMultiplePriceV3(ctx context.Context, shop *domain.Shop
 	return prices, nil
 }
 
-func (g *GHTKStrategy) getPriceInput(ctx context.Context, isBBS bool, weight int64, req *request.GetPriceReRequest) (*dto.GetPriceInputDto, *common.Error) {
-	//Todo duplicate o validate
-	//Todo join table
-	var pickWard *domain.Ward
-	var receiverWard *domain.Ward
-	var err *common.Error
-	if req.VersionLocation == constant.VersionLocation2 {
-		if pickWard, err = g.wardRepo.GetByKmsId(ctx, req.SenderWardId); err != nil {
-			log.Error(ctx, err.Error())
-			return nil, err
-		}
-		if receiverWard, err = g.wardRepo.GetByKmsId(ctx, req.ReceiverWardId); err != nil {
-			log.Error(ctx, err.Error())
-			return nil, err
-		}
-	} else {
-		if pickWard, err = g.wardRepo.GetByKvId(ctx, req.SenderWardId); err != nil {
-			log.Error(ctx, err.Error())
-			return nil, err
-		}
-		if receiverWard, err = g.wardRepo.GetByKvId(ctx, req.ReceiverWardId); err != nil {
-			log.Error(ctx, err.Error())
-			return nil, err
-		}
-	}
+func (g *GHTKStrategy) getPriceInput(ctx context.Context, isBBS bool, weight int64, req *request.GetPriceReRequest, pickWard, receiverWard *domain.Ward) (*dto.GetPriceInputDto, *common.Error) {
 	pickDistrict, err := g.districtRepo.GetById(ctx, pickWard.DistrictId)
 	if err != nil {
 		log.Error(ctx, err.Error())
@@ -150,7 +123,6 @@ func (g *GHTKStrategy) getPriceInput(ctx context.Context, isBBS bool, weight int
 			Height:   req.ProductHeight,
 		})
 	}
-	//Todo value, transport check lai
 	return &dto.GetPriceInputDto{
 		PickProvince:     pickProvince.Name,
 		PickDistrict:     pickDistrict.Name,

@@ -54,14 +54,14 @@ type ExtraService struct {
 
 func (g *GetPriceReRequest) validate(ctx context.Context) *common.Error {
 	ierr := common.ErrBadRequest(ctx)
+	if g.SenderLocationId == 0 {
+		return ierr.SetCode(4003)
+	}
 	if g.ReceiverLocationId == 0 {
 		return ierr.SetCode(4005)
 	}
 	if g.ProductWidth == 0 || g.ProductHeight == 0 || g.ProductLength == 0 || g.ProductWeight == 0 {
 		return ierr.SetCode(4007)
-	}
-	if g.SenderLocationId == 0 {
-		return ierr.SetCode(4003)
 	}
 	if len(g.ExtraService) == 0 {
 		return ierr.SetCode(4013)

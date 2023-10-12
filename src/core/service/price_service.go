@@ -54,7 +54,8 @@ func (p *PriceService) GetPrice(ctx context.Context, req *request.GetPriceReRequ
 			return nil, err
 		}
 	}
-	if ierr := p.validate(ctx, shop, req.RetailerId, req); ierr != nil {
+	pickWard, receiverWard, ierr := p.validate(ctx, shop, req.RetailerId, req)
+	if ierr != nil {
 		return nil, ierr
 	}
 	shipStrategy, exist := p.shipStrategyResolver.Resolve(clientCode)
@@ -62,11 +63,11 @@ func (p *PriceService) GetPrice(ctx context.Context, req *request.GetPriceReRequ
 		log.Warn(ctx, "not support with partner:[%s]", clientCode)
 		return nil, common.ErrBadRequest(ctx).SetDetail("partner not support").SetSource(common.SourceAPIService)
 	}
-	ierr := shipStrategy.Validate(ctx, req)
+	ierr = shipStrategy.Validate(ctx, req)
 	if ierr != nil {
 		return nil, ierr
 	}
-	prices, err := shipStrategy.GetMultiplePriceV3(ctx, shop, req)
+	prices, err := shipStrategy.GetMultiplePriceV3(ctx, shop, req, pickWard, receiverWard)
 	if err != nil {
 		log.IErr(ctx, err)
 		return nil, err

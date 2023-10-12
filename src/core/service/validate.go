@@ -11,29 +11,29 @@ import (
 	"context"
 )
 
-func (p *PriceService) validate(ctx context.Context, shop *domain.Shop, retailerId int64, req *request.GetPriceReRequest) *common.Error {
+func (p *PriceService) validate(ctx context.Context, shop *domain.Shop, retailerId int64, req *request.GetPriceReRequest) (*domain.Ward, *domain.Ward, *common.Error) {
 	clientCode := req.ClientCode
 	ierr := p.validateShop(ctx, shop, clientCode)
 	if ierr != nil {
-		return ierr
+		return nil, nil, ierr
 	}
 	client, ierr := p.validateClient(ctx, clientCode, retailerId)
 	if ierr != nil {
-		return ierr
+		return nil, nil, ierr
 	}
-	ierr = p.validateLocation(ctx, clientCode, req)
+	pickWard, receiverWard, ierr := p.validateLocation(ctx, clientCode, req)
 	if ierr != nil {
-		return ierr
+		return nil, nil, ierr
 	}
 	ierr = p.validateService(ctx, client, req.Services)
 	if ierr != nil {
-		return ierr
+		return nil, nil, ierr
 	}
 	ierr = p.validateExtraService(ctx, clientCode, retailerId, req.ExtraService)
 	if ierr != nil {
-		return ierr
+		return nil, nil, ierr
 	}
-	return nil
+	return pickWard, receiverWard, nil
 }
 
 // done
@@ -77,7 +77,6 @@ func (p *PriceService) validateClient(ctx context.Context, clientCode string, re
 	}
 	ierr := common.ErrBadRequest(ctx)
 	if client == nil {
-		log.Warn(ctx, "client is null")
 		return nil, ierr.SetCode(3001)
 	}
 	if client.Status == constant.DisableStatus {
@@ -113,44 +112,82 @@ func (p *PriceService) validateClient(ctx context.Context, clientCode string, re
 	return client, nil
 }
 
-func (p *PriceService) validateLocation(ctx context.Context, clientCode string, req *request.GetPriceReRequest) *common.Error {
+func (p *PriceService) validateLocation(ctx context.Context, clientCode string, req *request.GetPriceReRequest) (*domain.Ward, *domain.Ward, *common.Error) {
 	ierr := common.ErrBadRequest(ctx)
-	if req.VersionLocation == constant.VersionLocation2 {
+	var pickWard *domain.Ward
+	var receiverWard *domain.Ward
+	isVer2 := req.VersionLocation == constant.VersionLocation2
+	if isVer2 {
 		_, ierr = p.districtRepo.GetByKmsId(ctx, req.SenderLocationId)
 	} else {
 		_, ierr = p.districtRepo.GetByKvId(ctx, req.SenderLocationId)
 	}
-	if helpers.IsClientError(ierr) {
+	if helpers.IsInternalError(ierr) {
 		log.Error(ctx, ierr.Error())
-		return ierr
+		return nil, nil, ierr
 	}
 	if ierr != nil {
-		return ierr.SetCode(4003)
+		return nil, nil, ierr.SetCode(4003)
 	}
-	if clientCode == constant.GHTKDeliveryCode && req.SenderWardId == 0 {
-		return ierr.SetCode(4004)
+
+	if isVer2 {
+		_, ierr = p.districtRepo.GetByKmsId(ctx, req.ReceiverLocationId)
+	} else {
+		_, ierr = p.districtRepo.GetByKvId(ctx, req.ReceiverLocationId)
+	}
+	if helpers.IsInternalError(ierr) {
+		log.Error(ctx, ierr.Error())
+		return nil, nil, ierr
+	}
+	if ierr != nil {
+		return nil, nil, ierr.SetCode(4005)
+	}
+
+	if !helpers.InArray(constant.SenderWardIdDeliveryCode, clientCode) && req.ReceiverWardId != 0 {
+		return nil, nil, ierr.SetCode(4004)
 	}
 	if req.SenderWardId != 0 {
-		//Todo duplicate code
-		if req.VersionLocation == constant.VersionLocation2 {
-			_, ierr = p.wardRepo.GetByKmsId(ctx, req.SenderWardId)
+		if isVer2 {
+			pickWard, ierr = p.wardRepo.GetByKmsId(ctx, req.SenderWardId)
+			if helpers.IsInternalError(ierr) {
+				log.Error(ctx, ierr.Error())
+				return nil, nil, ierr
+			}
 		} else {
-			_, ierr = p.wardRepo.GetByKvId(ctx, req.SenderWardId)
-		}
-		if helpers.IsInternalError(ierr) {
-			log.Error(ctx, ierr.Error())
-			return ierr
+			pickWard, ierr = p.wardRepo.GetByKvId(ctx, req.SenderWardId)
+			if helpers.IsInternalError(ierr) {
+				log.Error(ctx, ierr.Error())
+				return nil, nil, ierr
+			}
 		}
 		if ierr != nil {
-			return ierr.SetCode(4004)
+			return nil, nil, ierr.SetCode(4004)
 		}
 	}
-	ierr = common.ErrBadRequest(ctx)
-	if !helpers.InArray(constant.ReceiverWardIdClientCode, clientCode) && req.ReceiverWardId != 0 {
-		return ierr.SetCode(4006)
+
+	if !helpers.InArray(constant.ReceiverWardIdDeliveryCode, clientCode) && req.ReceiverWardId != 0 {
+		return nil, nil, ierr.SetCode(4006)
 	}
-	//validate width, height, ...
-	return nil
+	if req.ReceiverWardId != 0 {
+		if isVer2 {
+			receiverWard, ierr = p.wardRepo.GetByKmsId(ctx, req.ReceiverWardId)
+			if helpers.IsInternalError(ierr) {
+				log.Error(ctx, ierr.Error())
+				return nil, nil, ierr
+			}
+		} else {
+			receiverWard, ierr = p.wardRepo.GetByKvId(ctx, req.ReceiverWardId)
+			if helpers.IsInternalError(ierr) {
+				log.Error(ctx, ierr.Error())
+				return nil, nil, ierr
+			}
+		}
+		if ierr != nil {
+			return nil, nil, ierr.SetCode(4006)
+		}
+	}
+
+	return pickWard, receiverWard, nil
 }
 
 func (p *PriceService) validateService(ctx context.Context, client *domain.Client, services []*request.Service) *common.Error {
