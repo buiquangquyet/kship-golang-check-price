@@ -45,7 +45,7 @@ func NewAuthMiddleware() *AuthMiddleware {
 
 func (a *AuthMiddleware) Authenticate() gin.HandlerFunc {
 	return func(c *gin.Context) {
-		token := c.GetHeader("Authorization")
+		token := c.GetHeader("token")
 		ierr := a.ValidateTokenClient(c, token)
 		if ierr != nil {
 			log.IErr(c, ierr)

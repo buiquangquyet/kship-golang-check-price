@@ -10,6 +10,7 @@ import (
 	"check-price/src/infra/external/ghtk"
 	"check-price/src/present/httpui/request"
 	"context"
+	"strconv"
 	"sync"
 )
 
@@ -123,6 +124,17 @@ func (g *GHTKStrategy) getPriceInput(ctx context.Context, isBBS bool, weight int
 			Height:   req.ProductHeight,
 		})
 	}
+	var value int64 = 0
+	for _, extraService := range req.ExtraService {
+		if extraService.Code == "GBH" {
+			valueString, err := strconv.ParseInt(extraService.Value, 10, 64)
+			if err != nil {
+				return nil, common.ErrBadRequest(ctx).SetDetail("value extra service invalid")
+			}
+			value = valueString
+		}
+	}
+	tags := make([]int, 0)
 	return &dto.GetPriceInputDto{
 		PickProvince:     pickProvince.Name,
 		PickDistrict:     pickDistrict.Name,
@@ -133,8 +145,8 @@ func (g *GHTKStrategy) getPriceInput(ctx context.Context, isBBS bool, weight int
 		Address:          req.ReceiverAddress,
 		Products:         products,
 		Weight:           weight,
-		Value:            0,
+		Value:            value,
 		Transport:        "",
-		OrderService:     "",
+		Tags:             tags,
 	}, nil
 }
