@@ -70,6 +70,6 @@ func (d DistrictRepoDecorator) GetById(ctx context.Context, id int64) (*domain.D
 	if ierr != nil {
 		return nil, ierr
 	}
-	go d.set(ctx, key, districtDB, expirationDistrictByKvId)
+	go d.set(ctx, key, districtDB, expirationDistrictById)
 	return districtDB, nil
 }
