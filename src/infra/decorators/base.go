@@ -27,6 +27,8 @@ const (
 
 	keyCacheServiceByClientId   = "cache_service_by_client_id"
 	keyCacheServiceByClientCode = "cache_service_by_client_code"
+
+	keyCacheCityById = "cache_city_by_id"
 )
 
 type baseDecorator struct {
@@ -99,4 +101,8 @@ func (b *baseDecorator) genKeyCacheGetServiceByClientId(typeService enums.TypeSe
 
 func (b *baseDecorator) genKeyCacheGetServiceByClientCode(typeService enums.TypeService, status int, clientCode string) string {
 	return fmt.Sprintf("%s_%v_%v_%s", keyCacheServiceByClientCode, typeService, status, clientCode)
+}
+
+func (b *baseDecorator) genKeyCacheGetCityById(id int64) string {
+	return fmt.Sprintf("%s_%v", keyCacheCityById, id)
 }
