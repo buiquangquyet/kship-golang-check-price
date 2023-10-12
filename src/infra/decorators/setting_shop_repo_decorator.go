@@ -6,7 +6,6 @@ import (
 	"check-price/src/core/enums"
 	"check-price/src/infra/repo"
 	"context"
-	"github.com/go-redis/redis/v8"
 	"time"
 )
 
@@ -16,14 +15,12 @@ const (
 
 type SettingShopRepoDecorator struct {
 	*baseDecorator
-	cache       redis.UniversalClient
 	settingShop *repo.SettingShopRepo
 }
 
-func NewSettingShopRepoDecorator(base *baseDecorator, settingShop *repo.SettingShopRepo, cache redis.UniversalClient) domain.SettingShopRepo {
+func NewSettingShopRepoDecorator(base *baseDecorator, settingShop *repo.SettingShopRepo) domain.SettingShopRepo {
 	return &SettingShopRepoDecorator{
 		baseDecorator: base,
-		cache:         cache,
 		settingShop:   settingShop,
 	}
 }
@@ -31,7 +28,7 @@ func NewSettingShopRepoDecorator(base *baseDecorator, settingShop *repo.SettingS
 func (s SettingShopRepoDecorator) GetByRetailerId(ctx context.Context, modelType enums.ModelTypeSettingShop, retailerId int64) ([]*domain.SettingShop, *common.Error) {
 	key := s.genKeyCacheGetSettingShopByRetailerId(modelType, retailerId)
 	var settingShops []*domain.SettingShop
-	err := s.cache.Get(ctx, key).Scan(&settingShops)
+	err := s.get(ctx, key).Scan(&settingShops)
 	if err != nil {
 		return settingShops, nil
 	}
@@ -40,6 +37,6 @@ func (s SettingShopRepoDecorator) GetByRetailerId(ctx context.Context, modelType
 	if ierr != nil {
 		return nil, ierr
 	}
-	go s.cache.Set(ctx, key, settingShopDB, expirationSettingShopByRetailerId)
+	go s.set(ctx, key, settingShopDB, expirationSettingShopByRetailerId)
 	return settingShopDB, nil
 }

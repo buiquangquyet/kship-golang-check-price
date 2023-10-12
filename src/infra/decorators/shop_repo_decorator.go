@@ -5,7 +5,6 @@ import (
 	"check-price/src/core/domain"
 	"check-price/src/infra/repo"
 	"context"
-	"github.com/go-redis/redis/v8"
 	"time"
 )
 
@@ -16,14 +15,12 @@ const (
 
 type ShopRepoDecorator struct {
 	*baseDecorator
-	cache    redis.UniversalClient
 	shopRepo *repo.ShopRepo
 }
 
-func NewShopRepoDecorator(base *baseDecorator, shopRepo *repo.ShopRepo, cache redis.UniversalClient) domain.ShopRepo {
+func NewShopRepoDecorator(base *baseDecorator, shopRepo *repo.ShopRepo) domain.ShopRepo {
 	return &ShopRepoDecorator{
 		baseDecorator: base,
-		cache:         cache,
 		shopRepo:      shopRepo,
 	}
 }
@@ -31,7 +28,7 @@ func NewShopRepoDecorator(base *baseDecorator, shopRepo *repo.ShopRepo, cache re
 func (s *ShopRepoDecorator) GetByRetailerId(ctx context.Context, retailerId int64) (*domain.Shop, *common.Error) {
 	key := s.genKeyCacheGetShopByRetailerId(retailerId)
 	var shop domain.Shop
-	err := s.cache.Get(ctx, key).Scan(&shop)
+	err := s.get(ctx, key).Scan(&shop)
 	if err != nil {
 		return &shop, nil
 	}
@@ -40,14 +37,14 @@ func (s *ShopRepoDecorator) GetByRetailerId(ctx context.Context, retailerId int6
 	if ierr != nil {
 		return nil, ierr
 	}
-	go s.cache.Set(ctx, key, shopDB, expirationShopByRetailerId)
+	go s.set(ctx, key, shopDB, expirationShopByRetailerId)
 	return shopDB, nil
 }
 
 func (s *ShopRepoDecorator) GetByCode(ctx context.Context, code string) (*domain.Shop, *common.Error) {
 	key := s.genKeyCacheGetShopByCode(code)
 	var shop domain.Shop
-	err := s.cache.Get(ctx, key).Scan(&shop)
+	err := s.get(ctx, key).Scan(&shop)
 	if err != nil {
 		return &shop, nil
 	}
@@ -56,6 +53,6 @@ func (s *ShopRepoDecorator) GetByCode(ctx context.Context, code string) (*domain
 	if ierr != nil {
 		return nil, ierr
 	}
-	go s.cache.Set(ctx, key, shopDB, expirationShopByCode)
+	go s.set(ctx, key, shopDB, expirationShopByCode)
 	return shopDB, nil
 }

@@ -5,7 +5,6 @@ import (
 	"check-price/src/core/domain"
 	"check-price/src/infra/repo"
 	"context"
-	"github.com/go-redis/redis/v8"
 	"time"
 )
 
@@ -15,27 +14,20 @@ const (
 
 type ClientRepoDecorator struct {
 	*baseDecorator
-	cache      redis.UniversalClient
 	clientRepo *repo.ClientRepo
 }
 
-func NewClientRepoDecorator(base *baseDecorator, clientRepo *repo.ClientRepo, cache redis.UniversalClient) domain.ClientRepo {
+func NewClientRepoDecorator(base *baseDecorator, clientRepo *repo.ClientRepo) domain.ClientRepo {
 	return &ClientRepoDecorator{
 		baseDecorator: base,
-		cache:         cache,
 		clientRepo:    clientRepo,
 	}
-}
-
-func (c ClientRepoDecorator) GetById(ctx context.Context, id int64) (*domain.Client, *common.Error) {
-	//TODO implement me
-	panic("implement me")
 }
 
 func (c ClientRepoDecorator) GetByCode(ctx context.Context, clientCode string) (*domain.Client, *common.Error) {
 	key := c.genKeyCacheGetClientByCode(clientCode)
 	var client domain.Client
-	err := c.cache.Get(ctx, key).Scan(&client)
+	err := c.get(ctx, key).Scan(&client)
 	if err != nil {
 		return &client, nil
 	}
@@ -44,6 +36,6 @@ func (c ClientRepoDecorator) GetByCode(ctx context.Context, clientCode string) (
 	if ierr != nil {
 		return nil, ierr
 	}
-	go c.cache.Set(ctx, key, clientDB, expirationClientByCode)
+	go c.set(ctx, key, clientDB, expirationClientByCode)
 	return clientDB, nil
 }

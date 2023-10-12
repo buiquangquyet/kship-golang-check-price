@@ -5,7 +5,6 @@ import (
 	"check-price/src/core/domain"
 	"check-price/src/infra/repo"
 	"context"
-	"github.com/go-redis/redis/v8"
 	"time"
 )
 
@@ -16,14 +15,12 @@ const (
 
 type DistrictRepoDecorator struct {
 	*baseDecorator
-	cache        redis.UniversalClient
 	districtRepo *repo.DistrictRepo
 }
 
-func NewDistrictRepoDecorator(base *baseDecorator, districtRepo *repo.DistrictRepo, cache redis.UniversalClient) domain.DistrictRepo {
+func NewDistrictRepoDecorator(base *baseDecorator, districtRepo *repo.DistrictRepo) domain.DistrictRepo {
 	return &DistrictRepoDecorator{
 		baseDecorator: base,
-		cache:         cache,
 		districtRepo:  districtRepo,
 	}
 }
@@ -31,7 +28,7 @@ func NewDistrictRepoDecorator(base *baseDecorator, districtRepo *repo.DistrictRe
 func (d DistrictRepoDecorator) GetByKmsId(ctx context.Context, kmsId int64) (*domain.District, *common.Error) {
 	key := d.genKeyCacheGetDistrictByKmsId(kmsId)
 	var district domain.District
-	err := d.cache.Get(ctx, key).Scan(&district)
+	err := d.get(ctx, key).Scan(&district)
 	if err != nil {
 		return &district, nil
 	}
@@ -40,14 +37,14 @@ func (d DistrictRepoDecorator) GetByKmsId(ctx context.Context, kmsId int64) (*do
 	if ierr != nil {
 		return nil, ierr
 	}
-	go d.cache.Set(ctx, key, districtDB, expirationDistrictByKmsId)
+	go d.set(ctx, key, districtDB, expirationDistrictByKmsId)
 	return districtDB, nil
 }
 
 func (d DistrictRepoDecorator) GetByKvId(ctx context.Context, kvId int64) (*domain.District, *common.Error) {
 	key := d.genKeyCacheGetDistrictByKvId(kvId)
 	var district domain.District
-	err := d.cache.Get(ctx, key).Scan(&district)
+	err := d.get(ctx, key).Scan(&district)
 	if err != nil {
 		return &district, nil
 	}
@@ -56,7 +53,7 @@ func (d DistrictRepoDecorator) GetByKvId(ctx context.Context, kvId int64) (*doma
 	if ierr != nil {
 		return nil, ierr
 	}
-	go d.cache.Set(ctx, key, shopDB, expirationDistrictByKvId)
+	go d.set(ctx, key, shopDB, expirationDistrictByKvId)
 	return shopDB, nil
 }
 

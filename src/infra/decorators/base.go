@@ -1,11 +1,13 @@
 package decorators
 
 import (
+	"check-price/src/common"
 	"check-price/src/common/log"
 	"check-price/src/core/enums"
 	"context"
 	"fmt"
 	"github.com/go-redis/redis/v8"
+	"time"
 )
 
 const (
@@ -21,18 +23,35 @@ const (
 
 	keyCacheWardByKmsId = "cache_ward_by_kms_id"
 	keyCacheWardByKvId  = "cache_ward_by_kv_id"
+
+	keyCacheServiceByClientId   = "cache_service_by_client_id"
+	keyCacheServiceByClientCode = "cache_service_by_client_code"
 )
 
 type baseDecorator struct {
+	cache redis.UniversalClient
 }
 
-func NewBaseDecorator() *baseDecorator {
-	return &baseDecorator{}
+func NewBaseDecorator(cache redis.UniversalClient) *baseDecorator {
+	return &baseDecorator{
+		cache: cache,
+	}
 }
 
 func (b *baseDecorator) handleRedisError(ctx context.Context, err error) {
 	if err != redis.Nil {
-		log.Error(ctx, "get redis error")
+		log.Warn(ctx, "get redis error, err:[%s]", err.Error())
+	}
+}
+
+func (b *baseDecorator) get(ctx context.Context, key string) *redis.StringCmd {
+	return b.cache.Get(ctx, key)
+}
+
+func (b *baseDecorator) set(ctx context.Context, key string, value interface{}, exp time.Duration) {
+	err := b.cache.Set(common.Detach(ctx), key, value, exp).Err()
+	if err != nil {
+		log.Warn(ctx, "set redis error, err:[%s]", err.Error())
 	}
 }
 
@@ -67,4 +86,12 @@ func (b *baseDecorator) genKeyCacheGetWardByKmsId(kmsId int64) string {
 
 func (b *baseDecorator) genKeyCacheGetWardByKvId(kvId int64) string {
 	return fmt.Sprintf("%s_%v", keyCacheWardByKvId, kvId)
+}
+
+func (b *baseDecorator) genKeyCacheGetServiceByClientId(typeService enums.TypeService, status int, clientId int64) string {
+	return fmt.Sprintf("%s_%v_%v_%v", keyCacheServiceByClientId, typeService.ToInt(), status, clientId)
+}
+
+func (b *baseDecorator) genKeyCacheGetServiceByClientCode(typeService enums.TypeService, status int, clientCode string) string {
+	return fmt.Sprintf("%s_%v_%v_%s", keyCacheServiceByClientCode, typeService, status, clientCode)
 }

@@ -5,19 +5,16 @@ import (
 	"check-price/src/core/domain"
 	"check-price/src/infra/repo"
 	"context"
-	"github.com/go-redis/redis/v8"
 )
 
 type CityRepoDecorator struct {
 	*baseDecorator
-	cache    redis.UniversalClient
 	cityRepo *repo.CityRepo
 }
 
-func NewCityRepoDecorator(base *baseDecorator, cityRepo *repo.CityRepo, cache redis.UniversalClient) domain.CityRepo {
+func NewCityRepoDecorator(base *baseDecorator, cityRepo *repo.CityRepo) domain.CityRepo {
 	return &CityRepoDecorator{
 		baseDecorator: base,
-		cache:         cache,
 		cityRepo:      cityRepo,
 	}
 }
