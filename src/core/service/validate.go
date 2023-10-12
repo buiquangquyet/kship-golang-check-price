@@ -119,12 +119,16 @@ func (p *PriceService) validateLocation(ctx context.Context, clientCode string, 
 	isVer2 := req.VersionLocation == constant.VersionLocation2
 	if isVer2 {
 		_, ierr = p.districtRepo.GetByKmsId(ctx, req.SenderLocationId)
+		if helpers.IsInternalError(ierr) {
+			log.Error(ctx, ierr.Error())
+			return nil, nil, ierr
+		}
 	} else {
 		_, ierr = p.districtRepo.GetByKvId(ctx, req.SenderLocationId)
-	}
-	if helpers.IsInternalError(ierr) {
-		log.Error(ctx, ierr.Error())
-		return nil, nil, ierr
+		if helpers.IsInternalError(ierr) {
+			log.Error(ctx, ierr.Error())
+			return nil, nil, ierr
+		}
 	}
 	if ierr != nil {
 		return nil, nil, ierr.SetCode(4003)
@@ -132,12 +136,16 @@ func (p *PriceService) validateLocation(ctx context.Context, clientCode string, 
 
 	if isVer2 {
 		_, ierr = p.districtRepo.GetByKmsId(ctx, req.ReceiverLocationId)
+		if helpers.IsInternalError(ierr) {
+			log.Error(ctx, ierr.Error())
+			return nil, nil, ierr
+		}
 	} else {
 		_, ierr = p.districtRepo.GetByKvId(ctx, req.ReceiverLocationId)
-	}
-	if helpers.IsInternalError(ierr) {
-		log.Error(ctx, ierr.Error())
-		return nil, nil, ierr
+		if helpers.IsInternalError(ierr) {
+			log.Error(ctx, ierr.Error())
+			return nil, nil, ierr
+		}
 	}
 	if ierr != nil {
 		return nil, nil, ierr.SetCode(4005)
