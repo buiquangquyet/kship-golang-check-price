@@ -23,7 +23,7 @@ func (w WardRepo) GetByKmsId(ctx context.Context, kmsId int64) (*domain.Ward, *c
 	ward := &domain.Ward{}
 	conds := []clause.Expression{
 		clause.Eq{Column: "kms_id", Value: kmsId},
-		clause.Eq{Column: "retailer_id", Value: 1},
+		clause.Eq{Column: "mapping_status", Value: 1},
 	}
 	if err := w.db.WithContext(ctx).Clauses(conds...).Take(ward).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
@@ -38,7 +38,7 @@ func (w WardRepo) GetByKvId(ctx context.Context, kvId int64) (*domain.Ward, *com
 	ward := &domain.Ward{}
 	conds := []clause.Expression{
 		clause.Eq{Column: "kv_id", Value: kvId},
-		clause.Eq{Column: "retailer_id", Value: 1},
+		clause.Eq{Column: "mapping_status", Value: 1},
 	}
 	if err := w.db.WithContext(ctx).Clauses(conds...).Take(ward).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
