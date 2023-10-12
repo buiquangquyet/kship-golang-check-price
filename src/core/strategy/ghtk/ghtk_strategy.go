@@ -114,7 +114,7 @@ func (g *GHTKStrategy) getPriceInput(ctx context.Context, isBBS bool, weight int
 			log.Error(ctx, err.Error())
 			return nil, err
 		}
-		if receiverWard, err = g.wardRepo.GetByKmsId(ctx, req.ReceiverWardId); err != nil {
+		if receiverWard, err = g.wardRepo.GetByKvId(ctx, req.ReceiverWardId); err != nil {
 			log.Error(ctx, err.Error())
 			return nil, err
 		}

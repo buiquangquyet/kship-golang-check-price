@@ -27,8 +27,8 @@ type Ward struct {
 }
 
 type WardRepo interface {
-	GetByKmsId(ctx context.Context, senderWardId int64) (*Ward, *common.Error)
-	GetByKvId(ctx context.Context, senderWardId int64) (*Ward, *common.Error)
+	GetByKmsId(ctx context.Context, kmsId int64) (*Ward, *common.Error)
+	GetByKvId(ctx context.Context, kvId int64) (*Ward, *common.Error)
 }
 
 func (Ward) TableName() string {
