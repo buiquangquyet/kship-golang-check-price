@@ -2,6 +2,7 @@ package domain
 
 import (
 	"check-price/src/common"
+	"check-price/src/core/enums"
 	"context"
 	"time"
 )
@@ -33,9 +34,8 @@ type Service struct {
 }
 
 type ServiceRepo interface {
-	GetServicesPluckCodeByClientCode(ctx context.Context, clientCode string) ([]string, *common.Error)
-	GetByServiceCode(ctx context.Context, clientCode string) ([]*Service, *common.Error)
-	GetByClientId(ctx context.Context, clientId int64) ([]*Service, *common.Error)
+	GetByClientId(ctx context.Context, typeService enums.TypeService, status int, clientId int64) ([]*Service, *common.Error)
+	GetByClientCode(ctx context.Context, typeService enums.TypeService, status int, clientCode string) ([]*Service, *common.Error)
 }
 
 func (Service) TableName() string {

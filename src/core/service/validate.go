@@ -158,19 +158,17 @@ func (p *PriceService) validateService(ctx context.Context, client *domain.Clien
 	if services == nil {
 		return ierr.SetCode(4001)
 	}
-	servicesEnable, ierr := p.serviceRepo.GetByClientId(ctx, client.Id)
+	servicesEnable, ierr := p.serviceRepo.GetByClientId(ctx, enums.TypeServiceDV, constant.EnableStatus, client.Id)
 	if ierr != nil {
 		log.IErr(ctx, ierr)
 		return ierr
 	}
-	//Todo xu li lai
 	servicesEnableCode := make([]string, len(servicesEnable))
 	for i, service := range servicesEnable {
 		servicesEnableCode[i] = service.Code
 	}
 	for _, service := range services {
-		serviceCode := service.Code
-		if helpers.InArray(servicesEnableCode, serviceCode) {
+		if !helpers.InArray(servicesEnableCode, service.Code) {
 			return common.ErrBadRequest(ctx).SetCode(4009)
 		}
 	}
@@ -186,7 +184,7 @@ func (p *PriceService) validateExtraService(ctx context.Context, clientCode stri
 	if !helpers.InArray(extraServiceRequestCodes, constant.ServiceExtraCodePayment) {
 		return ierr.SetCode(4013)
 	}
-	servicesExtraByClientCodes, ierr := p.serviceRepo.GetByServiceCode(ctx, clientCode)
+	servicesExtraByClientCodes, ierr := p.serviceRepo.GetByClientCode(ctx, enums.TypeServiceDVMR, constant.EnableStatus, clientCode)
 	if ierr != nil {
 		log.IErr(ctx, ierr)
 		return ierr
