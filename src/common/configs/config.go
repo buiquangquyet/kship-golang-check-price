@@ -13,10 +13,6 @@ type Config struct {
 		Prefix  string `mapstructure:"prefix"`
 	} `mapstructure:"server"`
 
-	Token struct {
-		PublicKeys map[string]string `mapstructure:"public_keys"`
-	} `mapstructure:"token"`
-
 	Mysql struct {
 		Host        string `mapstructure:"host"`
 		Port        string `mapstructure:"port"`

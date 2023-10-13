@@ -32,7 +32,6 @@ func newGetPriceUnder20Input(p *dto.GetPriceInputDto) *GetPriceUnder20Input {
 		Value:        p.Value,
 		Transport:    p.Transport,
 		Tags:         p.Tags,
-		OrderService: p.OrderService,
 	}
 }
 

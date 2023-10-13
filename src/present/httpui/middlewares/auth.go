@@ -2,15 +2,16 @@ package middlewares
 
 import (
 	"check-price/src/common"
-	"check-price/src/common/configs"
 	"check-price/src/common/log"
 	"check-price/src/core/constant"
 	"check-price/src/core/dto"
 	"crypto/rsa"
-	"encoding/base64"
+	"crypto/x509"
+	"encoding/pem"
 	"fmt"
 	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt/v5"
+	"os"
 	"strconv"
 	"strings"
 )
@@ -21,19 +22,17 @@ type AuthMiddleware struct {
 
 func loadKeyMap() map[string]*rsa.PublicKey {
 	mapPublicRsaKeys := make(map[string]*rsa.PublicKey)
-	cf := configs.Get().Token.PublicKeys
-	for key, data := range cf {
-		keyData, err := base64.StdEncoding.DecodeString(data)
-		if err != nil {
-			log.Fatal("err decode public key, data:[%s], err:[%s]", data, err.Error())
-		}
-
-		publicKey, err := jwt.ParseRSAPublicKeyFromPEM(keyData)
-		if err != nil {
-			log.Fatal("validate: parse key, err:[%s]", err.Error())
-		}
-		mapPublicRsaKeys[key] = publicKey
+	priv, err := os.ReadFile("configs/tokens/kv-secret-key-widget-rs256.pem")
+	if err != nil {
+		log.Fatal(err.Error())
 	}
+
+	block, _ := pem.Decode(priv)
+	key, err := x509.ParsePKIXPublicKey(block.Bytes)
+	if err != nil {
+		log.Fatal(err.Error())
+	}
+	mapPublicRsaKeys["RETAIL"] = key.(*rsa.PublicKey)
 	return mapPublicRsaKeys
 }
 
