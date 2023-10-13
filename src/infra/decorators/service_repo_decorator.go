@@ -30,7 +30,7 @@ func (s ServiceRepoDecorator) GetByClientId(ctx context.Context, typeService enu
 	key := s.genKeyCacheGetServiceByClientId(typeService, status, clientId)
 	var services []*domain.Service
 	err := s.get(ctx, key).Scan(&services)
-	if err != nil {
+	if err == nil {
 		return services, nil
 	}
 	s.handleRedisError(ctx, err)
@@ -46,7 +46,7 @@ func (s ServiceRepoDecorator) GetByClientCode(ctx context.Context, typeService e
 	key := s.genKeyCacheGetServiceByClientCode(typeService, status, clientCode)
 	var services []*domain.Service
 	err := s.get(ctx, key).Scan(&services)
-	if err != nil {
+	if err == nil {
 		return services, nil
 	}
 	s.handleRedisError(ctx, err)

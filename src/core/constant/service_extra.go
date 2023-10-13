@@ -29,4 +29,18 @@ const (
 	ServiceExtraGHTK3       = "GHTK_3"
 	ServiceExtraGHTK4       = "GHTK_4"
 	ServiceExtraGHTK5       = "GHTK_5"
+	ServiceExtraGHTK6       = "GHTK_6"
+)
+
+var (
+	MapGHTKExtraService = map[string]int{
+		ServiceExtraGHTK1:   1,
+		ServiceExtraGHTK7:   7,
+		ServiceExtraGHTK2:   13,
+		ServiceExtraGHTK3:   17,
+		ServiceExtraGHTK4:   18,
+		ServiceExtraCodeTip: 19,
+		ServiceExtraGHTK5:   20,
+		ServiceExtraGHTK6:   22,
+	}
 )

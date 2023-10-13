@@ -72,9 +72,9 @@ func (g *GHTKStrategy) GetMultiplePriceV3(ctx context.Context, shop *domain.Shop
 			var price *domain.Price
 			var err *common.Error
 			if isBBS {
-				price, err = g.ghtkExtService.GetPriceOver20(ctx, shop, getPriceParam)
+				price, err = g.ghtkExtService.GetPriceOver20(ctx, shop, service.Code, getPriceParam)
 			} else {
-				price, err = g.ghtkExtService.GetPriceUnder20(ctx, shop, getPriceParam)
+				price, err = g.ghtkExtService.GetPriceUnder20(ctx, shop, service.Code, getPriceParam)
 			}
 			if err != nil {
 				log.Error(ctx, err.Error())
@@ -135,6 +135,11 @@ func (g *GHTKStrategy) getPriceInput(ctx context.Context, isBBS bool, weight int
 		}
 	}
 	tags := make([]int, 0)
+	for _, service := range req.ExtraService {
+		if tag, exist := constant.MapGHTKExtraService[service.Code]; exist {
+			tags = append(tags, tag)
+		}
+	}
 	return &dto.GetPriceInputDto{
 		PickProvince:     pickProvince.Name,
 		PickDistrict:     pickDistrict.Name,
@@ -146,7 +151,6 @@ func (g *GHTKStrategy) getPriceInput(ctx context.Context, isBBS bool, weight int
 		Products:         products,
 		Weight:           weight,
 		Value:            value,
-		Transport:        "",
 		Tags:             tags,
 	}, nil
 }

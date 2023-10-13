@@ -29,7 +29,7 @@ func (s *ShopRepoDecorator) GetByRetailerId(ctx context.Context, retailerId int6
 	key := s.genKeyCacheGetShopByRetailerId(retailerId)
 	var shop domain.Shop
 	err := s.get(ctx, key).Scan(&shop)
-	if err != nil {
+	if err == nil {
 		return &shop, nil
 	}
 	s.handleRedisError(ctx, err)
@@ -45,7 +45,7 @@ func (s *ShopRepoDecorator) GetByCode(ctx context.Context, code string) (*domain
 	key := s.genKeyCacheGetShopByCode(code)
 	var shop domain.Shop
 	err := s.get(ctx, key).Scan(&shop)
-	if err != nil {
+	if err == nil {
 		return &shop, nil
 	}
 	s.handleRedisError(ctx, err)
