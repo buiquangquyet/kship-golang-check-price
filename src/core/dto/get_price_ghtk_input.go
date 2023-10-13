@@ -11,7 +11,6 @@ type GetPriceInputDto struct {
 	Products         []*Product //BBS
 	Weight           int64      //no BBS
 	Value            int64
-	Transport        string
 	Tags             []int
 }
 
