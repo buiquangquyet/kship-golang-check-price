@@ -19,7 +19,7 @@ type GetPriceUnder20Input struct {
 	OrderService string `json:"ORDER_SERVICE"`
 }
 
-func newGetPriceUnder20Input(p *dto.GetPriceInputDto) *GetPriceUnder20Input {
+func newGetPriceUnder20Input(serviceCode string, p *dto.GetPriceInputDto) *GetPriceUnder20Input {
 	return &GetPriceUnder20Input{
 		Address:      p.Address,
 		PickProvince: p.PickProvince,
@@ -30,7 +30,7 @@ func newGetPriceUnder20Input(p *dto.GetPriceInputDto) *GetPriceUnder20Input {
 		Ward:         p.ReceiverWard,
 		Weight:       p.Weight,
 		Value:        p.Value,
-		Transport:    p.Transport,
+		Transport:    serviceCode,
 		Tags:         p.Tags,
 	}
 }

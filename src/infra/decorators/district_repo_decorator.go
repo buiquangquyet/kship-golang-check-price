@@ -30,7 +30,7 @@ func (d DistrictRepoDecorator) GetByKmsId(ctx context.Context, kmsId int64) (*do
 	key := d.genKeyCacheGetDistrictByKmsId(kmsId)
 	var district domain.District
 	err := d.get(ctx, key).Scan(&district)
-	if err != nil {
+	if err == nil {
 		return &district, nil
 	}
 	d.handleRedisError(ctx, err)
@@ -46,7 +46,7 @@ func (d DistrictRepoDecorator) GetByKvId(ctx context.Context, kvId int64) (*doma
 	key := d.genKeyCacheGetDistrictByKvId(kvId)
 	var district domain.District
 	err := d.get(ctx, key).Scan(&district)
-	if err != nil {
+	if err == nil {
 		return &district, nil
 	}
 	d.handleRedisError(ctx, err)
@@ -62,7 +62,7 @@ func (d DistrictRepoDecorator) GetById(ctx context.Context, id int64) (*domain.D
 	key := d.genKeyCacheGetDistrictById(id)
 	var district domain.District
 	err := d.get(ctx, key).Scan(&district)
-	if err != nil {
+	if err == nil {
 		return &district, nil
 	}
 	d.handleRedisError(ctx, err)

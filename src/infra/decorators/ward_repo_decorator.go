@@ -29,7 +29,7 @@ func (w WardRepoDecorator) GetByKmsId(ctx context.Context, kmsId int64) (*domain
 	key := w.genKeyCacheGetWardByKmsId(kmsId)
 	var ward domain.Ward
 	err := w.get(ctx, key).Scan(&ward)
-	if err != nil {
+	if err == nil {
 		return &ward, nil
 	}
 	w.handleRedisError(ctx, err)
@@ -45,7 +45,7 @@ func (w WardRepoDecorator) GetByKvId(ctx context.Context, kvId int64) (*domain.W
 	key := w.genKeyCacheGetWardByKvId(kvId)
 	var ward domain.Ward
 	err := w.get(ctx, key).Scan(&ward)
-	if err != nil {
+	if err == nil {
 		return &ward, nil
 	}
 	w.handleRedisError(ctx, err)

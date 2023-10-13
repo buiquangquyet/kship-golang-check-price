@@ -1,7 +1,8 @@
 package ghtk
 
+import "check-price/src/core/dto"
+
 type GetPriceOver20Input struct {
-	PickAddress      string     `json:"pick_address"`
 	PickProvince     string     `json:"pick_province"`
 	PickDistrict     string     `json:"pick_district"`
 	PickWard         string     `json:"pick_ward"`
@@ -10,8 +11,6 @@ type GetPriceOver20Input struct {
 	CustomerProvince string     `json:"customer_province"`
 	CustomerDistrict string     `json:"customer_district"`
 	CustomerWard     string     `json:"customer_ward"`
-	CustomerAddress  string     `json:"customer_address"`
-	CustomerHamlet   string     `json:"customer_hamlet"`
 	Products         []*Product `json:"products"`
 	Transport        string     `json:"transport"`
 	Tags             []int      `json:"tags"`
@@ -23,7 +22,35 @@ type Product struct {
 	Height   int    `json:"height"`
 	Length   int    `json:"length"`
 	Quantity int    `json:"quantity"`
-	Weight   int    `json:"weight"`
+	Weight   int64  `json:"weight"`
+}
+
+func newGetPriceOver20Input(serviceCode string, p *dto.GetPriceInputDto) *GetPriceOver20Input {
+	products := make([]*Product, len(p.Products))
+	for _, product := range p.Products {
+		products = append(products, &Product{
+			Name:     product.Name,
+			Width:    product.Width,
+			Height:   product.Height,
+			Length:   product.Length,
+			Quantity: product.Quantity,
+			Weight:   product.Weight,
+		})
+	}
+
+	return &GetPriceOver20Input{
+		PickProvince:     p.PickProvince,
+		PickDistrict:     p.PickDistrict,
+		PickWard:         p.PickWard,
+		Value:            p.Value,
+		PickStreet:       "",
+		CustomerProvince: p.ReceiverProvince,
+		CustomerDistrict: p.ReceiverDistrict,
+		CustomerWard:     p.ReceiverWard,
+		Products:         products,
+		Transport:        serviceCode,
+		Tags:             p.Tags,
+	}
 }
 
 type GetPriceOver20Output struct {

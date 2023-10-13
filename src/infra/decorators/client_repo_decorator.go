@@ -28,7 +28,7 @@ func (c ClientRepoDecorator) GetByCode(ctx context.Context, clientCode string) (
 	key := c.genKeyCacheGetClientByCode(clientCode)
 	var client domain.Client
 	err := c.get(ctx, key).Scan(&client)
-	if err != nil {
+	if err == nil {
 		return &client, nil
 	}
 	c.handleRedisError(ctx, err)

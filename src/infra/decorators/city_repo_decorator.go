@@ -28,7 +28,7 @@ func (c CityRepoDecorator) GetById(ctx context.Context, id int64) (*domain.City,
 	key := c.genKeyCacheGetCityById(id)
 	var city domain.City
 	err := c.get(ctx, key).Scan(&city)
-	if err != nil {
+	if err == nil {
 		return &city, nil
 	}
 	c.handleRedisError(ctx, err)
