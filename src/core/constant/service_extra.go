@@ -29,6 +29,7 @@ const (
 	ServiceExtraGHTK3       = "GHTK_3"
 	ServiceExtraGHTK4       = "GHTK_4"
 	ServiceExtraGHTK5       = "GHTK_5"
+	ServiceExtraGHTK6       = "GHTK_6"
 )
 
 var (
@@ -38,7 +39,7 @@ var (
 		ServiceExtraGHTK2:   13,
 		ServiceExtraGHTK3:   17,
 		ServiceExtraGHTK4:   18,
-		ServiceExtraGHTKTIP: 19,
+		ServiceExtraCodeTip: 19,
 		ServiceExtraGHTK5:   20,
 		ServiceExtraGHTK6:   22,
 	}

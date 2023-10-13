@@ -29,7 +29,7 @@ func (s SettingShopRepoDecorator) GetByRetailerId(ctx context.Context, modelType
 	key := s.genKeyCacheGetSettingShopByRetailerId(modelType, retailerId)
 	var settingShops []*domain.SettingShop
 	err := s.get(ctx, key).Scan(&settingShops)
-	if err != nil {
+	if err == nil {
 		return settingShops, nil
 	}
 	s.handleRedisError(ctx, err)
