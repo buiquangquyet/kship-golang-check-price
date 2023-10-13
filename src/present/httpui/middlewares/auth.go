@@ -73,7 +73,7 @@ func (a *AuthMiddleware) ValidateTokenClient(c *gin.Context, token string) *comm
 	if !ok {
 		return ierr.SetDetail("kvrid not found")
 	}
-	retailerId := kvrid.(int64)
+	retailerId := int64((kvrid).(float64))
 	source, ok := claims["kvsource"]
 	if !ok {
 		return ierr.SetDetail("kvsource not found")
@@ -103,7 +103,7 @@ func (a *AuthMiddleware) keyFunc(jwtToken *jwt.Token) (interface{}, error) {
 	if !ok {
 		return nil, fmt.Errorf("kvsource wrong format")
 	}
-	publicKey, ok := a.publicKeys[strings.ToLower(source)]
+	publicKey, ok := a.publicKeys[strings.ToUpper(source)]
 	if !ok {
 		return nil, fmt.Errorf("kvsource not support")
 	}
