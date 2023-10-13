@@ -135,6 +135,9 @@ func (g *GHTKStrategy) getPriceInput(ctx context.Context, isBBS bool, weight int
 		}
 	}
 	tags := make([]int, 0)
+	//for _, service := range req.ExtraService {
+	//if service
+	//}
 	return &dto.GetPriceInputDto{
 		PickProvince:     pickProvince.Name,
 		PickDistrict:     pickDistrict.Name,
