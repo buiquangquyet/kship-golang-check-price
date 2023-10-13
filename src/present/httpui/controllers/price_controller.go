@@ -35,7 +35,7 @@ func (m *PriceController) GetPrice(c *gin.Context) {
 		m.ErrorData(c, ierr)
 		return
 	}
-	versionLocation, exist := c.Get(constant.MerchantIdKey)
+	versionLocation, exist := c.Get(constant.VersionLocation)
 	if !exist {
 		ierr := common.ErrSystemError(c, "version location not exist ")
 		m.ErrorData(c, ierr)
