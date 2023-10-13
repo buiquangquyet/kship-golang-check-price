@@ -7,6 +7,14 @@ import (
 type Config struct {
 	Mode string `mapstructure:"mode"`
 
+	Log struct {
+		EnableFile bool   `mapstructure:"enable_file"`
+		File       string `mapstructure:"file"`
+		MaxSize    int    `mapstructure:"max_size"`
+		MaxBackups int    `mapstructure:"max_backups"`
+		MaxAge     int    `mapstructure:"max_age"`
+	} `mapstructure:"log"`
+
 	Server struct {
 		Name    string `mapstructure:"name"`
 		Address string `mapstructure:"address"`

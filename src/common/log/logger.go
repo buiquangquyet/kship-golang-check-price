@@ -1,9 +1,11 @@
 package log
 
 import (
+	"check-price/src/common/configs"
 	"check-price/src/core/constant"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
+	"gopkg.in/natefinch/lumberjack.v2"
 	"os"
 	"time"
 )
@@ -42,10 +44,14 @@ func NewLogger() {
 		encoder = zapcore.NewConsoleEncoder(encoderConfig)
 		level = zap.DebugLevel
 	}
-	core := zapcore.NewCore(encoder, zapcore.AddSync(os.Stderr), level)
-	//set log
+	cores := make([]zapcore.Core, 0)
+	cores = append(cores, zapcore.NewCore(encoder, zapcore.AddSync(os.Stderr), level))
+	if configs.Get().Log.EnableFile {
+		cores = append(cores, zapcore.NewCore(encoder, getWriteSyncer(), level))
+	}
+	tee := zapcore.NewTee(cores...)
 	globalLogger = &logger{
-		zap: zap.New(core, zap.AddCaller(), zap.AddStacktrace(zapcore.ErrorLevel), zap.AddCallerSkip(callerSkip)).Sugar(),
+		zap: zap.New(tee, zap.AddCaller(), zap.AddStacktrace(zapcore.ErrorLevel), zap.AddCallerSkip(callerSkip)).Sugar(),
 	}
 	return
 }
@@ -72,4 +78,17 @@ func (l *logger) Fatal(msg string, args ...interface{}) {
 
 func (l *logger) GetZap() *zap.SugaredLogger {
 	return l.zap
+}
+
+func getWriteSyncer() zapcore.WriteSyncer {
+	cf := configs.Get().Log
+	lumberJackLogger := &lumberjack.Logger{
+		Filename:   cf.File,
+		MaxSize:    cf.MaxSize,
+		MaxAge:     cf.MaxAge,
+		MaxBackups: cf.MaxBackups,
+		Compress:   true,
+	}
+	return zapcore.AddSync(lumberJackLogger)
+
 }

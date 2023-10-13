@@ -1,5 +1,11 @@
-mode:
-  dev
+mode: dev
+
+log:
+  enable_file: true
+  file: ./ship.log
+  max_size: 500 #megabytes
+  max_backups: 3
+  max_age: 30 #days
 
 server:
   name: check-price
