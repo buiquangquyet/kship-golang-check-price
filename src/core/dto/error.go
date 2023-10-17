@@ -7,8 +7,9 @@ import (
 )
 
 type ErrorResponse struct {
-	Code       int    `json:"code"`
+	Code       int    `json:"status_code"`
 	Message    string `json:"message"`
+	Msg        string `json:"msg"`
 	TraceID    string `json:"trace_id,omitempty"`
 	Detail     string `json:"detail,omitempty"`
 	Source     string `json:"source"`
@@ -26,6 +27,7 @@ func ConvertErrorToResponse(err *common.Error) *ErrorResponse {
 		TraceID:    err.TraceID,
 		Detail:     detail,
 		Source:     string(err.Source),
+		Msg:        string(err.Message),
 		HTTPStatus: err.HTTPStatus,
 	}
 }
