@@ -7,6 +7,7 @@ import (
 	"check-price/src/core/domain"
 	"check-price/src/core/dto"
 	"check-price/src/core/strategy"
+	"check-price/src/helpers"
 	"check-price/src/infra/external/ghtk"
 	"check-price/src/present/httpui/request"
 	"context"
@@ -48,7 +49,7 @@ func (g *GHTKStrategy) Validate(ctx context.Context, req *request.GetPriceReRequ
 	return nil
 }
 
-func (g *GHTKStrategy) GetMultiplePriceV3(ctx context.Context, shop *domain.Shop, req *request.GetPriceReRequest, pickWard, receiverWard *domain.Ward) ([]*domain.Price, *common.Error) {
+func (g *GHTKStrategy) GetMultiplePriceV3(ctx context.Context, shop *domain.Shop, req *request.GetPriceReRequest) ([]*domain.Price, *common.Error) {
 	var wg sync.WaitGroup
 	mapPrices := make(map[string]*domain.Price)
 	isBBS := false
@@ -61,7 +62,7 @@ func (g *GHTKStrategy) GetMultiplePriceV3(ctx context.Context, shop *domain.Shop
 		isBBS = true
 	}
 
-	getPriceParam, err := g.getPriceInput(ctx, isBBS, weight, req, pickWard, receiverWard)
+	getPriceParam, err := g.getPriceInput(ctx, isBBS, weight, req)
 	if err != nil {
 		return nil, err
 	}
@@ -92,7 +93,45 @@ func (g *GHTKStrategy) GetMultiplePriceV3(ctx context.Context, shop *domain.Shop
 	return prices, nil
 }
 
-func (g *GHTKStrategy) getPriceInput(ctx context.Context, isBBS bool, weight int64, req *request.GetPriceReRequest, pickWard, receiverWard *domain.Ward) (*dto.GetPriceInputDto, *common.Error) {
+func (g *GHTKStrategy) getPriceInput(ctx context.Context, isBBS bool, weight int64, req *request.GetPriceReRequest) (*dto.GetPriceInputDto, *common.Error) {
+	isVer2 := req.VersionLocation == constant.VersionLocation2
+	ierr := common.ErrBadRequest(ctx)
+	var pickWard *domain.Ward
+	var receiverWard *domain.Ward
+	if isVer2 {
+		pickWard, ierr = g.wardRepo.GetByKmsId(ctx, req.SenderWardId)
+		if helpers.IsInternalError(ierr) {
+			log.Error(ctx, ierr.Error())
+			return nil, ierr
+		}
+	} else {
+		pickWard, ierr = g.wardRepo.GetByKvId(ctx, req.SenderWardId)
+		if helpers.IsInternalError(ierr) {
+			log.Error(ctx, ierr.Error())
+			return nil, ierr
+		}
+	}
+	if ierr != nil {
+		return nil, ierr.SetCode(4004)
+	}
+
+	if isVer2 {
+		receiverWard, ierr = g.wardRepo.GetByKmsId(ctx, req.ReceiverWardId)
+		if helpers.IsInternalError(ierr) {
+			log.Error(ctx, ierr.Error())
+			return nil, ierr
+		}
+	} else {
+		receiverWard, ierr = g.wardRepo.GetByKvId(ctx, req.ReceiverWardId)
+		if helpers.IsInternalError(ierr) {
+			log.Error(ctx, ierr.Error())
+			return nil, ierr
+		}
+	}
+	if ierr != nil {
+		return nil, ierr.SetCode(4006)
+	}
+
 	pickDistrict, err := g.districtRepo.GetById(ctx, pickWard.DistrictId)
 	if err != nil {
 		log.Error(ctx, err.Error())

@@ -60,6 +60,12 @@ func (g *GetPriceReRequest) validate(ctx context.Context) *common.Error {
 	if g.ReceiverLocationId == 0 {
 		return ierr.SetCode(4005)
 	}
+	if g.SenderWardId != 0 {
+		return ierr.SetCode(4004)
+	}
+	if g.ReceiverWardId != 0 {
+		return ierr.SetCode(4006)
+	}
 	if g.ProductWidth == 0 || g.ProductHeight == 0 || g.ProductLength == 0 || g.ProductWeight == 0 {
 		return ierr.SetCode(4007)
 	}
