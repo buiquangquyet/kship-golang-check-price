@@ -34,6 +34,7 @@ type Error struct {
 	Detail     string    `json:"detail"`
 	Source     Source    `json:"source"`
 	HTTPStatus int       `json:"http_status"`
+	Lang       string    `json:"lang"`
 }
 
 func NewError(ctx context.Context, code ErrorCode, message string, httpStatus int) *Error {
@@ -63,8 +64,8 @@ func (e *Error) GetMessage() string {
 }
 
 func (e *Error) SetCode(code ErrorCode) *Error {
-	if code == 3012 {
-		e.Message = "xxx"
+	if code == 3012 && e.Lang == "VN" {
+		e.Message = "xxxVN"
 	}
 	e.Code = code
 	return e
@@ -146,6 +147,7 @@ var (
 
 	ErrSystemError = func(ctx context.Context, detail string) *Error {
 		traceId := GetTraceId(ctx)
+		lang := "VN"
 		return &Error{
 			Code:       ErrorCodeSystemError,
 			Message:    DefaultServerErrorMessage,
@@ -153,6 +155,7 @@ var (
 			HTTPStatus: http.StatusInternalServerError,
 			Source:     SourceAPIService,
 			Detail:     detail,
+			Lang:       lang,
 		}
 	}
 )
