@@ -54,7 +54,7 @@ func (p *PriceService) GetPrice(ctx context.Context, req *request.GetPriceReRequ
 			return nil, err
 		}
 	}
-	pickWard, receiverWard, ierr := p.validate(ctx, shop, req.RetailerId, req)
+	ierr := p.validate(ctx, shop, req.RetailerId, req)
 	if ierr != nil {
 		return nil, ierr
 	}
@@ -67,7 +67,7 @@ func (p *PriceService) GetPrice(ctx context.Context, req *request.GetPriceReRequ
 	if ierr != nil {
 		return nil, ierr
 	}
-	prices, err := shipStrategy.GetMultiplePriceV3(ctx, shop, req, pickWard, receiverWard)
+	prices, err := shipStrategy.GetMultiplePriceV3(ctx, shop, req)
 	if err != nil {
 		log.IErr(ctx, err)
 		return nil, err

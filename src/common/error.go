@@ -63,6 +63,9 @@ func (e *Error) GetMessage() string {
 }
 
 func (e *Error) SetCode(code ErrorCode) *Error {
+	if code == 3012 {
+		e.Message = "xxx"
+	}
 	e.Code = code
 	return e
 }
