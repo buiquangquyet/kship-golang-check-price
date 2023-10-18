@@ -67,10 +67,16 @@ func (e *Error) SetCode(code ErrorCode) *Error {
 	if code == 3012 && e.Lang == "VN" {
 		e.Message = "xxxVN"
 	}
+	if code == 4001 && e.Lang == "vn" {
+		e.Message = "loi 4001 vn"
+	}
 	e.Code = code
 	return e
 }
-
+func (e *Error) SetLang(lang string) *Error {
+	e.Lang = lang
+	return e
+}
 func (e *Error) SetTraceId(traceId string) *Error {
 	e.TraceID = fmt.Sprintf("%s:%d", traceId, time.Now().Unix())
 	return e
@@ -147,7 +153,6 @@ var (
 
 	ErrSystemError = func(ctx context.Context, detail string) *Error {
 		traceId := GetTraceId(ctx)
-		lang := "VN"
 		return &Error{
 			Code:       ErrorCodeSystemError,
 			Message:    DefaultServerErrorMessage,
@@ -155,7 +160,6 @@ var (
 			HTTPStatus: http.StatusInternalServerError,
 			Source:     SourceAPIService,
 			Detail:     detail,
-			Lang:       lang,
 		}
 	}
 )
