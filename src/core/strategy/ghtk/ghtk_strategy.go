@@ -22,8 +22,16 @@ type GHTKStrategy struct {
 	ghtkExtService *ghtk.GHTKExtService
 }
 
-func NewGHTKStrategy(ghtkExtService *ghtk.GHTKExtService) strategy.ShipStrategy {
+func NewGHTKStrategy(
+	wardRepo domain.WardRepo,
+	districtRepo domain.DistrictRepo,
+	cityRepo domain.CityRepo,
+	ghtkExtService *ghtk.GHTKExtService,
+) strategy.ShipStrategy {
 	return &GHTKStrategy{
+		wardRepo:       wardRepo,
+		districtRepo:   districtRepo,
+		cityRepo:       cityRepo,
 		ghtkExtService: ghtkExtService,
 	}
 }

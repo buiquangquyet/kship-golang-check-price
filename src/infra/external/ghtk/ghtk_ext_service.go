@@ -173,9 +173,9 @@ func (g *GHTKExtService) newToken(ctx context.Context, shop *domain.Shop) (strin
 	if resp.IsErrorState() || !g.success(output.Code) {
 		log.Debug(ctx, "Call ghtk failed with body: %+v", output)
 		detail := fmt.Sprintf("http: [%d], resp: [%s]", resp.StatusCode, resp.String())
-		return "", common.ErrSystemError(ctx, err.Error()).SetDetail(detail).SetSource(common.SourceGHTKService)
+		return "", common.ErrSystemError(ctx, detail).SetSource(common.SourceGHTKService)
 	}
-	return output.Data.Code, nil
+	return output.Data.Token, nil
 }
 
 func (g *GHTKExtService) success(code string) bool {
