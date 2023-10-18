@@ -3,14 +3,16 @@ package ghtk
 import "check-price/src/core/domain"
 
 type LoginInput struct {
-	Username string `json:"username"`
+	Email    string `json:"email"`
 	Password string `json:"password"`
 }
 
 func newLoginInput(shop *domain.Shop) *LoginInput {
 	return &LoginInput{
-		Username: shop.GHTKUsername,
+		Email:    shop.GHTKUsername,
 		Password: shop.GHTKPassword,
+		//Email:    "giaovan@citigo.com.vn",
+		//Password: "Giaovan@123456KV",
 	}
 }
 
