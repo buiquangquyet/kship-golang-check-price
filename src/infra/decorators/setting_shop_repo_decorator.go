@@ -2,10 +2,12 @@ package decorators
 
 import (
 	"check-price/src/common"
+	"check-price/src/common/log"
 	"check-price/src/core/domain"
 	"check-price/src/core/enums"
 	"check-price/src/infra/repo"
 	"context"
+	"encoding/json"
 	"time"
 )
 
@@ -28,11 +30,15 @@ func NewSettingShopRepoDecorator(base *baseDecorator, settingShop *repo.SettingS
 func (s SettingShopRepoDecorator) GetByRetailerId(ctx context.Context, modelType enums.ModelTypeSettingShop, retailerId int64) ([]*domain.SettingShop, *common.Error) {
 	key := s.genKeyCacheGetSettingShopByRetailerId(modelType, retailerId)
 	var settingShops []*domain.SettingShop
-	err := s.get(ctx, key).Scan(&settingShops)
-	if err == nil {
-		return settingShops, nil
-	}
+	val, err := s.get(ctx, key).Result()
 	s.handleRedisError(ctx, err)
+	if err == nil {
+		err = json.Unmarshal([]byte(val), &settingShops)
+		if err == nil {
+			return settingShops, nil
+		}
+		log.Warn(ctx, "unmarshall error")
+	}
 	settingShopDB, ierr := s.settingShop.GetByRetailerId(ctx, modelType, retailerId)
 	if ierr != nil {
 		return nil, ierr

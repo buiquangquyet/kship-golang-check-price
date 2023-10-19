@@ -2,10 +2,12 @@ package decorators
 
 import (
 	"check-price/src/common"
+	"check-price/src/common/log"
 	"check-price/src/core/domain"
 	"check-price/src/core/enums"
 	"check-price/src/infra/repo"
 	"context"
+	"encoding/json"
 	"time"
 )
 
@@ -29,11 +31,15 @@ func NewServiceRepoDecorator(base *baseDecorator, serviceRepo *repo.ServiceRepo)
 func (s ServiceRepoDecorator) GetByClientId(ctx context.Context, typeService enums.TypeService, status int, clientId int64) ([]*domain.Service, *common.Error) {
 	key := s.genKeyCacheGetServiceByClientId(typeService, status, clientId)
 	var services []*domain.Service
-	err := s.get(ctx, key).Scan(&services)
-	if err == nil {
-		return services, nil
-	}
+	val, err := s.get(ctx, key).Result()
 	s.handleRedisError(ctx, err)
+	if err == nil {
+		err = json.Unmarshal([]byte(val), &services)
+		if err == nil {
+			return services, nil
+		}
+		log.Warn(ctx, "unmarshall error")
+	}
 	servicesDB, ierr := s.serviceRepo.GetByClientId(ctx, typeService, status, clientId)
 	if ierr != nil {
 		return nil, ierr
@@ -45,11 +51,15 @@ func (s ServiceRepoDecorator) GetByClientId(ctx context.Context, typeService enu
 func (s ServiceRepoDecorator) GetByClientCode(ctx context.Context, typeService enums.TypeService, status int, clientCode string) ([]*domain.Service, *common.Error) {
 	key := s.genKeyCacheGetServiceByClientCode(typeService, status, clientCode)
 	var services []*domain.Service
-	err := s.get(ctx, key).Scan(&services)
-	if err == nil {
-		return services, nil
-	}
+	val, err := s.get(ctx, key).Result()
 	s.handleRedisError(ctx, err)
+	if err == nil {
+		err = json.Unmarshal([]byte(val), &services)
+		if err == nil {
+			return services, nil
+		}
+		log.Warn(ctx, "unmarshall error")
+	}
 	servicesDB, ierr := s.serviceRepo.GetByClientCode(ctx, typeService, status, clientCode)
 	if ierr != nil {
 		return nil, ierr

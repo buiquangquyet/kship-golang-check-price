@@ -5,8 +5,9 @@ import (
 	"check-price/src/common/log"
 	"check-price/src/core/enums"
 	"context"
+	"encoding/json"
 	"fmt"
-	"github.com/go-redis/redis/v8"
+	"github.com/redis/go-redis/v9"
 	"time"
 )
 
@@ -42,6 +43,9 @@ func NewBaseDecorator(cache redis.UniversalClient) *baseDecorator {
 }
 
 func (b *baseDecorator) handleRedisError(ctx context.Context, err error) {
+	if err == nil {
+		return
+	}
 	if err != redis.Nil {
 		log.Warn(ctx, "get redis error, err:[%s]", err.Error())
 	}
@@ -52,7 +56,11 @@ func (b *baseDecorator) get(ctx context.Context, key string) *redis.StringCmd {
 }
 
 func (b *baseDecorator) set(ctx context.Context, key string, value interface{}, exp time.Duration) {
-	err := b.cache.Set(common.Detach(ctx), key, value, exp).Err()
+	valueByte, err := json.Marshal(value)
+	if err != nil {
+		log.Warn(ctx, "marshal error")
+	}
+	err = b.cache.Set(common.Detach(ctx), key, valueByte, exp).Err()
 	if err != nil {
 		log.Warn(ctx, "set redis error, err:[%s]", err.Error())
 	}

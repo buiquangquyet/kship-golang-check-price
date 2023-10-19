@@ -10,8 +10,8 @@ import (
 	"check-price/src/infra/external"
 	"context"
 	"fmt"
-	"github.com/go-redis/redis/v8"
 	"github.com/imroc/req/v3"
+	"github.com/redis/go-redis/v9"
 	"time"
 )
 

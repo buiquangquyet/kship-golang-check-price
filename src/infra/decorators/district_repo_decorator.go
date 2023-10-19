@@ -2,9 +2,11 @@ package decorators
 
 import (
 	"check-price/src/common"
+	"check-price/src/common/log"
 	"check-price/src/core/domain"
 	"check-price/src/infra/repo"
 	"context"
+	"encoding/json"
 	"time"
 )
 
@@ -29,11 +31,15 @@ func NewDistrictRepoDecorator(base *baseDecorator, districtRepo *repo.DistrictRe
 func (d DistrictRepoDecorator) GetByKmsId(ctx context.Context, kmsId int64) (*domain.District, *common.Error) {
 	key := d.genKeyCacheGetDistrictByKmsId(kmsId)
 	var district domain.District
-	err := d.get(ctx, key).Scan(&district)
-	if err == nil {
-		return &district, nil
-	}
+	val, err := d.get(ctx, key).Result()
 	d.handleRedisError(ctx, err)
+	if err == nil {
+		err = json.Unmarshal([]byte(val), &district)
+		if err == nil {
+			return &district, nil
+		}
+		log.Warn(ctx, "unmarshall error")
+	}
 	districtDB, ierr := d.districtRepo.GetByKmsId(ctx, kmsId)
 	if ierr != nil {
 		return nil, ierr
@@ -45,11 +51,15 @@ func (d DistrictRepoDecorator) GetByKmsId(ctx context.Context, kmsId int64) (*do
 func (d DistrictRepoDecorator) GetByKvId(ctx context.Context, kvId int64) (*domain.District, *common.Error) {
 	key := d.genKeyCacheGetDistrictByKvId(kvId)
 	var district domain.District
-	err := d.get(ctx, key).Scan(&district)
-	if err == nil {
-		return &district, nil
-	}
+	val, err := d.get(ctx, key).Result()
 	d.handleRedisError(ctx, err)
+	if err == nil {
+		err = json.Unmarshal([]byte(val), &district)
+		if err == nil {
+			return &district, nil
+		}
+		log.Warn(ctx, "unmarshall error")
+	}
 	districtDB, ierr := d.districtRepo.GetByKvId(ctx, kvId)
 	if ierr != nil {
 		return nil, ierr
@@ -61,9 +71,14 @@ func (d DistrictRepoDecorator) GetByKvId(ctx context.Context, kvId int64) (*doma
 func (d DistrictRepoDecorator) GetById(ctx context.Context, id int64) (*domain.District, *common.Error) {
 	key := d.genKeyCacheGetDistrictById(id)
 	var district domain.District
-	err := d.get(ctx, key).Scan(&district)
+	val, err := d.get(ctx, key).Result()
+	d.handleRedisError(ctx, err)
 	if err == nil {
-		return &district, nil
+		err = json.Unmarshal([]byte(val), &district)
+		if err == nil {
+			return &district, nil
+		}
+		log.Warn(ctx, "unmarshall error")
 	}
 	d.handleRedisError(ctx, err)
 	districtDB, ierr := d.districtRepo.GetById(ctx, id)

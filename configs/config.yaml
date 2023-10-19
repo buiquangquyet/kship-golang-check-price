@@ -1,7 +1,7 @@
 mode: dev
 
 log:
-  enable_file: true
+  enable_file: false
   file: ./ship.log
   max_size: 500 #megabytes
   max_backups: 3
@@ -39,10 +39,10 @@ ext_service:
     token: 88cFcAB40657e1AA1EBf852c4060E6d257a02EFf
 
 swagger:
-  enabled: true
+  enabled: false
 
 tracer:
-  enabled: false
+  enabled: true
   jaeger:
     endpoint: http://localhost:14268/api/traces
     active: true

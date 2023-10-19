@@ -2,9 +2,11 @@ package decorators
 
 import (
 	"check-price/src/common"
+	"check-price/src/common/log"
 	"check-price/src/core/domain"
 	"check-price/src/infra/repo"
 	"context"
+	"encoding/json"
 	"time"
 )
 
@@ -28,11 +30,15 @@ func NewShopRepoDecorator(base *baseDecorator, shopRepo *repo.ShopRepo) domain.S
 func (s *ShopRepoDecorator) GetByRetailerId(ctx context.Context, retailerId int64) (*domain.Shop, *common.Error) {
 	key := s.genKeyCacheGetShopByRetailerId(retailerId)
 	var shop domain.Shop
-	err := s.get(ctx, key).Scan(&shop)
-	if err == nil {
-		return &shop, nil
-	}
+	val, err := s.get(ctx, key).Result()
 	s.handleRedisError(ctx, err)
+	if err == nil {
+		err = json.Unmarshal([]byte(val), &shop)
+		if err == nil {
+			return &shop, nil
+		}
+		log.Warn(ctx, "unmarshall error")
+	}
 	shopDB, ierr := s.shopRepo.GetByRetailerId(ctx, retailerId)
 	if ierr != nil {
 		return nil, ierr
@@ -44,11 +50,15 @@ func (s *ShopRepoDecorator) GetByRetailerId(ctx context.Context, retailerId int6
 func (s *ShopRepoDecorator) GetByCode(ctx context.Context, code string) (*domain.Shop, *common.Error) {
 	key := s.genKeyCacheGetShopByCode(code)
 	var shop domain.Shop
-	err := s.get(ctx, key).Scan(&shop)
-	if err == nil {
-		return &shop, nil
-	}
+	val, err := s.get(ctx, key).Result()
 	s.handleRedisError(ctx, err)
+	if err == nil {
+		err = json.Unmarshal([]byte(val), &shop)
+		if err == nil {
+			return &shop, nil
+		}
+		log.Warn(ctx, "unmarshall error")
+	}
 	shopDB, ierr := s.shopRepo.GetByCode(ctx, code)
 	if ierr != nil {
 		return nil, ierr

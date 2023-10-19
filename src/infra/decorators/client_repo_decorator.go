@@ -2,9 +2,11 @@ package decorators
 
 import (
 	"check-price/src/common"
+	"check-price/src/common/log"
 	"check-price/src/core/domain"
 	"check-price/src/infra/repo"
 	"context"
+	"encoding/json"
 	"time"
 )
 
@@ -27,11 +29,15 @@ func NewClientRepoDecorator(base *baseDecorator, clientRepo *repo.ClientRepo) do
 func (c ClientRepoDecorator) GetByCode(ctx context.Context, clientCode string) (*domain.Client, *common.Error) {
 	key := c.genKeyCacheGetClientByCode(clientCode)
 	var client domain.Client
-	err := c.get(ctx, key).Scan(&client)
-	if err == nil {
-		return &client, nil
-	}
+	val, err := c.get(ctx, key).Result()
 	c.handleRedisError(ctx, err)
+	if err == nil {
+		err = json.Unmarshal([]byte(val), &client)
+		if err == nil {
+			return &client, nil
+		}
+		log.Warn(ctx, "unmarshall error")
+	}
 	clientDB, ierr := c.clientRepo.GetByCode(ctx, clientCode)
 	if ierr != nil {
 		return nil, ierr
