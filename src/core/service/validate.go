@@ -317,6 +317,7 @@ func (p *PriceService) validateExtraService(ctx context.Context, clientCode stri
 			//Todo nho xem lai
 			notAllow := !helpers.InArray(clientExtraServicesAllow, serviceExtraValue)
 			ierr := common.ErrBadRequest(ctx)
+			ierr.SetLang("vn")
 			if serviceExtraValue == constant.PaymentByFrom && notAllow {
 				return ierr.SetCode(4001)
 			}
