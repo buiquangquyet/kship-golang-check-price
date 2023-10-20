@@ -14,23 +14,23 @@ import (
 
 func (p *PriceService) validate(ctx context.Context, shop *domain.Shop, retailerId int64, req *request.GetPriceReRequest) *common.Error {
 	clientCode := req.ClientCode
-	ierr := p.validateShop(ctx, shop, clientCode)
+	ierr := p.validateShop(ctx, shop, clientCode, req.Lang)
 	if ierr != nil {
 		return ierr
 	}
-	client, ierr := p.validateClient(ctx, clientCode, retailerId)
+	client, ierr := p.validateClient(ctx, clientCode, retailerId, req.Lang)
 	if ierr != nil {
 		return ierr
 	}
-	ierr = p.validateLocation(ctx, clientCode, req)
+	ierr = p.validateLocation(ctx, clientCode, req, req.Lang)
 	if ierr != nil {
 		return ierr
 	}
-	ierr = p.validateService(ctx, client, req.Services)
+	ierr = p.validateService(ctx, client, req.Services, req.Lang)
 	if ierr != nil {
 		return ierr
 	}
-	ierr = p.validateExtraService(ctx, clientCode, retailerId, req.ExtraService)
+	ierr = p.validateExtraService(ctx, clientCode, retailerId, req.ExtraService, req.Lang)
 	if ierr != nil {
 		return ierr
 	}
@@ -38,8 +38,9 @@ func (p *PriceService) validate(ctx context.Context, shop *domain.Shop, retailer
 }
 
 // done
-func (p *PriceService) validateShop(ctx context.Context, shop *domain.Shop, clientCode string) *common.Error {
+func (p *PriceService) validateShop(ctx context.Context, shop *domain.Shop, clientCode string, lang string) *common.Error {
 	ierr := common.ErrBadRequest(ctx)
+	ierr.SetLang(lang)
 	switch clientCode {
 	case constant.VTPFWDeliveryCode:
 		if shop.VtpUsername == "" || shop.VtpPassword == "" {
@@ -70,13 +71,14 @@ func (p *PriceService) validateShop(ctx context.Context, shop *domain.Shop, clie
 }
 
 // done
-func (p *PriceService) validateClient(ctx context.Context, clientCode string, retailerId int64) (*domain.Client, *common.Error) {
+func (p *PriceService) validateClient(ctx context.Context, clientCode string, retailerId int64, lang string) (*domain.Client, *common.Error) {
 	client, err := p.clientRepo.GetByCode(ctx, clientCode)
 	if helpers.IsInternalError(err) {
 		log.IErr(ctx, err)
 		return nil, err
 	}
 	ierr := common.ErrBadRequest(ctx)
+	ierr.SetLang(lang)
 	if client == nil {
 		return nil, ierr.SetCode(3001)
 	}
@@ -113,8 +115,9 @@ func (p *PriceService) validateClient(ctx context.Context, clientCode string, re
 	return client, nil
 }
 
-func (p *PriceService) validateLocation(ctx context.Context, clientCode string, req *request.GetPriceReRequest) *common.Error {
+func (p *PriceService) validateLocation(ctx context.Context, clientCode string, req *request.GetPriceReRequest, lang string) *common.Error {
 	ierr := common.ErrBadRequest(ctx)
+	ierr.SetLang(lang)
 	var pickWard *domain.Ward
 	var receiverWard *domain.Ward
 	fmt.Print(pickWard, receiverWard)
@@ -196,8 +199,9 @@ func (p *PriceService) validateLocation(ctx context.Context, clientCode string, 
 	return nil
 }
 
-func (p *PriceService) validateService(ctx context.Context, client *domain.Client, services []*request.Service) *common.Error {
+func (p *PriceService) validateService(ctx context.Context, client *domain.Client, services []*request.Service, lang string) *common.Error {
 	ierr := common.ErrBadRequest(ctx)
+	ierr.SetLang(lang)
 	if services == nil {
 		return ierr.SetCode(4001)
 	}
@@ -218,8 +222,9 @@ func (p *PriceService) validateService(ctx context.Context, client *domain.Clien
 	return nil
 }
 
-func (p *PriceService) validateExtraService(ctx context.Context, clientCode string, retailerId int64, extraServices []*request.ExtraService) *common.Error {
+func (p *PriceService) validateExtraService(ctx context.Context, clientCode string, retailerId int64, extraServices []*request.ExtraService, lang string) *common.Error {
 	ierr := common.ErrBadRequest(ctx)
+	ierr.SetLang(lang)
 	extraServiceRequestCodes := make([]string, len(extraServices))
 	for i, service := range extraServices {
 		extraServiceRequestCodes[i] = service.Code
@@ -317,7 +322,7 @@ func (p *PriceService) validateExtraService(ctx context.Context, clientCode stri
 			//Todo nho xem lai
 			notAllow := !helpers.InArray(clientExtraServicesAllow, serviceExtraValue)
 			ierr := common.ErrBadRequest(ctx)
-			ierr.SetLang("vn")
+			ierr.SetLang(lang)
 			if serviceExtraValue == constant.PaymentByFrom && notAllow {
 				return ierr.SetCode(4001)
 			}
