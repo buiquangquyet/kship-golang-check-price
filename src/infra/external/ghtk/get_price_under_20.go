@@ -1,6 +1,7 @@
 package ghtk
 
 import (
+	"check-price/src/core/domain"
 	"check-price/src/core/dto"
 )
 
@@ -16,7 +17,6 @@ type GetPriceUnder20Input struct {
 	Value        int64  `json:"value"`
 	Transport    string `json:"transport"`
 	Tags         []int  `json:"tags"`
-	OrderService string `json:"ORDER_SERVICE"`
 }
 
 func newGetPriceUnder20Input(serviceCode string, p *dto.GetPriceInputDto) *GetPriceUnder20Input {
@@ -52,4 +52,28 @@ type GetPriceUnder20Output struct {
 		PromotionKey string `json:"promotion_key"`
 		Delivery     bool   `json:"delivery"`
 	} `json:"fee"`
+}
+
+func (g *GetPriceUnder20Output) ToDomainPrice() *domain.Price {
+	return &domain.Price{
+		Id:            0,
+		Code:          "",
+		Name:          "",
+		Image:         "",
+		Description:   "",
+		ClientCode:    "",
+		GroupId:       "",
+		InsuranceFee:  g.Fee.InsuranceFee,
+		TransferFee:   g.Fee.ShipFeeOnly,
+		CodeFee:       0,
+		Total:         0,
+		Fee:           g.Fee.Fee,
+		ConnFee:       0,
+		CodstFee:      0,
+		TotalPrice:    0,
+		OtherPrice:    0,
+		OldTotalPrice: 0,
+		Status:        g.Fee.Delivery,
+		Msg:           "",
+	}
 }

@@ -8,11 +8,11 @@ type Price struct {
 	Description   string `json:"description,omitempty"`
 	ClientCode    string `json:"clientCode,omitempty"`
 	GroupId       string `json:"groupId,omitempty"`
-	InsuranceFee  int    `json:"insuranceFee,omitempty"`
-	TransferFee   int    `json:"transferFee,omitempty"`
+	InsuranceFee  int64  `json:"insuranceFee,omitempty"`
+	TransferFee   int64  `json:"transferFee,omitempty"`
 	CodeFee       int    `json:"codeFee,omitempty"`
 	Total         int    `json:"total,omitempty"`
-	Fee           int    `json:"fee,omitempty"`
+	Fee           int64  `json:"fee,omitempty"`
 	ConnFee       int    `json:"connFee,omitempty"`
 	CodstFee      int    `json:"codstFee,omitempty"`
 	TotalPrice    int    `json:"totalPrice,omitempty"`
