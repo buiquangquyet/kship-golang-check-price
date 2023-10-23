@@ -19,6 +19,8 @@ type GHTKStrategy struct {
 	wardRepo       domain.WardRepo
 	districtRepo   domain.DistrictRepo
 	cityRepo       domain.CityRepo
+	clientRepo     domain.ClientRepo
+	serviceRepo    domain.ServiceRepo
 	ghtkExtService *ghtk.GHTKExtService
 }
 
@@ -26,12 +28,16 @@ func NewGHTKStrategy(
 	wardRepo domain.WardRepo,
 	districtRepo domain.DistrictRepo,
 	cityRepo domain.CityRepo,
+	clientRepo domain.ClientRepo,
+	serviceRepo domain.ServiceRepo,
 	ghtkExtService *ghtk.GHTKExtService,
 ) strategy.ShipStrategy {
 	return &GHTKStrategy{
 		wardRepo:       wardRepo,
 		districtRepo:   districtRepo,
 		cityRepo:       cityRepo,
+		clientRepo:     clientRepo,
+		serviceRepo:    serviceRepo,
 		ghtkExtService: ghtkExtService,
 	}
 }
@@ -57,7 +63,7 @@ func (g *GHTKStrategy) Validate(ctx context.Context, req *request.GetPriceReRequ
 	return nil
 }
 
-func (g *GHTKStrategy) GetMultiplePriceV3(ctx context.Context, shop *domain.Shop, req *request.GetPriceReRequest) ([]*domain.Price, *common.Error) {
+func (g *GHTKStrategy) GetMultiplePriceV3(ctx context.Context, shop *domain.Shop, req *request.GetPriceReRequest) (map[string]*domain.Price, *common.Error) {
 	var wg sync.WaitGroup
 	mapPrices := make(map[string]*domain.Price)
 	isBBS := false
@@ -93,12 +99,7 @@ func (g *GHTKStrategy) GetMultiplePriceV3(ctx context.Context, shop *domain.Shop
 		}(service)
 	}
 	wg.Wait()
-	prices := make([]*domain.Price, 0)
-	for service, price := range mapPrices {
-		price.Code = service
-		prices = append(prices, price)
-	}
-	return prices, nil
+	return mapPrices, nil
 }
 
 func (g *GHTKStrategy) getPriceInput(ctx context.Context, isBBS bool, weight int64, req *request.GetPriceReRequest) (*dto.GetPriceInputDto, *common.Error) {

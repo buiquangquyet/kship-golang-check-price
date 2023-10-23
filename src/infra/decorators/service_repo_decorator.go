@@ -28,7 +28,7 @@ func NewServiceRepoDecorator(base *baseDecorator, serviceRepo *repo.ServiceRepo)
 	}
 }
 
-func (s ServiceRepoDecorator) GetByClientId(ctx context.Context, typeService enums.TypeService, status int, clientId int64) ([]*domain.Service, *common.Error) {
+func (s ServiceRepoDecorator) GetByClientIdAndStatus(ctx context.Context, typeService enums.TypeService, status int, clientId int64) ([]*domain.Service, *common.Error) {
 	key := s.genKeyCacheGetServiceByClientId(typeService, status, clientId)
 	var services []*domain.Service
 	val, err := s.get(ctx, key).Result()
@@ -40,7 +40,7 @@ func (s ServiceRepoDecorator) GetByClientId(ctx context.Context, typeService enu
 		}
 		log.Warn(ctx, "unmarshall error")
 	}
-	servicesDB, ierr := s.serviceRepo.GetByClientId(ctx, typeService, status, clientId)
+	servicesDB, ierr := s.serviceRepo.GetByClientIdAndStatus(ctx, typeService, status, clientId)
 	if ierr != nil {
 		return nil, ierr
 	}
@@ -48,7 +48,7 @@ func (s ServiceRepoDecorator) GetByClientId(ctx context.Context, typeService enu
 	return servicesDB, nil
 }
 
-func (s ServiceRepoDecorator) GetByClientCode(ctx context.Context, typeService enums.TypeService, status int, clientCode string) ([]*domain.Service, *common.Error) {
+func (s ServiceRepoDecorator) GetByClientCodeAndStatus(ctx context.Context, typeService enums.TypeService, status int, clientCode string) ([]*domain.Service, *common.Error) {
 	key := s.genKeyCacheGetServiceByClientCode(typeService, status, clientCode)
 	var services []*domain.Service
 	val, err := s.get(ctx, key).Result()
@@ -60,7 +60,27 @@ func (s ServiceRepoDecorator) GetByClientCode(ctx context.Context, typeService e
 		}
 		log.Warn(ctx, "unmarshall error")
 	}
-	servicesDB, ierr := s.serviceRepo.GetByClientCode(ctx, typeService, status, clientCode)
+	servicesDB, ierr := s.serviceRepo.GetByClientCodeAndStatus(ctx, typeService, status, clientCode)
+	if ierr != nil {
+		return nil, ierr
+	}
+	go s.set(ctx, key, servicesDB, expirationServiceByClientCode)
+	return servicesDB, nil
+}
+
+func (s ServiceRepoDecorator) GetByClientIdAndCodes(ctx context.Context, typeService enums.TypeService, codes []string, clientId int64) ([]*domain.Service, *common.Error) {
+	key := s.genKeyCacheGetServiceByClientIdAndCodes(typeService, codes, clientId)
+	var services []*domain.Service
+	val, err := s.get(ctx, key).Result()
+	s.handleRedisError(ctx, err)
+	if err == nil {
+		err = json.Unmarshal([]byte(val), &services)
+		if err == nil {
+			return services, nil
+		}
+		log.Warn(ctx, "unmarshall error")
+	}
+	servicesDB, ierr := s.serviceRepo.GetByClientIdAndCodes(ctx, typeService, codes, clientId)
 	if ierr != nil {
 		return nil, ierr
 	}

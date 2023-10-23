@@ -65,7 +65,7 @@ func (g *GetPriceUnder20Output) ToDomainPrice() *domain.Price {
 		GroupId:       "",
 		InsuranceFee:  g.Fee.InsuranceFee,
 		TransferFee:   g.Fee.ShipFeeOnly,
-		CodeFee:       0,
+		CodFee:        0,
 		Total:         0,
 		Fee:           g.Fee.Fee,
 		ConnFee:       0,

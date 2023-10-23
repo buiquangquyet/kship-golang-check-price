@@ -85,7 +85,7 @@ func (g *GHTKExtService) getPriceUnder20(ctx context.Context, serviceCode string
 		//detail := fmt.Sprintf("http: [%d], resp: [%s]", resp.StatusCode, resp.String())
 		//return nil, g.handleError(ctx, resp.StatusCode, &output).SetSource(common.SourceGHTKService).SetDetail(detail)
 	}
-	return &domain.Price{}, nil
+	return output.ToDomainPrice(), nil
 }
 
 func (g *GHTKExtService) GetPriceOver20(ctx context.Context, shop *domain.Shop, serviceCode string, getPriceParam *dto.GetPriceInputDto) (*domain.Price, *common.Error) {

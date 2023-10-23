@@ -201,7 +201,7 @@ func (p *PriceService) validateService(ctx context.Context, client *domain.Clien
 	if services == nil {
 		return ierr.SetCode(4001)
 	}
-	servicesEnable, ierr := p.serviceRepo.GetByClientId(ctx, enums.TypeServiceDV, constant.EnableStatus, client.Id)
+	servicesEnable, ierr := p.serviceRepo.GetByClientIdAndStatus(ctx, enums.TypeServiceDV, constant.EnableStatus, client.Id)
 	if ierr != nil {
 		log.IErr(ctx, ierr)
 		return ierr
@@ -227,7 +227,7 @@ func (p *PriceService) validateExtraService(ctx context.Context, clientCode stri
 	if !helpers.InArray(extraServiceRequestCodes, constant.ServiceExtraCodePayment) {
 		return ierr.SetCode(4013)
 	}
-	servicesExtraByClientCodes, ierr := p.serviceRepo.GetByClientCode(ctx, enums.TypeServiceDVMR, constant.EnableStatus, clientCode)
+	servicesExtraByClientCodes, ierr := p.serviceRepo.GetByClientCodeAndStatus(ctx, enums.TypeServiceDVMR, constant.EnableStatus, clientCode)
 	if ierr != nil {
 		log.IErr(ctx, ierr)
 		return ierr
