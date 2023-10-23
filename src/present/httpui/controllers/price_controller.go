@@ -50,6 +50,7 @@ func (m *PriceController) GetPrice(c *gin.Context) {
 	req.Lang = lang
 	data, err := m.priceService.GetPrice(c, req)
 	if err != nil {
+		err.SetLang(lang)
 		m.ErrorData(c, err)
 		return
 	}

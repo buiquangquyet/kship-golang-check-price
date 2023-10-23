@@ -201,7 +201,6 @@ func (p *PriceService) validateLocation(ctx context.Context, clientCode string, 
 
 func (p *PriceService) validateService(ctx context.Context, client *domain.Client, services []*request.Service, lang string) *common.Error {
 	ierr := common.ErrBadRequest(ctx)
-	ierr.SetLang(lang)
 	if services == nil {
 		return ierr.SetCode(4001)
 	}
