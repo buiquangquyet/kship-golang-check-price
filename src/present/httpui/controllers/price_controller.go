@@ -47,7 +47,6 @@ func (m *PriceController) GetPrice(c *gin.Context) {
 	}
 	req.RetailerId = retailerId.(int64)
 	req.VersionLocation = versionLocation.(int)
-	req.Lang = lang
 	data, err := m.priceService.GetPrice(c, req)
 	if err != nil {
 		err.SetLang(lang)

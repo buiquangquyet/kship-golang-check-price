@@ -15,9 +15,8 @@ type GetPriceReRequest struct {
 	Services        []*Service      `json:"SERVICES"`
 	ExtraService    []*ExtraService `json:"SERVICE_EXTRA"`
 
-	RetailerId      int64  `json:"retailer_id"`
-	VersionLocation int    `json:"version_location"`
-	Lang            string `json:"lang"`
+	RetailerId      int64 `json:"retailer_id"`
+	VersionLocation int   `json:"version_location"`
 }
 
 type Sender struct {
