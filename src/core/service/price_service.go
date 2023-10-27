@@ -101,9 +101,15 @@ func (p *PriceService) addInfo(ctx context.Context, clientCode string, servicesR
 	}
 	prices := make([]*domain.Price, 0)
 	for serviceCode, price := range mapPrices {
+		price.Code = serviceCode
 		price.SetClientInfo(client)
 		price.SetServiceInfo(mapServices[serviceCode])
 		prices = append(prices, price)
 	}
 	return prices, nil
+}
+
+func (p *PriceService) handlePriceSpecialService(ctx context.Context) *common.Error {
+
+	return nil
 }
