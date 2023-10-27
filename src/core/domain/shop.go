@@ -35,6 +35,7 @@ type Shop struct {
 	VnpCustomerCode string `json:"vnp_customer_code"`
 	GHTKUsername    string `json:"ghtk_username"`
 	GHTKPassword    string `json:"ghtk_password"`
+	GHTKPass        string `json:"ghtk_pass"`
 	JtCustomerId    string `json:"jt_customer_id"`
 	GHNGWShopId     string `json:"ghnfw_shop_id"`
 	GHNFWPhone      string `json:"ghnfw_phone"`
