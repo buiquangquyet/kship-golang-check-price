@@ -40,6 +40,8 @@ type Shop struct {
 	GHNFWPhone      string `json:"ghnfw_phone"`
 	UsernameBestFw  string `json:"username_bestfw"`
 	PasswordBestFw  string `json:"password_bestfw"`
+
+	Type int `json:"type"`
 	//update sau
 	CreatedAt time.Time `json:"created_at"`
 	UpdatedAt time.Time `json:"updated_at"`

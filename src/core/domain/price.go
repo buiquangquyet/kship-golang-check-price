@@ -1,6 +1,9 @@
 package domain
 
-import "strconv"
+import (
+	"check-price/src/core/constant"
+	"strconv"
+)
 
 type Price struct {
 	Id            int64  `json:"id,omitempty"`
@@ -16,7 +19,7 @@ type Price struct {
 	Total         int    `json:"total,omitempty"`
 	Fee           int64  `json:"fee,omitempty"`
 	ConnFee       int    `json:"connFee,omitempty"`
-	CodstFee      int    `json:"codstFee,omitempty"`
+	CodstFee      int64  `json:"codstFee,omitempty"`
 	TotalPrice    int    `json:"totalPrice,omitempty"`
 	OtherPrice    int    `json:"otherPrice,omitempty"`
 	CouponSale    string `json:"couponSale"`
@@ -36,5 +39,21 @@ func (p *Price) SetServiceInfo(service *Service) *Price {
 	p.GroupId = strconv.Itoa(service.GroupId)
 	p.Name = service.Name
 	p.Description = service.Description
+	return p
+}
+
+func (p *Price) CalculatorCODST(shop *Shop, cod int64) *Price {
+	var codStFee int64
+	isShopType := shop.Type == constant.ShopVip
+	for i := 0; i < constant.MaxLevel; i++ {
+		if constant.CodLevelMin[i] <= cod && cod <= constant.CodLevelMax[i] {
+			if isShopType {
+				codStFee = constant.PriceVip[i]
+			} else {
+				codStFee = constant.PriceNormal[i]
+			}
+		}
+	}
+	p.CodstFee = codStFee
 	return p
 }

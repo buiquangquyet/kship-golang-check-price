@@ -104,12 +104,29 @@ func (p *PriceService) addInfo(ctx context.Context, clientCode string, servicesR
 		price.Code = serviceCode
 		price.SetClientInfo(client)
 		price.SetServiceInfo(mapServices[serviceCode])
+
 		prices = append(prices, price)
 	}
 	return prices, nil
 }
 
-func (p *PriceService) handlePriceSpecialService(ctx context.Context) *common.Error {
-
+func (p *PriceService) handlePriceSpecialService(ctx context.Context, price *domain.Price, shop *domain.Shop, extraService []*request.ExtraService, cod int64) *common.Error {
+	extraServiceCode := make([]string, len(extraService))
+	payer := ""
+	for i, service := range extraService {
+		if service.Code == "PAYMENT_BY" {
+			payer = service.Code
+		}
+		extraServiceCode[i] = service.Code
+	}
+	if helpers.InArray(extraServiceCode, constant.ServiceExtraCODST) && p.checkServiceExtraIsPossible(ctx) {
+		price.CalculatorCODST(shop, cod)
+	}
 	return nil
+}
+
+func (p *PriceService) checkServiceExtraIsPossible(ctx context.Context) bool {
+
+	//Todo code
+	return true
 }
