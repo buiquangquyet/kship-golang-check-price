@@ -112,10 +112,10 @@ func (p *PriceService) addInfo(ctx context.Context, clientCode string, servicesR
 
 func (p *PriceService) handlePriceSpecialService(ctx context.Context, price *domain.Price, shop *domain.Shop, extraService []*request.ExtraService, cod int64) *common.Error {
 	extraServiceCode := make([]string, len(extraService))
-	payer := ""
+	//payer := ""
 	for i, service := range extraService {
 		if service.Code == "PAYMENT_BY" {
-			payer = service.Code
+			//payer = service.Code
 		}
 		extraServiceCode[i] = service.Code
 	}
@@ -125,7 +125,7 @@ func (p *PriceService) handlePriceSpecialService(ctx context.Context, price *dom
 	return nil
 }
 
-func (p *PriceService) checkServiceExtraIsPossible(ctx context.Context) bool {
+func (p *PriceService) checkServiceExtraIsPossible(_ context.Context) bool {
 
 	//Todo code
 	return true
