@@ -12,25 +12,49 @@ import (
 	"fmt"
 )
 
-func (p *PriceService) validate(ctx context.Context, shop *domain.Shop, retailerId int64, req *request.GetPriceReRequest) *common.Error {
+type ValidateService struct {
+	settingShopRepo domain.SettingShopRepo
+	clientRepo      domain.ClientRepo
+	districtRepo    domain.DistrictRepo
+	wardRepo        domain.WardRepo
+	serviceRepo     domain.ServiceRepo
+}
+
+func NewValidateService(
+	settingShopRepo domain.SettingShopRepo,
+	clientRepo domain.ClientRepo,
+	districtRepo domain.DistrictRepo,
+	wardRepo domain.WardRepo,
+	serviceRepo domain.ServiceRepo,
+) *ValidateService {
+	return &ValidateService{
+		settingShopRepo: settingShopRepo,
+		clientRepo:      clientRepo,
+		districtRepo:    districtRepo,
+		wardRepo:        wardRepo,
+		serviceRepo:     serviceRepo,
+	}
+}
+
+func (v *ValidateService) validatePrice(ctx context.Context, shop *domain.Shop, retailerId int64, req *request.GetPriceReRequest) *common.Error {
 	clientCode := req.ClientCode
-	ierr := p.validateShop(ctx, shop, clientCode)
+	ierr := v.validateShop(ctx, shop, clientCode)
 	if ierr != nil {
 		return ierr
 	}
-	client, ierr := p.validateClient(ctx, clientCode, retailerId)
+	client, ierr := v.validateClient(ctx, clientCode, retailerId)
 	if ierr != nil {
 		return ierr
 	}
-	ierr = p.validateLocation(ctx, clientCode, req)
+	ierr = v.validateLocation(ctx, clientCode, req)
 	if ierr != nil {
 		return ierr
 	}
-	ierr = p.validateService(ctx, client, req.Services)
+	ierr = v.validateService(ctx, client, req.Services)
 	if ierr != nil {
 		return ierr
 	}
-	ierr = p.validateExtraService(ctx, clientCode, retailerId, req.ExtraService)
+	ierr = v.validateExtraService(ctx, clientCode, retailerId, req.ExtraService)
 	if ierr != nil {
 		return ierr
 	}
@@ -38,7 +62,7 @@ func (p *PriceService) validate(ctx context.Context, shop *domain.Shop, retailer
 }
 
 // done
-func (p *PriceService) validateShop(ctx context.Context, shop *domain.Shop, clientCode string) *common.Error {
+func (v *ValidateService) validateShop(ctx context.Context, shop *domain.Shop, clientCode string) *common.Error {
 	ierr := common.ErrBadRequest(ctx)
 	switch clientCode {
 	case constant.VTPFWDeliveryCode:
@@ -70,8 +94,8 @@ func (p *PriceService) validateShop(ctx context.Context, shop *domain.Shop, clie
 }
 
 // done
-func (p *PriceService) validateClient(ctx context.Context, clientCode string, retailerId int64) (*domain.Client, *common.Error) {
-	client, err := p.clientRepo.GetByCode(ctx, clientCode)
+func (v *ValidateService) validateClient(ctx context.Context, clientCode string, retailerId int64) (*domain.Client, *common.Error) {
+	client, err := v.clientRepo.GetByCode(ctx, clientCode)
 	if helpers.IsInternalError(err) {
 		log.IErr(ctx, err)
 		return nil, err
@@ -83,7 +107,7 @@ func (p *PriceService) validateClient(ctx context.Context, clientCode string, re
 	if client.Status == constant.DisableStatus {
 		return nil, ierr.SetCode(3002)
 	}
-	clientUnAllowedShop, err := p.settingShopRepo.GetByRetailerId(ctx, enums.ModelTypeClientDisableShop, retailerId)
+	clientUnAllowedShop, err := v.settingShopRepo.GetByRetailerId(ctx, enums.ModelTypeClientDisableShop, retailerId)
 	if err != nil {
 		log.IErr(ctx, err)
 		return nil, err
@@ -97,7 +121,7 @@ func (p *PriceService) validateClient(ctx context.Context, clientCode string, re
 	}
 
 	if client.OnBoardingStatus == constant.OnboardingDisable {
-		clientSettingShops, err := p.settingShopRepo.GetByRetailerId(ctx, enums.ModelTypeClientSettingShop, retailerId)
+		clientSettingShops, err := v.settingShopRepo.GetByRetailerId(ctx, enums.ModelTypeClientSettingShop, retailerId)
 		if err != nil {
 			log.IErr(ctx, err)
 			return nil, err
@@ -113,20 +137,20 @@ func (p *PriceService) validateClient(ctx context.Context, clientCode string, re
 	return client, nil
 }
 
-func (p *PriceService) validateLocation(ctx context.Context, clientCode string, req *request.GetPriceReRequest) *common.Error {
+func (v *ValidateService) validateLocation(ctx context.Context, clientCode string, req *request.GetPriceReRequest) *common.Error {
 	ierr := common.ErrBadRequest(ctx)
 	var pickWard *domain.Ward
 	var receiverWard *domain.Ward
 	fmt.Print(pickWard, receiverWard)
 	isVer2 := req.VersionLocation == constant.VersionLocation2
 	if isVer2 {
-		_, ierr = p.districtRepo.GetByKmsId(ctx, req.SenderLocationId)
+		_, ierr = v.districtRepo.GetByKmsId(ctx, req.SenderLocationId)
 		if helpers.IsInternalError(ierr) {
 			log.Error(ctx, ierr.Error())
 			return ierr
 		}
 	} else {
-		_, ierr = p.districtRepo.GetByKvId(ctx, req.SenderLocationId)
+		_, ierr = v.districtRepo.GetByKvId(ctx, req.SenderLocationId)
 		if helpers.IsInternalError(ierr) {
 			log.Error(ctx, ierr.Error())
 			return ierr
@@ -137,13 +161,13 @@ func (p *PriceService) validateLocation(ctx context.Context, clientCode string, 
 	}
 
 	if isVer2 {
-		_, ierr = p.districtRepo.GetByKmsId(ctx, req.ReceiverLocationId)
+		_, ierr = v.districtRepo.GetByKmsId(ctx, req.ReceiverLocationId)
 		if helpers.IsInternalError(ierr) {
 			log.Error(ctx, ierr.Error())
 			return ierr
 		}
 	} else {
-		_, ierr = p.districtRepo.GetByKvId(ctx, req.ReceiverLocationId)
+		_, ierr = v.districtRepo.GetByKvId(ctx, req.ReceiverLocationId)
 		if helpers.IsInternalError(ierr) {
 			log.Error(ctx, ierr.Error())
 			return ierr
@@ -157,13 +181,13 @@ func (p *PriceService) validateLocation(ctx context.Context, clientCode string, 
 		return ierr.SetCode(4004)
 	}
 	if isVer2 {
-		pickWard, ierr = p.wardRepo.GetByKmsId(ctx, req.SenderWardId)
+		pickWard, ierr = v.wardRepo.GetByKmsId(ctx, req.SenderWardId)
 		if helpers.IsInternalError(ierr) {
 			log.Error(ctx, ierr.Error())
 			return ierr
 		}
 	} else {
-		pickWard, ierr = p.wardRepo.GetByKvId(ctx, req.SenderWardId)
+		pickWard, ierr = v.wardRepo.GetByKvId(ctx, req.SenderWardId)
 		if helpers.IsInternalError(ierr) {
 			log.Error(ctx, ierr.Error())
 			return ierr
@@ -177,13 +201,13 @@ func (p *PriceService) validateLocation(ctx context.Context, clientCode string, 
 		return ierr.SetCode(4006)
 	}
 	if isVer2 {
-		receiverWard, ierr = p.wardRepo.GetByKmsId(ctx, req.ReceiverWardId)
+		receiverWard, ierr = v.wardRepo.GetByKmsId(ctx, req.ReceiverWardId)
 		if helpers.IsInternalError(ierr) {
 			log.Error(ctx, ierr.Error())
 			return ierr
 		}
 	} else {
-		receiverWard, ierr = p.wardRepo.GetByKvId(ctx, req.ReceiverWardId)
+		receiverWard, ierr = v.wardRepo.GetByKvId(ctx, req.ReceiverWardId)
 		if helpers.IsInternalError(ierr) {
 			log.Error(ctx, ierr.Error())
 			return ierr
@@ -196,12 +220,12 @@ func (p *PriceService) validateLocation(ctx context.Context, clientCode string, 
 	return nil
 }
 
-func (p *PriceService) validateService(ctx context.Context, client *domain.Client, services []*request.Service) *common.Error {
+func (v *ValidateService) validateService(ctx context.Context, client *domain.Client, services []*request.Service) *common.Error {
 	ierr := common.ErrBadRequest(ctx)
 	if services == nil {
 		return ierr.SetCode(4001)
 	}
-	servicesEnable, ierr := p.serviceRepo.GetByClientIdAndStatus(ctx, enums.TypeServiceDV, constant.EnableStatus, client.Id)
+	servicesEnable, ierr := v.serviceRepo.GetByClientIdAndStatus(ctx, enums.TypeServiceDV, constant.EnableStatus, client.Id)
 	if ierr != nil {
 		log.IErr(ctx, ierr)
 		return ierr
@@ -218,7 +242,7 @@ func (p *PriceService) validateService(ctx context.Context, client *domain.Clien
 	return nil
 }
 
-func (p *PriceService) validateExtraService(ctx context.Context, clientCode string, retailerId int64, extraServices []*request.ExtraService) *common.Error {
+func (v *ValidateService) validateExtraService(ctx context.Context, clientCode string, retailerId int64, extraServices []*request.ExtraService) *common.Error {
 	ierr := common.ErrBadRequest(ctx)
 	extraServiceRequestCodes := make([]string, len(extraServices))
 	for i, service := range extraServices {
@@ -227,7 +251,7 @@ func (p *PriceService) validateExtraService(ctx context.Context, clientCode stri
 	if !helpers.InArray(extraServiceRequestCodes, constant.ServiceExtraCodePayment) {
 		return ierr.SetCode(4013)
 	}
-	servicesExtraByClientCodes, ierr := p.serviceRepo.GetByClientCodeAndStatus(ctx, enums.TypeServiceDVMR, constant.EnableStatus, clientCode)
+	servicesExtraByClientCodes, ierr := v.serviceRepo.GetByClientCodeAndStatus(ctx, enums.TypeServiceDVMR, constant.EnableStatus, clientCode)
 	if ierr != nil {
 		log.IErr(ctx, ierr)
 		return ierr
@@ -247,7 +271,7 @@ func (p *PriceService) validateExtraService(ctx context.Context, clientCode stri
 			continue
 		}
 		if servicesExtraByClientCode.OnBoardingStatus == constant.OnboardingDisable {
-			serviceExtraEnableShop, ierr := p.settingShopRepo.GetByRetailerId(ctx, enums.ModelTypeServiceExtraSettingShop, retailerId)
+			serviceExtraEnableShop, ierr := v.settingShopRepo.GetByRetailerId(ctx, enums.ModelTypeServiceExtraSettingShop, retailerId)
 			if ierr != nil {
 				log.IErr(ctx, ierr)
 				return ierr

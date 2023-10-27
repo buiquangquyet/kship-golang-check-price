@@ -10,6 +10,7 @@ import (
 func BuildServiceModule() fx.Option {
 	return fx.Options(
 		fx.Provide(service.NewBaseService),
+		fx.Provide(service.NewValidateService),
 		fx.Provide(service.NewPriceService),
 
 		fx.Provide(strategy.NewShipStrategyFilterResolver),
