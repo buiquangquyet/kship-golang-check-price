@@ -20,12 +20,15 @@ type Price struct {
 	Fee           int64  `json:"fee,omitempty"`
 	ConnFee       int    `json:"connFee,omitempty"`
 	CodstFee      int64  `json:"codstFee,omitempty"`
+	CodT0Fee      int    `json:"codT0Fee"`
 	TotalPrice    int    `json:"totalPrice,omitempty"`
 	OtherPrice    int    `json:"otherPrice,omitempty"`
 	CouponSale    string `json:"couponSale"`
 	OldTotalPrice int    `json:"oldTotalPrice,omitempty"`
 	Status        bool   `json:"status"`
 	Msg           string `json:"msg,omitempty"`
+	StatusCodT0   string `json:"status_codT0"`
+	MessageCodT0  string `json:"message_codT0"`
 }
 
 func (p *Price) SetClientInfo(client *Client) *Price {

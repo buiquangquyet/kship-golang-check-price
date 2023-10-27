@@ -8,7 +8,7 @@ const (
 	ServiceExtraCodeTip     = "TIP"
 	ServiceExtraXmg         = "XMG"
 	ServiceExtraPickShift   = "PickShift"
-
+	ServiceExtraCODT0       = "CODT0"
 	ServiceExtraBulky       = "BULKY"
 	ServiceExtraCODST       = "CODST"
 	ServiceExtraConn        = "CONN"

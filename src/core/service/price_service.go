@@ -16,6 +16,7 @@ type PriceService struct {
 	shopRepo             domain.ShopRepo
 	serviceRepo          domain.ServiceRepo
 	clientRepo           domain.ClientRepo
+	validateService      *ValidateService
 	shipStrategyResolver *strategy.ShipStrategyFilterResolver
 }
 
@@ -23,12 +24,14 @@ func NewPriceService(
 	shopRepo domain.ShopRepo,
 	serviceRepo domain.ServiceRepo,
 	clientRepo domain.ClientRepo,
+	validateService *ValidateService,
 	shipStrategyResolver *strategy.ShipStrategyFilterResolver,
 ) *PriceService {
 	return &PriceService{
 		shopRepo:             shopRepo,
 		serviceRepo:          serviceRepo,
 		clientRepo:           clientRepo,
+		validateService:      validateService,
 		shipStrategyResolver: shipStrategyResolver,
 	}
 }
@@ -47,7 +50,7 @@ func (p *PriceService) GetPrice(ctx context.Context, req *request.GetPriceReRequ
 			return nil, err
 		}
 	}
-	ierr := p.validate(ctx, shop, req.RetailerId, req)
+	ierr := p.validateService.validatePrice(ctx, shop, req.RetailerId, req)
 	if ierr != nil {
 		return nil, ierr
 	}
@@ -113,6 +116,9 @@ func (p *PriceService) handlePriceSpecialService(ctx context.Context, price *dom
 	}
 	if helpers.InArray(extraServiceCode, constant.ServiceExtraCODST) && p.checkServiceExtraIsPossible(ctx) {
 		price.CalculatorCODST(shop, cod)
+	}
+	if helpers.InArray(extraServiceCode, constant.ServiceExtraCODT0) {
+
 	}
 	return nil
 }
