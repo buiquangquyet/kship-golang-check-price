@@ -12,6 +12,7 @@ func BuildServiceModule() fx.Option {
 		fx.Provide(service.NewBaseService),
 		fx.Provide(service.NewValidateService),
 		fx.Provide(service.NewPriceService),
+		fx.Provide(service.NewCodT0Service),
 
 		fx.Provide(strategy.NewShipStrategyFilterResolver),
 		strategy.ProvideShipStrategyFilterStrategy(ghtk.NewGHTKStrategy),

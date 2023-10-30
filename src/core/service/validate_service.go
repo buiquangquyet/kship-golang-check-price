@@ -36,7 +36,7 @@ func NewValidateService(
 	}
 }
 
-func (v *ValidateService) validatePrice(ctx context.Context, shop *domain.Shop, retailerId int64, req *request.GetPriceReRequest) *common.Error {
+func (v *ValidateService) validatePrice(ctx context.Context, shop *domain.Shop, retailerId int64, req *request.GetPriceRequest) *common.Error {
 	clientCode := req.ClientCode
 	ierr := v.validateShop(ctx, shop, clientCode)
 	if ierr != nil {
@@ -137,7 +137,7 @@ func (v *ValidateService) validateClient(ctx context.Context, clientCode string,
 	return client, nil
 }
 
-func (v *ValidateService) validateLocation(ctx context.Context, clientCode string, req *request.GetPriceReRequest) *common.Error {
+func (v *ValidateService) validateLocation(ctx context.Context, clientCode string, req *request.GetPriceRequest) *common.Error {
 	ierr := common.ErrBadRequest(ctx)
 	var pickWard *domain.Ward
 	var receiverWard *domain.Ward
