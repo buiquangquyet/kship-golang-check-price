@@ -31,6 +31,20 @@ func NewCodT0Service(
 	}
 }
 
+//func (c *CodT0Service) addCodT0Price(ctx context.Context, price *domain.Price) *common.Error {
+//	isValid, err := c.validateCODT0(ctx, price)
+//	if err != nil {
+//		return err
+//	}
+//	status := true
+//	msg := "success"
+//	if !isValid {
+//		status = false
+//		msg = "Số tiền thu hộ không được áp dụng Đối soát nhanh."
+//	}
+//	price.
+//}
+
 func (c *CodT0Service) validateCODT0(ctx context.Context, cod int64, clientId int64, retailerId int64, clientCode string, price *domain.Price) (bool, *common.Error) {
 	configCodT0s, err := c.configCofT0Repo.GetByCodAndClientId(ctx, cod, clientId)
 	if err != nil {
@@ -41,7 +55,7 @@ func (c *CodT0Service) validateCODT0(ctx context.Context, cod int64, clientId in
 		return false, nil
 	}
 
-	isValidate, err := c.validateService(ctx, retailerId, clientCode, price)
+	codT0Service, isValidate, err := c.validateService(ctx, retailerId, clientCode, price)
 	if err != nil {
 		return false, err
 	}
@@ -57,33 +71,40 @@ func (c *CodT0Service) validateCODT0(ctx context.Context, cod int64, clientId in
 	if len(shopBlackList) != 0 {
 		return false, nil
 	}
-
+	isUseCodT0, err := c.settingShopRepo.GetByRetailerIdAndModelId(ctx, enums.ModelTypeServiceExtraSettingUser, retailerId, codT0Service.Id)
+	if err != nil {
+		log.Error(ctx, err.Error())
+		return false, nil
+	}
+	if len(isUseCodT0) == 0 {
+		return false, nil
+	}
 	return true, nil
 }
 
-func (c *CodT0Service) validateService(ctx context.Context, retailerId int64, clientCode string, price *domain.Price) (bool, *common.Error) {
+func (c *CodT0Service) validateService(ctx context.Context, retailerId int64, clientCode string, price *domain.Price) (*domain.Service, bool, *common.Error) {
 	codT0Service, err := c.serviceRepo.GetByCode(ctx, constant.ServiceExtraCODT0)
 	if helpers.IsInternalError(err) {
 		log.Error(ctx, err.Error())
-		return false, err
+		return nil, false, err
 	}
 	if err != nil {
-		return false, nil
+		return nil, false, nil
 	}
 	if codT0Service.Status == constant.StatusDisableServiceExtra {
-		return false, nil
+		return nil, false, nil
 	}
 	if codT0Service.OnBoardingStatus == constant.OnboardingDisable {
 		shopSettings, err := c.settingShopRepo.GetByRetailerId(ctx, enums.ModelTypeServiceExtraSettingShop, retailerId)
 		if err != nil {
 			log.Error(ctx, err.Error())
-			return false, err
+			return nil, false, err
 		}
 		fmt.Println(shopSettings)
 	}
 	idPrice := strconv.FormatInt(price.Id, 10)
 	if strings.Contains(codT0Service.ClientsPossible, clientCode) || strings.Contains(codT0Service.ClientsPossible, idPrice) {
-		return false, nil
+		return nil, false, nil
 	}
-	return true, nil
+	return codT0Service, true, nil
 }

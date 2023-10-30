@@ -20,6 +20,11 @@ type SettingShopRepoDecorator struct {
 	settingShop *repo.SettingShopRepo
 }
 
+func (s SettingShopRepoDecorator) GetByRetailerIdAndModelId(ctx context.Context, modelType enums.ModelTypeSettingShop, retailerId int64, modelId int64) ([]*domain.SettingShop, *common.Error) {
+	//TODO implement me
+	panic("implement me")
+}
+
 func NewSettingShopRepoDecorator(base *baseDecorator, settingShop *repo.SettingShopRepo) domain.SettingShopRepo {
 	return &SettingShopRepoDecorator{
 		baseDecorator: base,

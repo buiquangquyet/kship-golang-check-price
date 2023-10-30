@@ -36,7 +36,7 @@ func NewPriceService(
 	}
 }
 
-func (p *PriceService) GetPrice(ctx context.Context, req *request.GetPriceReRequest) ([]*domain.Price, *common.Error) {
+func (p *PriceService) GetPrice(ctx context.Context, req *request.GetPriceRequest) ([]*domain.Price, *common.Error) {
 	clientCode := req.ClientCode
 	shop, err := p.shopRepo.GetByRetailerId(ctx, req.RetailerId)
 	if helpers.IsInternalError(err) {
@@ -68,21 +68,21 @@ func (p *PriceService) GetPrice(ctx context.Context, req *request.GetPriceReRequ
 		log.IErr(ctx, err)
 		return nil, err
 	}
-	prices, ierr := p.addInfo(ctx, req.ClientCode, req.Services, mapPrices)
+	prices, ierr := p.addInfo(ctx, shop, req.ClientCode, req, mapPrices)
 	if ierr != nil {
 		return nil, ierr
 	}
 	return prices, nil
 }
 
-func (p *PriceService) addInfo(ctx context.Context, clientCode string, servicesReq []*request.Service, mapPrices map[string]*domain.Price) ([]*domain.Price, *common.Error) {
+func (p *PriceService) addInfo(ctx context.Context, shop *domain.Shop, clientCode string, req *request.GetPriceRequest, mapPrices map[string]*domain.Price) ([]*domain.Price, *common.Error) {
 	client, ierr := p.clientRepo.GetByCode(ctx, clientCode)
 	if ierr != nil {
 		log.Error(ctx, ierr.Error())
 		return nil, ierr
 	}
-	servicesCode := make([]string, len(servicesReq))
-	for i, service := range servicesReq {
+	servicesCode := make([]string, len(req.Services))
+	for i, service := range req.Services {
 		servicesCode[i] = service.Code
 	}
 	services, ierr := p.serviceRepo.GetByClientIdAndCodes(ctx, enums.TypeServiceDV, servicesCode, client.Id)
@@ -99,7 +99,7 @@ func (p *PriceService) addInfo(ctx context.Context, clientCode string, servicesR
 		price.Code = serviceCode
 		price.SetClientInfo(client)
 		price.SetServiceInfo(mapServices[serviceCode])
-
+		p.handlePriceSpecialService(ctx, price, shop, req.ExtraService, req.MoneyCollection)
 		prices = append(prices, price)
 	}
 	return prices, nil

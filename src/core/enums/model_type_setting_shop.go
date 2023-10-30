@@ -7,6 +7,7 @@ const (
 	ModelTypeClientSettingShop       ModelTypeSettingShop = "App\\Core\\WidgetSetting\\ServiceSettingShop"
 	ModelTypeServiceExtraSettingShop ModelTypeSettingShop = "App\\Core\\WidgetSetting\\ServiceExtraSettingShop"
 	ModelTypeServiceExtraDisableShop ModelTypeSettingShop = "App\\Core\\WidgetSetting\\ServiceDisableExtraSettingShop"
+	ModelTypeServiceExtraSettingUser ModelTypeSettingShop = "App\\Core\\WidgetSetting\\ServiceExtraSettingUser"
 )
 
 func (m ModelTypeSettingShop) ToString() string {
