@@ -99,7 +99,10 @@ func (p *PriceService) addInfo(ctx context.Context, shop *domain.Shop, clientCod
 		price.Code = serviceCode
 		price.SetClientInfo(client)
 		price.SetServiceInfo(mapServices[serviceCode])
-		p.handlePriceSpecialService(ctx, price, shop, req.ExtraService, req.MoneyCollection)
+		err := p.handlePriceSpecialService(ctx, price, shop, req.ExtraService, req.MoneyCollection)
+		if err != nil {
+			return nil, err
+		}
 		prices = append(prices, price)
 	}
 	return prices, nil
