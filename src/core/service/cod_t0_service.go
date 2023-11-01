@@ -27,11 +27,15 @@ func NewCodT0Service(
 	configCofT0Repo domain.ConfigCodT0Repo,
 	serviceRepo domain.ServiceRepo,
 	settingShopRepo domain.SettingShopRepo,
+	settingRepo domain.SettingRepo,
+	shopCodT0Repo domain.ShopCodT0Repo,
 ) *CodT0Service {
 	return &CodT0Service{
 		configCofT0Repo: configCofT0Repo,
 		serviceRepo:     serviceRepo,
 		settingShopRepo: settingShopRepo,
+		settingRepo:     settingRepo,
+		shopCodT0Repo:   shopCodT0Repo,
 	}
 }
 

@@ -18,6 +18,7 @@ type PriceService struct {
 	clientRepo           domain.ClientRepo
 	validateService      *ValidateService
 	shipStrategyResolver *strategy.ShipStrategyFilterResolver
+	codT0Service         *CodT0Service
 }
 
 func NewPriceService(
@@ -26,6 +27,7 @@ func NewPriceService(
 	clientRepo domain.ClientRepo,
 	validateService *ValidateService,
 	shipStrategyResolver *strategy.ShipStrategyFilterResolver,
+	codT0Service *CodT0Service,
 ) *PriceService {
 	return &PriceService{
 		shopRepo:             shopRepo,
@@ -33,6 +35,7 @@ func NewPriceService(
 		clientRepo:           clientRepo,
 		validateService:      validateService,
 		shipStrategyResolver: shipStrategyResolver,
+		codT0Service:         codT0Service,
 	}
 }
 
@@ -100,6 +103,10 @@ func (p *PriceService) addInfo(ctx context.Context, shop *domain.Shop, clientCod
 		price.SetClientInfo(client)
 		price.SetServiceInfo(mapServices[serviceCode])
 		err := p.handlePriceSpecialService(ctx, price, shop, req.ExtraService, req.MoneyCollection)
+		if err != nil {
+			return nil, err
+		}
+		err = p.codT0Service.addCodT0Price(ctx, price, req, client, shop)
 		if err != nil {
 			return nil, err
 		}
