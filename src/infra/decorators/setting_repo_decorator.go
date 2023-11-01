@@ -27,7 +27,7 @@ func NewSettingRepoDecorator(base *baseDecorator, settingRepo *repo.SettingRepo)
 }
 
 func (c SettingRepoDecorator) GetByName(ctx context.Context, name string) (*domain.Setting, *common.Error) {
-	key := c.keyCacheSettingByName(name)
+	key := c.genKeyCacheSettingByName(name)
 	var setting domain.Setting
 	val, err := c.get(ctx, key).Result()
 	c.handleRedisError(ctx, err)

@@ -35,6 +35,8 @@ const (
 	keyCacheConfigCodT0ByCodAndClientId = "cache_config_cod_t0_by_cod_and_client_id"
 
 	keyCacheSettingByName = "cache_setting_by_name"
+
+	keyCacheShopCodT0ByShopId = "cache_shop_cod_t0_by_shop_id"
 )
 
 type baseDecorator struct {
@@ -128,6 +130,10 @@ func (b *baseDecorator) genKeyCacheGetConfigCodT0ByCodAndClientId(cod int64, cli
 	return fmt.Sprintf("%s_%v_%v", keyCacheConfigCodT0ByCodAndClientId, cod, clientId)
 }
 
-func (b *baseDecorator) keyCacheSettingByName(name string) string {
+func (b *baseDecorator) genKeyCacheSettingByName(name string) string {
 	return fmt.Sprintf("%s_%s", keyCacheSettingByName, name)
+}
+
+func (b *baseDecorator) genKeyCacheShopCodT0ByShopId(shopId int64) string {
+	return fmt.Sprintf("%s_%v", keyCacheShopCodT0ByShopId, shopId)
 }

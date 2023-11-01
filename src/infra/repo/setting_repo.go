@@ -24,7 +24,7 @@ func (r SettingRepo) GetByName(ctx context.Context, name string) (*domain.Settin
 	cond := clause.Eq{Column: "name", Value: name}
 	if err := r.db.WithContext(ctx).Clauses(cond).Take(setting).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return nil, common.ErrNotFound(ctx, "city", "not found").SetSource(common.SourceInfraService)
+			return nil, common.ErrNotFound(ctx, "setting", "not found").SetSource(common.SourceInfraService)
 		}
 		return nil, r.returnError(ctx, err)
 	}
