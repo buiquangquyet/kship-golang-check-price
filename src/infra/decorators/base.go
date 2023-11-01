@@ -73,7 +73,6 @@ func (b *baseDecorator) set(ctx context.Context, key string, value interface{}, 
 	}
 }
 
-// shop domain
 func (b *baseDecorator) genKeyCacheGetShopByRetailerId(retailerId int64) string {
 	return fmt.Sprintf("%s_%v", keyCacheShopByRetailerId, retailerId)
 }

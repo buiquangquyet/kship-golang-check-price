@@ -36,29 +36,28 @@ func NewValidateService(
 	}
 }
 
-func (v *ValidateService) validatePrice(ctx context.Context, shop *domain.Shop, retailerId int64, req *request.GetPriceRequest) *common.Error {
-	clientCode := req.ClientCode
-	ierr := v.validateShop(ctx, shop, clientCode)
+func (v *ValidateService) validatePrice(ctx context.Context, shop *domain.Shop, req *request.GetPriceRequest) (*domain.Client, *common.Error) {
+	ierr := v.validateShop(ctx, shop, req.ClientCode)
 	if ierr != nil {
-		return ierr
+		return nil, ierr
 	}
-	client, ierr := v.validateClient(ctx, clientCode, retailerId)
+	client, ierr := v.validateClient(ctx, req.ClientCode, req.RetailerId)
 	if ierr != nil {
-		return ierr
+		return nil, ierr
 	}
-	ierr = v.validateLocation(ctx, clientCode, req)
+	ierr = v.validateLocation(ctx, req.ClientCode, req)
 	if ierr != nil {
-		return ierr
+		return nil, ierr
 	}
 	ierr = v.validateService(ctx, client, req.Services)
 	if ierr != nil {
-		return ierr
+		return nil, ierr
 	}
-	ierr = v.validateExtraService(ctx, clientCode, retailerId, req.ExtraService)
+	ierr = v.validateExtraService(ctx, req.ClientCode, req.RetailerId, req.ExtraService)
 	if ierr != nil {
-		return ierr
+		return nil, ierr
 	}
-	return nil
+	return client, nil
 }
 
 // done

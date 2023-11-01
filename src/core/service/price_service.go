@@ -5,6 +5,7 @@ import (
 	"check-price/src/common/log"
 	"check-price/src/core/constant"
 	"check-price/src/core/domain"
+	"check-price/src/core/dto"
 	"check-price/src/core/enums"
 	"check-price/src/core/strategy"
 	"check-price/src/helpers"
@@ -40,7 +41,6 @@ func NewPriceService(
 }
 
 func (p *PriceService) GetPrice(ctx context.Context, req *request.GetPriceRequest) ([]*domain.Price, *common.Error) {
-	clientCode := req.ClientCode
 	shop, err := p.shopRepo.GetByRetailerId(ctx, req.RetailerId)
 	if helpers.IsInternalError(err) {
 		log.Error(ctx, err.Error())
@@ -53,13 +53,13 @@ func (p *PriceService) GetPrice(ctx context.Context, req *request.GetPriceReques
 			return nil, err
 		}
 	}
-	ierr := p.validateService.validatePrice(ctx, shop, req.RetailerId, req)
+	client, ierr := p.validateService.validatePrice(ctx, shop, req)
 	if ierr != nil {
 		return nil, ierr
 	}
-	shipStrategy, exist := p.shipStrategyResolver.Resolve(clientCode)
+	shipStrategy, exist := p.shipStrategyResolver.Resolve(req.ClientCode)
 	if !exist {
-		log.Warn(ctx, "not support with partner:[%s]", clientCode)
+		log.Warn(ctx, "not support with partner:[%s]", req.ClientCode)
 		return nil, common.ErrBadRequest(ctx).SetDetail("partner not support").SetSource(common.SourceAPIService)
 	}
 	ierr = shipStrategy.Validate(ctx, req)
@@ -71,21 +71,22 @@ func (p *PriceService) GetPrice(ctx context.Context, req *request.GetPriceReques
 		log.IErr(ctx, err)
 		return nil, err
 	}
-	prices, ierr := p.addInfo(ctx, shop, req.ClientCode, req, mapPrices)
+
+	prices, ierr := p.addInfo(ctx, dto.NewAddInfoDTO(shop, client, req), mapPrices)
 	if ierr != nil {
 		return nil, ierr
 	}
 	return prices, nil
 }
 
-func (p *PriceService) addInfo(ctx context.Context, shop *domain.Shop, clientCode string, req *request.GetPriceRequest, mapPrices map[string]*domain.Price) ([]*domain.Price, *common.Error) {
-	client, ierr := p.clientRepo.GetByCode(ctx, clientCode)
+func (p *PriceService) addInfo(ctx context.Context, addInfoDto *dto.AddInfoDto, mapPrices map[string]*domain.Price) ([]*domain.Price, *common.Error) {
+	client, ierr := p.clientRepo.GetByCode(ctx, addInfoDto.Client.Code)
 	if ierr != nil {
 		log.Error(ctx, ierr.Error())
 		return nil, ierr
 	}
-	servicesCode := make([]string, len(req.Services))
-	for i, service := range req.Services {
+	servicesCode := make([]string, len(addInfoDto.Services))
+	for i, service := range addInfoDto.Services {
 		servicesCode[i] = service.Code
 	}
 	services, ierr := p.serviceRepo.GetByClientIdAndCodes(ctx, enums.TypeServiceDV, servicesCode, client.Id)
@@ -102,33 +103,33 @@ func (p *PriceService) addInfo(ctx context.Context, shop *domain.Shop, clientCod
 		price.Code = serviceCode
 		price.SetClientInfo(client)
 		price.SetServiceInfo(mapServices[serviceCode])
-		err := p.handlePriceSpecialService(ctx, price, shop, req.ExtraService, req.MoneyCollection)
+		err := p.handlePriceSpecialService(ctx, addInfoDto, price)
 		if err != nil {
 			return nil, err
 		}
-		err = p.codT0Service.addCodT0Price(ctx, price, req, client, shop)
-		if err != nil {
-			return nil, err
-		}
+
 		prices = append(prices, price)
 	}
 	return prices, nil
 }
 
-func (p *PriceService) handlePriceSpecialService(ctx context.Context, price *domain.Price, shop *domain.Shop, extraService []*request.ExtraService, cod int64) *common.Error {
-	extraServiceCode := make([]string, len(extraService))
+func (p *PriceService) handlePriceSpecialService(ctx context.Context, addInfoDto *dto.AddInfoDto, price *domain.Price) *common.Error {
+	extraServiceCode := make([]string, len(addInfoDto.ExtraService))
 	//payer := ""
-	for i, service := range extraService {
+	for i, service := range addInfoDto.ExtraService {
 		if service.Code == "PAYMENT_BY" {
 			//payer = service.Code
 		}
 		extraServiceCode[i] = service.Code
 	}
 	if helpers.InArray(extraServiceCode, constant.ServiceExtraCODST) && p.checkServiceExtraIsPossible(ctx) {
-		price.CalculatorCODST(shop, cod)
+		price.CalculatorCODST(addInfoDto.Shop, addInfoDto.Cod)
 	}
 	if helpers.InArray(extraServiceCode, constant.ServiceExtraCODT0) {
-
+		err := p.codT0Service.addCodT0Price(ctx, price, addInfoDto)
+		if err != nil {
+			return err
+		}
 	}
 	return nil
 }

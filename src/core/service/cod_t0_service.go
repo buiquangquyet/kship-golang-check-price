@@ -5,9 +5,9 @@ import (
 	"check-price/src/common/log"
 	"check-price/src/core/constant"
 	"check-price/src/core/domain"
+	"check-price/src/core/dto"
 	"check-price/src/core/enums"
 	"check-price/src/helpers"
-	"check-price/src/present/httpui/request"
 	"context"
 	"fmt"
 	"strconv"
@@ -39,8 +39,8 @@ func NewCodT0Service(
 	}
 }
 
-func (c *CodT0Service) addCodT0Price(ctx context.Context, price *domain.Price, req *request.GetPriceRequest, client *domain.Client, shop *domain.Shop) *common.Error {
-	configCodT0s, isValid, err := c.validateCODT0(ctx, req.MoneyCollection, client.Id, req.RetailerId, req.ClientCode, price)
+func (c *CodT0Service) addCodT0Price(ctx context.Context, price *domain.Price, addInfoDto *dto.AddInfoDto) *common.Error {
+	configCodT0s, isValid, err := c.validateCODT0(ctx, price, addInfoDto)
 	if err != nil {
 		return err
 	}
@@ -55,7 +55,7 @@ func (c *CodT0Service) addCodT0Price(ctx context.Context, price *domain.Price, r
 			msg = "Số tiền thu hộ không được áp dụng Đối soát nhanh.'"
 		}
 	} else {
-		dataFee, err = c.calculator(ctx, configCodT0s[0], req.MoneyCollection, shop)
+		dataFee, err = c.calculator(ctx, configCodT0s[0], addInfoDto)
 		if err != nil {
 			return err
 		}
@@ -64,8 +64,8 @@ func (c *CodT0Service) addCodT0Price(ctx context.Context, price *domain.Price, r
 	return nil
 }
 
-func (c *CodT0Service) calculator(ctx context.Context, configCodT0 *domain.ConfigCodT0, cod int64, shop *domain.Shop) (float64, *common.Error) {
-	isTrial, err := c.isTrial(ctx, shop)
+func (c *CodT0Service) calculator(ctx context.Context, configCodT0 *domain.ConfigCodT0, addInfoDto *dto.AddInfoDto) (float64, *common.Error) {
+	isTrial, err := c.isTrial(ctx, addInfoDto.Shop)
 	if err != nil {
 		return 0, err
 	}
@@ -77,7 +77,7 @@ func (c *CodT0Service) calculator(ctx context.Context, configCodT0 *domain.Confi
 	case constant.TypeFixed:
 		return value, nil
 	case constant.TypeByCodPercent:
-		return float64(cod) * value / 100, nil
+		return float64(addInfoDto.Cod) * value / 100, nil
 	}
 	return 0, nil
 }
@@ -102,8 +102,8 @@ func (c *CodT0Service) isTrial(ctx context.Context, shop *domain.Shop) (bool, *c
 	return time.Now().Before(startDate), nil
 }
 
-func (c *CodT0Service) validateCODT0(ctx context.Context, cod int64, clientId int64, retailerId int64, clientCode string, price *domain.Price) ([]*domain.ConfigCodT0, bool, *common.Error) {
-	configCodT0s, err := c.configCofT0Repo.GetByCodAndClientId(ctx, cod, clientId)
+func (c *CodT0Service) validateCODT0(ctx context.Context, price *domain.Price, addInfoDto *dto.AddInfoDto) ([]*domain.ConfigCodT0, bool, *common.Error) {
+	configCodT0s, err := c.configCofT0Repo.GetByCodAndClientId(ctx, addInfoDto.Cod, addInfoDto.Client.Id)
 	if err != nil {
 		log.Error(ctx, err.Error())
 		return nil, false, err
@@ -112,7 +112,7 @@ func (c *CodT0Service) validateCODT0(ctx context.Context, cod int64, clientId in
 		return configCodT0s, false, nil
 	}
 
-	codT0Service, isValidate, err := c.validateService(ctx, retailerId, clientCode, price)
+	codT0Service, isValidate, err := c.validateService(ctx, addInfoDto.RetailerId, addInfoDto.Client.Code, price)
 	if err != nil {
 		return configCodT0s, false, err
 	}
@@ -120,7 +120,7 @@ func (c *CodT0Service) validateCODT0(ctx context.Context, cod int64, clientId in
 		return configCodT0s, false, nil
 	}
 
-	shopBlackList, err := c.settingShopRepo.GetByRetailerId(ctx, enums.ModelTypeServiceExtraDisableShop, retailerId)
+	shopBlackList, err := c.settingShopRepo.GetByRetailerId(ctx, enums.ModelTypeServiceExtraDisableShop, addInfoDto.RetailerId)
 	if err != nil {
 		log.Error(ctx, err.Error())
 		return configCodT0s, false, err
@@ -128,7 +128,7 @@ func (c *CodT0Service) validateCODT0(ctx context.Context, cod int64, clientId in
 	if len(shopBlackList) != 0 {
 		return configCodT0s, false, nil
 	}
-	isUseCodT0, err := c.settingShopRepo.GetByRetailerIdAndModelId(ctx, enums.ModelTypeServiceExtraSettingUser, retailerId, codT0Service.Id)
+	isUseCodT0, err := c.settingShopRepo.GetByRetailerIdAndModelId(ctx, enums.ModelTypeServiceExtraSettingUser, addInfoDto.RetailerId, codT0Service.Id)
 	if err != nil {
 		log.Error(ctx, err.Error())
 		return configCodT0s, false, nil
