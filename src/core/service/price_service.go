@@ -11,6 +11,7 @@ import (
 	"check-price/src/helpers"
 	"check-price/src/present/httpui/request"
 	"context"
+	"strings"
 )
 
 type PriceService struct {
@@ -18,6 +19,7 @@ type PriceService struct {
 	serviceRepo          domain.ServiceRepo
 	clientRepo           domain.ClientRepo
 	validateService      *ValidateService
+	settingShopRepo      domain.SettingShopRepo
 	shipStrategyResolver *strategy.ShipStrategyFilterResolver
 	codT0Service         *CodT0Service
 }
@@ -27,6 +29,7 @@ func NewPriceService(
 	serviceRepo domain.ServiceRepo,
 	clientRepo domain.ClientRepo,
 	validateService *ValidateService,
+	settingShopRepo domain.SettingShopRepo,
 	shipStrategyResolver *strategy.ShipStrategyFilterResolver,
 	codT0Service *CodT0Service,
 ) *PriceService {
@@ -35,6 +38,7 @@ func NewPriceService(
 		serviceRepo:          serviceRepo,
 		clientRepo:           clientRepo,
 		validateService:      validateService,
+		settingShopRepo:      settingShopRepo,
 		shipStrategyResolver: shipStrategyResolver,
 		codT0Service:         codT0Service,
 	}
@@ -122,7 +126,7 @@ func (p *PriceService) handlePriceSpecialService(ctx context.Context, addInfoDto
 		}
 		extraServiceCode[i] = service.Code
 	}
-	if helpers.InArray(extraServiceCode, constant.ServiceExtraCODST) && p.checkServiceExtraIsPossible(ctx) {
+	if helpers.InArray(extraServiceCode, constant.ServiceExtraCODST) && p.checkServiceExtraIsPossible(ctx, addInfoDto, constant.ServiceExtraCODST) {
 		price.CalculatorCODST(addInfoDto.Shop, addInfoDto.Cod)
 	}
 	if helpers.InArray(extraServiceCode, constant.ServiceExtraCODT0) {
@@ -134,8 +138,29 @@ func (p *PriceService) handlePriceSpecialService(ctx context.Context, addInfoDto
 	return nil
 }
 
-func (p *PriceService) checkServiceExtraIsPossible(_ context.Context) bool {
-
-	//Todo code
+func (p *PriceService) checkServiceExtraIsPossible(ctx context.Context, addInfoDto *dto.AddInfoDto, extraServiceCode string) bool {
+	extraService, err := p.serviceRepo.GetByCode(ctx, extraServiceCode)
+	if helpers.IsInternalError(err) {
+		log.Error(ctx, err.Error())
+		return false
+	}
+	if err != nil {
+		return false
+	}
+	if extraService.ClientsPossible == "" && strings.Contains(extraService.ClientsPossible, addInfoDto.Client.Code) {
+		if extraService.OnBoardingStatus == constant.StatusEnableServiceExtra {
+			return true
+		}
+		serviceExtraEnableShop, err := p.settingShopRepo.GetByRetailerId(ctx, enums.ModelTypeServiceExtraSettingShop, addInfoDto.RetailerId)
+		if err != nil {
+			log.Error(ctx, err.Error())
+			return false
+		}
+		for _, service := range serviceExtraEnableShop {
+			if extraService.Id == service.ModelId {
+				return true
+			}
+		}
+	}
 	return true
 }
