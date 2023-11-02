@@ -6,28 +6,28 @@ import (
 )
 
 type Price struct {
-	Id            int64   `json:"id,omitempty"`
-	Code          string  `json:"code,omitempty"`
-	Name          string  `json:"name,omitempty"`
-	Image         string  `json:"image,omitempty"`
-	Description   string  `json:"description,omitempty"`
-	ClientCode    string  `json:"clientCode,omitempty"`
-	GroupId       string  `json:"groupId,omitempty"`
-	InsuranceFee  int64   `json:"insuranceFee,omitempty"`
-	TransferFee   int64   `json:"transferFee,omitempty"`
-	CodFee        int     `json:"codFee,omitempty"`
-	Total         int     `json:"total,omitempty"`
-	Fee           int64   `json:"fee,omitempty"`
-	ConnFee       int     `json:"connFee,omitempty"`
-	CodstFee      int64   `json:"codstFee,omitempty"`
+	Id            int64   `json:"id"`
+	Code          string  `json:"code"`
+	Name          string  `json:"name"`
+	Image         string  `json:"image"`
+	Description   string  `json:"description"`
+	ClientCode    string  `json:"clientCode"`
+	GroupId       string  `json:"groupId"`
+	InsuranceFee  int64   `json:"insuranceFee"`
+	TransferFee   int64   `json:"transferFee"`
+	CodFee        int     `json:"codFee"`
+	Total         int     `json:"total"`
+	Fee           int64   `json:"fee"`
+	ConnFee       int     `json:"connFee"`
+	CodstFee      int64   `json:"codstFee"`
 	CodT0Fee      float64 `json:"codT0Fee"`
-	TotalPrice    int     `json:"totalPrice,omitempty"`
-	OtherPrice    int     `json:"otherPrice,omitempty"`
-	CouponSale    string  `json:"couponSale"`
-	OldTotalPrice int     `json:"oldTotalPrice,omitempty"`
+	TotalPrice    int     `json:"totalPrice"`
+	OtherPrice    int     `json:"otherPrice"`
+	CouponSale    int64   `json:"couponSale"`
+	OldTotalPrice int     `json:"oldTotalPrice"`
 	Status        bool    `json:"status"`
-	Msg           string  `json:"msg,omitempty"`
-	StatusCodT0   string  `json:"status_codT0"`
+	Msg           string  `json:"msg"`
+	StatusCodT0   bool    `json:"status_codT0"`
 	MessageCodT0  string  `json:"message_codT0"`
 }
 
@@ -46,7 +46,7 @@ func (p *Price) SetServiceInfo(service *Service) *Price {
 }
 
 func (p *Price) SetCodT0Info(status bool, message string, codStFee float64) *Price {
-	p.Status = status
+	p.StatusCodT0 = status
 	p.MessageCodT0 = message
 	p.CodT0Fee = codStFee
 	return p

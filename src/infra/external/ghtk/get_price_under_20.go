@@ -74,6 +74,6 @@ func (g *GetPriceUnder20Output) ToDomainPrice() *domain.Price {
 		OtherPrice:    0,
 		OldTotalPrice: 0,
 		Status:        g.Fee.Delivery,
-		Msg:           "",
+		Msg:           "Check price success",
 	}
 }

@@ -42,7 +42,7 @@ swagger:
   enabled: false
 
 tracer:
-  enabled: true
+  enabled: false
   jaeger:
     endpoint: http://localhost:14268/api/traces
     active: true
