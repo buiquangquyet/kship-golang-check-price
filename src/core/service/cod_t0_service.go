@@ -49,11 +49,7 @@ func (c *CodT0Service) addCodT0Price(ctx context.Context, price *domain.Price, a
 	var dataFee float64 = 0
 	if !isValid {
 		status = false
-		if len(configCodT0s) != 0 {
-			msg = "Dịch vụ bạn chọn không được áp dụng Đối soát nhanh."
-		} else {
-			msg = "Số tiền thu hộ không được áp dụng Đối soát nhanh.'"
-		}
+		msg = "Số tiền thu hộ hoặc dịch vụ không được áp dụng Đối soát nhanh.'"
 	} else {
 		dataFee, err = c.calculator(ctx, configCodT0s[0], addInfoDto)
 		if err != nil {
