@@ -1,7 +1,6 @@
 package domain
 
 import (
-	"check-price/src/core/constant"
 	"strconv"
 )
 
@@ -49,21 +48,5 @@ func (p *Price) SetCodT0Info(status bool, message string, codStFee float64) *Pri
 	p.StatusCodT0 = status
 	p.MessageCodT0 = message
 	p.CodT0Fee = codStFee
-	return p
-}
-
-func (p *Price) CalculatorCODST(shop *Shop, cod int64) *Price {
-	var codStFee int64
-	isShopType := shop.Type == constant.ShopVip
-	for i := 0; i < constant.MaxLevel; i++ {
-		if constant.CodLevelMin[i] <= cod && cod <= constant.CodLevelMax[i] {
-			if isShopType {
-				codStFee = constant.PriceVip[i]
-			} else {
-				codStFee = constant.PriceNormal[i]
-			}
-		}
-	}
-	p.CodstFee = codStFee
 	return p
 }

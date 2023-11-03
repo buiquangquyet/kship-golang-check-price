@@ -11,7 +11,6 @@ import (
 	"check-price/src/helpers"
 	"check-price/src/present/httpui/request"
 	"context"
-	"strings"
 )
 
 type PriceService struct {
@@ -21,7 +20,7 @@ type PriceService struct {
 	validateService      *ValidateService
 	settingShopRepo      domain.SettingShopRepo
 	shipStrategyResolver *strategy.ShipStrategyFilterResolver
-	codT0Service         *CodT0Service
+	extraService         *ExtraService
 }
 
 func NewPriceService(
@@ -31,7 +30,7 @@ func NewPriceService(
 	validateService *ValidateService,
 	settingShopRepo domain.SettingShopRepo,
 	shipStrategyResolver *strategy.ShipStrategyFilterResolver,
-	codT0Service *CodT0Service,
+	extraService *ExtraService,
 ) *PriceService {
 	return &PriceService{
 		shopRepo:             shopRepo,
@@ -40,7 +39,7 @@ func NewPriceService(
 		validateService:      validateService,
 		settingShopRepo:      settingShopRepo,
 		shipStrategyResolver: shipStrategyResolver,
-		codT0Service:         codT0Service,
+		extraService:         extraService,
 	}
 }
 
@@ -107,7 +106,7 @@ func (p *PriceService) addInfo(ctx context.Context, addInfoDto *dto.AddInfoDto, 
 		price.Code = serviceCode
 		price.SetClientInfo(client)
 		price.SetServiceInfo(mapServices[serviceCode])
-		err := p.handlePriceSpecialService(ctx, addInfoDto, price)
+		err := p.extraService.handlePriceSpecialService(ctx, price, addInfoDto)
 		if err != nil {
 			return nil, err
 		}
@@ -115,52 +114,4 @@ func (p *PriceService) addInfo(ctx context.Context, addInfoDto *dto.AddInfoDto, 
 		prices = append(prices, price)
 	}
 	return prices, nil
-}
-
-func (p *PriceService) handlePriceSpecialService(ctx context.Context, addInfoDto *dto.AddInfoDto, price *domain.Price) *common.Error {
-	extraServiceCode := make([]string, len(addInfoDto.ExtraService))
-	//payer := ""
-	for i, service := range addInfoDto.ExtraService {
-		if service.Code == "PAYMENT_BY" {
-			//payer = service.Code
-		}
-		extraServiceCode[i] = service.Code
-	}
-	if helpers.InArray(extraServiceCode, constant.ServiceExtraCODST) && p.checkServiceExtraIsPossible(ctx, addInfoDto, constant.ServiceExtraCODST) {
-		price.CalculatorCODST(addInfoDto.Shop, addInfoDto.Cod)
-	}
-	if helpers.InArray(extraServiceCode, constant.ServiceExtraCODT0) {
-		err := p.codT0Service.addCodT0Price(ctx, price, addInfoDto)
-		if err != nil {
-			return err
-		}
-	}
-	return nil
-}
-
-func (p *PriceService) checkServiceExtraIsPossible(ctx context.Context, addInfoDto *dto.AddInfoDto, extraServiceCode string) bool {
-	extraService, err := p.serviceRepo.GetByCode(ctx, extraServiceCode)
-	if helpers.IsInternalError(err) {
-		log.Error(ctx, err.Error())
-		return false
-	}
-	if err != nil {
-		return false
-	}
-	if extraService.ClientsPossible == "" && strings.Contains(extraService.ClientsPossible, addInfoDto.Client.Code) {
-		if extraService.OnBoardingStatus == constant.StatusEnableServiceExtra {
-			return true
-		}
-		serviceExtraEnableShop, err := p.settingShopRepo.GetByRetailerId(ctx, enums.ModelTypeServiceExtraSettingShop, addInfoDto.RetailerId)
-		if err != nil {
-			log.Error(ctx, err.Error())
-			return false
-		}
-		for _, service := range serviceExtraEnableShop {
-			if extraService.Id == service.ModelId {
-				return true
-			}
-		}
-	}
-	return true
 }
