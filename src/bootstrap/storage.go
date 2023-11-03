@@ -38,6 +38,7 @@ func BuildStorageModules() fx.Option {
 		fx.Provide(repo.NewConfigCodT0Repo),
 		fx.Provide(repo.NewSettingRepo),
 		fx.Provide(repo.NewShopCodT0Repo),
+		fx.Provide(repo.NewShopLevelRepo),
 
 		fx.Provide(decorators.NewBaseDecorator),
 		fx.Provide(decorators.NewCityRepoDecorator),
@@ -50,6 +51,7 @@ func BuildStorageModules() fx.Option {
 		fx.Provide(decorators.NewConfigCodT0RepoDecorator),
 		fx.Provide(decorators.NewSettingRepoDecorator),
 		fx.Provide(decorators.NewShopCodT0RepoDecorator),
+		fx.Provide(decorators.NewShopLevelRepoDecorator),
 	)
 }
 
