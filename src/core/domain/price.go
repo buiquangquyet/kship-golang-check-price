@@ -17,7 +17,7 @@ type Price struct {
 	CodFee        int     `json:"codFee"`
 	Total         int     `json:"total"`
 	Fee           int64   `json:"fee"`
-	ConnFee       int     `json:"connFee"`
+	ConnFee       float64 `json:"connFee"`
 	CodstFee      int64   `json:"codstFee"`
 	CodT0Fee      float64 `json:"codT0Fee"`
 	TotalPrice    int     `json:"totalPrice"`

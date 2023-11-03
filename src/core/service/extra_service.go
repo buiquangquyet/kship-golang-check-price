@@ -21,6 +21,7 @@ type ExtraService struct {
 	settingShopRepo domain.SettingShopRepo
 	settingRepo     domain.SettingRepo
 	shopCodT0Repo   domain.ShopCodT0Repo
+	shopLevelRepo   domain.ShopLevelRepo
 }
 
 func NewExtraService(
@@ -29,6 +30,7 @@ func NewExtraService(
 	settingShopRepo domain.SettingShopRepo,
 	settingRepo domain.SettingRepo,
 	shopCodT0Repo domain.ShopCodT0Repo,
+	shopLevelRepo domain.ShopLevelRepo,
 ) *ExtraService {
 	return &ExtraService{
 		configCofT0Repo: configCofT0Repo,
@@ -36,34 +38,34 @@ func NewExtraService(
 		settingShopRepo: settingShopRepo,
 		settingRepo:     settingRepo,
 		shopCodT0Repo:   shopCodT0Repo,
+		shopLevelRepo:   shopLevelRepo,
 	}
 }
 
-func (c *ExtraService) handlePriceSpecialService(ctx context.Context, price *domain.Price, addInfoDto *dto.AddInfoDto) *common.Error {
+func (s *ExtraService) handlePriceSpecialService(ctx context.Context, price *domain.Price, addInfoDto *dto.AddInfoDto) *common.Error {
 	extraServiceCode := make([]string, len(addInfoDto.ExtraService))
-	//payer := ""
 	for i, service := range addInfoDto.ExtraService {
-		if service.Code == "PAYMENT_BY" {
-			//payer = service.Code
-		}
 		extraServiceCode[i] = service.Code
 	}
-	if helpers.InArray(extraServiceCode, constant.ServiceExtraCODST) && c.checkServiceExtraIsPossible(ctx, addInfoDto, constant.ServiceExtraCODST) {
-		c.addCodStPrice(price, addInfoDto.Shop, addInfoDto.Cod)
+	if helpers.InArray(extraServiceCode, constant.ServiceExtraCODST) && s.checkServiceExtraIsPossible(ctx, addInfoDto, constant.ServiceExtraCODST) {
+		s.addCodStPrice(price, addInfoDto.Shop, addInfoDto.Cod)
 	}
 	if helpers.InArray(extraServiceCode, constant.ServiceExtraCODT0) {
-		err := c.addCodT0Price(ctx, price, addInfoDto)
+		err := s.addCodT0Price(ctx, price, addInfoDto)
 		if err != nil {
 			return err
 		}
 	}
-	if helpers.InArray(extraServiceCode, constant.ServiceExtraConn) && c.checkServiceExtraIsPossible(ctx, addInfoDto, constant.ServiceExtraConn) {
-
+	if helpers.InArray(extraServiceCode, constant.ServiceExtraConn) && s.checkServiceExtraIsPossible(ctx, addInfoDto, constant.ServiceExtraConn) {
+		err := s.addCodConnPrice(ctx, price, addInfoDto.Shop)
+		if err != nil {
+			return err
+		}
 	}
 	return nil
 }
 
-func (c *ExtraService) addCodStPrice(price *domain.Price, shop *domain.Shop, cod int64) {
+func (s *ExtraService) addCodStPrice(price *domain.Price, shop *domain.Shop, cod int64) {
 	var codStFee int64
 	isShopType := shop.Type == constant.ShopVip
 	for i := 0; i < constant.MaxLevel; i++ {
@@ -78,8 +80,26 @@ func (c *ExtraService) addCodStPrice(price *domain.Price, shop *domain.Shop, cod
 	price.CodstFee = codStFee
 }
 
-func (c *ExtraService) addCodT0Price(ctx context.Context, price *domain.Price, addInfoDto *dto.AddInfoDto) *common.Error {
-	configCodT0s, isValid, err := c.validateCODT0(ctx, price, addInfoDto)
+func (s *ExtraService) addCodConnPrice(ctx context.Context, price *domain.Price, shop *domain.Shop) *common.Error {
+	var shopLevelId int64 = 1
+	var err error
+	if shop.ShopLevel != "" {
+		shopLevelId, err = strconv.ParseInt(shop.ShopLevel, 10, 64)
+		if err != nil {
+			log.Error(ctx, err.Error())
+			return common.ErrSystemError(ctx, err.Error())
+		}
+	}
+	shopLevel, ierr := s.shopLevelRepo.GetById(ctx, shopLevelId)
+	if ierr != nil {
+		log.Error(ctx, ierr.Error())
+		return ierr
+	}
+	price.ConnFee = shopLevel.GhnMarkup
+	return nil
+}
+func (s *ExtraService) addCodT0Price(ctx context.Context, price *domain.Price, addInfoDto *dto.AddInfoDto) *common.Error {
+	configCodT0s, isValid, err := s.validateCODT0(ctx, price, addInfoDto)
 	if err != nil {
 		return err
 	}
@@ -90,7 +110,7 @@ func (c *ExtraService) addCodT0Price(ctx context.Context, price *domain.Price, a
 		status = false
 		msg = "Số tiền thu hộ hoặc dịch vụ không được áp dụng Đối soát nhanh."
 	} else {
-		dataFee, err = c.calculator(ctx, configCodT0s[0], addInfoDto)
+		dataFee, err = s.calculator(ctx, configCodT0s[0], addInfoDto)
 		if err != nil {
 			return err
 		}
@@ -99,8 +119,8 @@ func (c *ExtraService) addCodT0Price(ctx context.Context, price *domain.Price, a
 	return nil
 }
 
-func (c *ExtraService) calculator(ctx context.Context, configCodT0 *domain.ConfigCodT0, addInfoDto *dto.AddInfoDto) (float64, *common.Error) {
-	isTrial, err := c.isTrial(ctx, addInfoDto.Shop)
+func (s *ExtraService) calculator(ctx context.Context, configCodT0 *domain.ConfigCodT0, addInfoDto *dto.AddInfoDto) (float64, *common.Error) {
+	isTrial, err := s.isTrial(ctx, addInfoDto.Shop)
 	if err != nil {
 		return 0, err
 	}
@@ -117,8 +137,8 @@ func (c *ExtraService) calculator(ctx context.Context, configCodT0 *domain.Confi
 	return 0, nil
 }
 
-func (c *ExtraService) isTrial(ctx context.Context, shop *domain.Shop) (bool, *common.Error) {
-	settingFreeDay, ierr := c.settingRepo.GetByName(ctx, "free_trial_cod_t0")
+func (s *ExtraService) isTrial(ctx context.Context, shop *domain.Shop) (bool, *common.Error) {
+	settingFreeDay, ierr := s.settingRepo.GetByName(ctx, "free_trial_cod_t0")
 	if ierr != nil {
 		log.Error(ctx, ierr.Error())
 		return false, ierr
@@ -128,7 +148,7 @@ func (c *ExtraService) isTrial(ctx context.Context, shop *domain.Shop) (bool, *c
 		log.Error(ctx, err.Error())
 		return false, common.ErrSystemError(ctx, err.Error())
 	}
-	shopCodT0, ierr := c.shopCodT0Repo.GetByShopId(ctx, shop.Id)
+	shopCodT0, ierr := s.shopCodT0Repo.GetByShopId(ctx, shop.Id)
 	if ierr != nil {
 		log.Error(ctx, ierr.Error())
 		return false, ierr
@@ -137,8 +157,8 @@ func (c *ExtraService) isTrial(ctx context.Context, shop *domain.Shop) (bool, *c
 	return time.Now().Before(startDate), nil
 }
 
-func (c *ExtraService) validateCODT0(ctx context.Context, price *domain.Price, addInfoDto *dto.AddInfoDto) ([]*domain.ConfigCodT0, bool, *common.Error) {
-	configCodT0s, err := c.configCofT0Repo.GetByCodAndClientId(ctx, addInfoDto.Cod, addInfoDto.Client.Id)
+func (s *ExtraService) validateCODT0(ctx context.Context, price *domain.Price, addInfoDto *dto.AddInfoDto) ([]*domain.ConfigCodT0, bool, *common.Error) {
+	configCodT0s, err := s.configCofT0Repo.GetByCodAndClientId(ctx, addInfoDto.Cod, addInfoDto.Client.Id)
 	if err != nil {
 		log.Error(ctx, err.Error())
 		return nil, false, err
@@ -147,7 +167,7 @@ func (c *ExtraService) validateCODT0(ctx context.Context, price *domain.Price, a
 		return configCodT0s, false, nil
 	}
 
-	codT0Service, isValidate, err := c.validateService(ctx, addInfoDto.RetailerId, addInfoDto.Client.Code, price)
+	codT0Service, isValidate, err := s.validateService(ctx, addInfoDto.RetailerId, addInfoDto.Client.Code, price)
 	if err != nil {
 		return configCodT0s, false, err
 	}
@@ -155,7 +175,7 @@ func (c *ExtraService) validateCODT0(ctx context.Context, price *domain.Price, a
 		return configCodT0s, false, nil
 	}
 
-	shopBlackList, err := c.settingShopRepo.GetByRetailerId(ctx, enums.ModelTypeServiceExtraDisableShop, addInfoDto.RetailerId)
+	shopBlackList, err := s.settingShopRepo.GetByRetailerId(ctx, enums.ModelTypeServiceExtraDisableShop, addInfoDto.RetailerId)
 	if err != nil {
 		log.Error(ctx, err.Error())
 		return configCodT0s, false, err
@@ -163,7 +183,7 @@ func (c *ExtraService) validateCODT0(ctx context.Context, price *domain.Price, a
 	if len(shopBlackList) != 0 {
 		return configCodT0s, false, nil
 	}
-	isUseCodT0, err := c.settingShopRepo.GetByRetailerIdAndModelId(ctx, enums.ModelTypeServiceExtraSettingUser, addInfoDto.RetailerId, codT0Service.Id)
+	isUseCodT0, err := s.settingShopRepo.GetByRetailerIdAndModelId(ctx, enums.ModelTypeServiceExtraSettingUser, addInfoDto.RetailerId, codT0Service.Id)
 	if err != nil {
 		log.Error(ctx, err.Error())
 		return configCodT0s, false, nil
@@ -174,8 +194,8 @@ func (c *ExtraService) validateCODT0(ctx context.Context, price *domain.Price, a
 	return configCodT0s, true, nil
 }
 
-func (c *ExtraService) validateService(ctx context.Context, retailerId int64, clientCode string, price *domain.Price) (*domain.Service, bool, *common.Error) {
-	codT0Service, err := c.serviceRepo.GetByCode(ctx, constant.ServiceExtraCODT0)
+func (s *ExtraService) validateService(ctx context.Context, retailerId int64, clientCode string, price *domain.Price) (*domain.Service, bool, *common.Error) {
+	codT0Service, err := s.serviceRepo.GetByCode(ctx, constant.ServiceExtraCODT0)
 	if helpers.IsInternalError(err) {
 		log.Error(ctx, err.Error())
 		return nil, false, err
@@ -187,7 +207,7 @@ func (c *ExtraService) validateService(ctx context.Context, retailerId int64, cl
 		return nil, false, nil
 	}
 	if codT0Service.OnBoardingStatus == constant.OnboardingDisable {
-		shopSettings, err := c.settingShopRepo.GetByRetailerId(ctx, enums.ModelTypeServiceExtraSettingShop, retailerId)
+		shopSettings, err := s.settingShopRepo.GetByRetailerId(ctx, enums.ModelTypeServiceExtraSettingShop, retailerId)
 		if err != nil {
 			log.Error(ctx, err.Error())
 			return nil, false, err
@@ -201,8 +221,8 @@ func (c *ExtraService) validateService(ctx context.Context, retailerId int64, cl
 	return codT0Service, true, nil
 }
 
-func (c *ExtraService) checkServiceExtraIsPossible(ctx context.Context, addInfoDto *dto.AddInfoDto, extraServiceCode string) bool {
-	extraService, err := c.serviceRepo.GetByCode(ctx, extraServiceCode)
+func (s *ExtraService) checkServiceExtraIsPossible(ctx context.Context, addInfoDto *dto.AddInfoDto, extraServiceCode string) bool {
+	extraService, err := s.serviceRepo.GetByCode(ctx, extraServiceCode)
 	if helpers.IsInternalError(err) {
 		log.Error(ctx, err.Error())
 		return false
@@ -214,7 +234,7 @@ func (c *ExtraService) checkServiceExtraIsPossible(ctx context.Context, addInfoD
 		if extraService.OnBoardingStatus == constant.StatusEnableServiceExtra {
 			return true
 		}
-		serviceExtraEnableShop, err := c.settingShopRepo.GetByRetailerId(ctx, enums.ModelTypeServiceExtraSettingShop, addInfoDto.RetailerId)
+		serviceExtraEnableShop, err := s.settingShopRepo.GetByRetailerId(ctx, enums.ModelTypeServiceExtraSettingShop, addInfoDto.RetailerId)
 		if err != nil {
 			log.Error(ctx, err.Error())
 			return false
