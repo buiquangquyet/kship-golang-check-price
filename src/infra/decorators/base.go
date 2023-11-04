@@ -33,6 +33,12 @@ const (
 	keyCacheCityById = "cache_city_by_id"
 
 	keyCacheConfigCodT0ByCodAndClientId = "cache_config_cod_t0_by_cod_and_client_id"
+
+	keyCacheSettingByName = "cache_setting_by_name"
+
+	keyCacheShopCodT0ByShopId = "cache_shop_cod_t0_by_shop_id"
+
+	keyCacheShopLevelById = "cache_shop_level_by_id"
 )
 
 type baseDecorator struct {
@@ -69,7 +75,6 @@ func (b *baseDecorator) set(ctx context.Context, key string, value interface{}, 
 	}
 }
 
-// shop domain
 func (b *baseDecorator) genKeyCacheGetShopByRetailerId(retailerId int64) string {
 	return fmt.Sprintf("%s_%v", keyCacheShopByRetailerId, retailerId)
 }
@@ -124,4 +129,16 @@ func (b *baseDecorator) genKeyCacheGetCityById(id int64) string {
 
 func (b *baseDecorator) genKeyCacheGetConfigCodT0ByCodAndClientId(cod int64, clientId int64) string {
 	return fmt.Sprintf("%s_%v_%v", keyCacheConfigCodT0ByCodAndClientId, cod, clientId)
+}
+
+func (b *baseDecorator) genKeyCacheSettingByName(name string) string {
+	return fmt.Sprintf("%s_%s", keyCacheSettingByName, name)
+}
+
+func (b *baseDecorator) genKeyCacheShopCodT0ByShopId(shopId int64) string {
+	return fmt.Sprintf("%s_%v", keyCacheShopCodT0ByShopId, shopId)
+}
+
+func (b *baseDecorator) genKeyCacheShopLevelById(id int64) string {
+	return fmt.Sprintf("%s_%v", keyCacheShopLevelById, id)
 }

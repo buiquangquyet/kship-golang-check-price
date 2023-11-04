@@ -46,7 +46,7 @@ func (g *GHTKStrategy) Code() string {
 	return constant.GHTKDeliveryCode
 }
 
-func (g *GHTKStrategy) Validate(ctx context.Context, req *request.GetPriceReRequest) *common.Error {
+func (g *GHTKStrategy) Validate(ctx context.Context, req *request.GetPriceRequest) *common.Error {
 	ierr := common.ErrBadRequest(ctx)
 	if req.ReceiverWardId == 0 {
 		return ierr.SetMessage("Vui lòng nhập xã phường người nhận")
@@ -63,7 +63,7 @@ func (g *GHTKStrategy) Validate(ctx context.Context, req *request.GetPriceReRequ
 	return nil
 }
 
-func (g *GHTKStrategy) GetMultiplePriceV3(ctx context.Context, shop *domain.Shop, req *request.GetPriceReRequest) (map[string]*domain.Price, *common.Error) {
+func (g *GHTKStrategy) GetMultiplePriceV3(ctx context.Context, shop *domain.Shop, req *request.GetPriceRequest) (map[string]*domain.Price, *common.Error) {
 	var wg sync.WaitGroup
 	mapPrices := make(map[string]*domain.Price)
 	isBBS := false
@@ -102,7 +102,7 @@ func (g *GHTKStrategy) GetMultiplePriceV3(ctx context.Context, shop *domain.Shop
 	return mapPrices, nil
 }
 
-func (g *GHTKStrategy) getPriceInput(ctx context.Context, isBBS bool, weight int64, req *request.GetPriceReRequest) (*dto.GetPriceInputDto, *common.Error) {
+func (g *GHTKStrategy) getPriceInput(ctx context.Context, isBBS bool, weight int64, req *request.GetPriceRequest) (*dto.GetPriceInputDto, *common.Error) {
 	isVer2 := req.VersionLocation == constant.VersionLocation2
 	ierr := common.ErrBadRequest(ctx)
 	var pickWard *domain.Ward

@@ -24,7 +24,7 @@ func NewPriceController(
 }
 
 func (m *PriceController) GetPrice(c *gin.Context) {
-	req := new(request.GetPriceReRequest)
+	req := new(request.GetPriceRequest)
 	if ierr := m.BindAndValidateRequest(c, req); ierr != nil {
 		m.ErrorData(c, ierr)
 		return
@@ -49,8 +49,7 @@ func (m *PriceController) GetPrice(c *gin.Context) {
 	req.VersionLocation = versionLocation.(int)
 	data, err := m.priceService.GetPrice(c, req)
 	if err != nil {
-		err.SetLang(lang)
-		m.ErrorData(c, err)
+		m.ErrorData(c, err.SetLang(lang))
 		return
 	}
 	m.Success(c, data)

@@ -58,3 +58,8 @@ func (s ServiceRepo) GetByClientIdAndCodes(ctx context.Context, typeService enum
 	}
 	return services, nil
 }
+
+func (s ServiceRepo) GetByCode(ctx context.Context, code string) ([]*domain.Service, *common.Error) {
+
+	return nil, nil
+}

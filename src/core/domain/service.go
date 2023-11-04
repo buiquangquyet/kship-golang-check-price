@@ -37,6 +37,7 @@ type ServiceRepo interface {
 	GetByClientIdAndStatus(ctx context.Context, typeService enums.TypeService, status int, clientId int64) ([]*Service, *common.Error)
 	GetByClientCodeAndStatus(ctx context.Context, typeService enums.TypeService, status int, clientCode string) ([]*Service, *common.Error)
 	GetByClientIdAndCodes(ctx context.Context, typeService enums.TypeService, code []string, clientId int64) ([]*Service, *common.Error)
+	GetByCode(ctx context.Context, code string) (*Service, *common.Error)
 }
 
 func (Service) TableName() string {

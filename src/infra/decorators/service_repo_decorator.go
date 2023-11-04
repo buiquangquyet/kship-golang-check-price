@@ -21,6 +21,11 @@ type ServiceRepoDecorator struct {
 	serviceRepo *repo.ServiceRepo
 }
 
+func (s ServiceRepoDecorator) GetByCode(ctx context.Context, code string) (*domain.Service, *common.Error) {
+	//TODO implement me
+	panic("implement me")
+}
+
 func NewServiceRepoDecorator(base *baseDecorator, serviceRepo *repo.ServiceRepo) domain.ServiceRepo {
 	return &ServiceRepoDecorator{
 		baseDecorator: base,

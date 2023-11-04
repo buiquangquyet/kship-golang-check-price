@@ -5,7 +5,7 @@ import (
 	"context"
 )
 
-type GetPriceReRequest struct {
+type GetPriceRequest struct {
 	ClientCode  string `uri:"client" binding:"required"`
 	ActiveKShip bool   `json:"ACTIVE_KSHIP"`
 	*Sender
@@ -52,7 +52,7 @@ type ExtraService struct {
 	Name     string `json:"Name"`
 }
 
-func (g *GetPriceReRequest) validate(ctx context.Context) *common.Error {
+func (g *GetPriceRequest) validate(ctx context.Context) *common.Error {
 	ierr := common.ErrBadRequest(ctx)
 	if g.SenderLocationId == 0 {
 		return ierr.SetCode(4003)

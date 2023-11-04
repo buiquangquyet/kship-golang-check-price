@@ -5,6 +5,7 @@ import (
 	"check-price/src/common/log"
 	"check-price/src/core/constant"
 	"check-price/src/core/domain"
+	"check-price/src/core/dto"
 	"check-price/src/core/enums"
 	"check-price/src/core/strategy"
 	"check-price/src/helpers"
@@ -17,7 +18,9 @@ type PriceService struct {
 	serviceRepo          domain.ServiceRepo
 	clientRepo           domain.ClientRepo
 	validateService      *ValidateService
+	settingShopRepo      domain.SettingShopRepo
 	shipStrategyResolver *strategy.ShipStrategyFilterResolver
+	extraService         *ExtraService
 }
 
 func NewPriceService(
@@ -25,19 +28,22 @@ func NewPriceService(
 	serviceRepo domain.ServiceRepo,
 	clientRepo domain.ClientRepo,
 	validateService *ValidateService,
+	settingShopRepo domain.SettingShopRepo,
 	shipStrategyResolver *strategy.ShipStrategyFilterResolver,
+	extraService *ExtraService,
 ) *PriceService {
 	return &PriceService{
 		shopRepo:             shopRepo,
 		serviceRepo:          serviceRepo,
 		clientRepo:           clientRepo,
 		validateService:      validateService,
+		settingShopRepo:      settingShopRepo,
 		shipStrategyResolver: shipStrategyResolver,
+		extraService:         extraService,
 	}
 }
 
-func (p *PriceService) GetPrice(ctx context.Context, req *request.GetPriceReRequest) ([]*domain.Price, *common.Error) {
-	clientCode := req.ClientCode
+func (p *PriceService) GetPrice(ctx context.Context, req *request.GetPriceRequest) ([]*domain.Price, *common.Error) {
 	shop, err := p.shopRepo.GetByRetailerId(ctx, req.RetailerId)
 	if helpers.IsInternalError(err) {
 		log.Error(ctx, err.Error())
@@ -50,13 +56,13 @@ func (p *PriceService) GetPrice(ctx context.Context, req *request.GetPriceReRequ
 			return nil, err
 		}
 	}
-	ierr := p.validateService.validatePrice(ctx, shop, req.RetailerId, req)
+	client, ierr := p.validateService.validatePrice(ctx, shop, req)
 	if ierr != nil {
 		return nil, ierr
 	}
-	shipStrategy, exist := p.shipStrategyResolver.Resolve(clientCode)
+	shipStrategy, exist := p.shipStrategyResolver.Resolve(req.ClientCode)
 	if !exist {
-		log.Warn(ctx, "not support with partner:[%s]", clientCode)
+		log.Warn(ctx, "not support with partner:[%s]", req.ClientCode)
 		return nil, common.ErrBadRequest(ctx).SetDetail("partner not support").SetSource(common.SourceAPIService)
 	}
 	ierr = shipStrategy.Validate(ctx, req)
@@ -68,21 +74,22 @@ func (p *PriceService) GetPrice(ctx context.Context, req *request.GetPriceReRequ
 		log.IErr(ctx, err)
 		return nil, err
 	}
-	prices, ierr := p.addInfo(ctx, req.ClientCode, req.Services, mapPrices)
+
+	prices, ierr := p.addInfo(ctx, dto.NewAddInfoDTO(shop, client, req), mapPrices)
 	if ierr != nil {
 		return nil, ierr
 	}
 	return prices, nil
 }
 
-func (p *PriceService) addInfo(ctx context.Context, clientCode string, servicesReq []*request.Service, mapPrices map[string]*domain.Price) ([]*domain.Price, *common.Error) {
-	client, ierr := p.clientRepo.GetByCode(ctx, clientCode)
+func (p *PriceService) addInfo(ctx context.Context, addInfoDto *dto.AddInfoDto, mapPrices map[string]*domain.Price) ([]*domain.Price, *common.Error) {
+	client, ierr := p.clientRepo.GetByCode(ctx, addInfoDto.Client.Code)
 	if ierr != nil {
 		log.Error(ctx, ierr.Error())
 		return nil, ierr
 	}
-	servicesCode := make([]string, len(servicesReq))
-	for i, service := range servicesReq {
+	servicesCode := make([]string, len(addInfoDto.Services))
+	for i, service := range addInfoDto.Services {
 		servicesCode[i] = service.Code
 	}
 	services, ierr := p.serviceRepo.GetByClientIdAndCodes(ctx, enums.TypeServiceDV, servicesCode, client.Id)
@@ -99,32 +106,12 @@ func (p *PriceService) addInfo(ctx context.Context, clientCode string, servicesR
 		price.Code = serviceCode
 		price.SetClientInfo(client)
 		price.SetServiceInfo(mapServices[serviceCode])
+		err := p.extraService.handlePriceSpecialService(ctx, price, addInfoDto)
+		if err != nil {
+			return nil, err
+		}
 
 		prices = append(prices, price)
 	}
 	return prices, nil
-}
-
-func (p *PriceService) handlePriceSpecialService(ctx context.Context, price *domain.Price, shop *domain.Shop, extraService []*request.ExtraService, cod int64) *common.Error {
-	extraServiceCode := make([]string, len(extraService))
-	//payer := ""
-	for i, service := range extraService {
-		if service.Code == "PAYMENT_BY" {
-			//payer = service.Code
-		}
-		extraServiceCode[i] = service.Code
-	}
-	if helpers.InArray(extraServiceCode, constant.ServiceExtraCODST) && p.checkServiceExtraIsPossible(ctx) {
-		price.CalculatorCODST(shop, cod)
-	}
-	if helpers.InArray(extraServiceCode, constant.ServiceExtraCODT0) {
-
-	}
-	return nil
-}
-
-func (p *PriceService) checkServiceExtraIsPossible(_ context.Context) bool {
-
-	//Todo code
-	return true
 }
