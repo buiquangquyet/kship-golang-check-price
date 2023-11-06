@@ -15,7 +15,7 @@ type Price struct {
 	InsuranceFee  int64   `json:"insuranceFee"`
 	TransferFee   int64   `json:"transferFee"`
 	CodFee        int     `json:"codFee"`
-	Total         int     `json:"total"`
+	Total         int64   `json:"total"`
 	Fee           int64   `json:"fee"`
 	ConnFee       float64 `json:"connFee"`
 	CodstFee      int64   `json:"codstFee"`
@@ -41,6 +41,16 @@ func (p *Price) SetServiceInfo(service *Service) *Price {
 	p.GroupId = strconv.Itoa(service.GroupId)
 	p.Name = service.Name
 	p.Description = service.Description
+	return p
+}
+
+func (p *Price) SetConnFee(connFee float64) *Price {
+	p.ConnFee = connFee
+	return p
+}
+
+func (p *Price) SetCodStFee(codStFee int64) *Price {
+	p.CodstFee = codStFee
 	return p
 }
 

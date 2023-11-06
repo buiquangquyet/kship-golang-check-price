@@ -77,7 +77,7 @@ func (s *ExtraService) addCodStPrice(price *domain.Price, shop *domain.Shop, cod
 			}
 		}
 	}
-	price.CodstFee = codStFee
+	price.SetCodStFee(codStFee)
 }
 
 func (s *ExtraService) addCodConnPrice(ctx context.Context, price *domain.Price, shop *domain.Shop) *common.Error {
@@ -95,7 +95,7 @@ func (s *ExtraService) addCodConnPrice(ctx context.Context, price *domain.Price,
 		log.Error(ctx, ierr.Error())
 		return ierr
 	}
-	price.ConnFee = shopLevel.GhnMarkup
+	price.SetConnFee(shopLevel.GhnMarkup)
 	return nil
 }
 func (s *ExtraService) addCodT0Price(ctx context.Context, price *domain.Price, addInfoDto *dto.AddInfoDto) *common.Error {
