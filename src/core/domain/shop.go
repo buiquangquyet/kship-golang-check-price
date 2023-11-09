@@ -26,6 +26,7 @@ type Shop struct {
 	BankBranch  string `json:"bank_branch"`
 	BankAccount string `json:"bank_account"`
 	BankNumber  string `json:"bank_number"`
+	RetailerId  int64  `json:"retailer_id"`
 
 	GhnShopId       string `json:"ghn_shop_id"`
 	GhnContractId   int    `json:"ghn_contract_id"`

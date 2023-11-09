@@ -15,7 +15,8 @@ const (
 	keyCacheShopByCode       = "cache_shop_by_code"
 	keyCacheShopByRetailerId = "cache_shop_by_retailer_id"
 
-	keyCacheSettingShopByRetailerId = "cache_setting_shop"
+	keyCacheSettingShopByRetailerId           = "cache_setting_shop_by_retailer_id"
+	keyCacheSettingShopByRetailerIdAndModelId = "cache_setting_shop_by_retailer_id_and_model_id"
 
 	keyCacheClientByCode = "cache_client_by_code"
 
@@ -29,6 +30,7 @@ const (
 	keyCacheServiceByClientId        = "cache_service_by_client_id"
 	keyCacheServiceByClientCode      = "cache_service_by_client_code"
 	keyCacheServiceByClientIdAndCode = "cache_service_by_code_and_client_code"
+	keyCacheServiceByCode            = "cache_service_by_code"
 
 	keyCacheCityById = "cache_city_by_id"
 
@@ -87,6 +89,10 @@ func (b *baseDecorator) genKeyCacheGetSettingShopByRetailerId(modelType enums.Mo
 	return fmt.Sprintf("%s_%s_%v", keyCacheSettingShopByRetailerId, modelType.ToString(), retailerId)
 }
 
+func (b *baseDecorator) genKeyCacheGetSettingShopByRetailerIdAndModelId(modelType enums.ModelTypeSettingShop, retailerId int64, modelId int64) string {
+	return fmt.Sprintf("%s_%s_%v_%v", keyCacheSettingShopByRetailerIdAndModelId, modelType.ToString(), retailerId, modelId)
+}
+
 func (b *baseDecorator) genKeyCacheGetClientByCode(code string) string {
 	return fmt.Sprintf("%s_%s", keyCacheClientByCode, code)
 }
@@ -121,6 +127,10 @@ func (b *baseDecorator) genKeyCacheGetServiceByClientCode(typeService enums.Type
 
 func (b *baseDecorator) genKeyCacheGetServiceByClientIdAndCodes(typeService enums.TypeService, codes []string, clientId int64) string {
 	return fmt.Sprintf("%s_%v_%v_%v", keyCacheServiceByClientIdAndCode, typeService, codes, clientId)
+}
+
+func (b *baseDecorator) genKeyCacheGetServiceByCode(code string) string {
+	return fmt.Sprintf("%s_%s", keyCacheServiceByCode, code)
 }
 
 func (b *baseDecorator) genKeyCacheGetCityById(id int64) string {

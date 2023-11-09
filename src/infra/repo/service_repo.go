@@ -6,6 +6,8 @@ import (
 	"check-price/src/core/enums"
 	"check-price/src/helpers"
 	"context"
+	"errors"
+	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
 )
 
@@ -59,7 +61,14 @@ func (s ServiceRepo) GetByClientIdAndCodes(ctx context.Context, typeService enum
 	return services, nil
 }
 
-func (s ServiceRepo) GetByCode(ctx context.Context, code string) ([]*domain.Service, *common.Error) {
-
-	return nil, nil
+func (s ServiceRepo) GetByCode(ctx context.Context, code string) (*domain.Service, *common.Error) {
+	service := &domain.Service{}
+	cond := clause.Eq{Column: "code", Value: code}
+	if err := s.db.WithContext(ctx).Clauses(cond).Take(service).Error; err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, common.ErrNotFound(ctx, "service", "not found").SetSource(common.SourceInfraService)
+		}
+		return nil, s.returnError(ctx, err)
+	}
+	return service, nil
 }

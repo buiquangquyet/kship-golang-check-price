@@ -10,6 +10,8 @@ type AddInfoDto struct {
 	Client       *domain.Client
 	Cod          int64
 	RetailerId   int64
+	Payer        string
+	Coupon       string
 	Services     []*Service
 	ExtraService []*ExtraService
 }
@@ -22,8 +24,16 @@ func NewAddInfoDTO(shop *domain.Shop, client *domain.Client, req *request.GetPri
 			OldTotalPrice: service.OldTotalPrice,
 		}
 	}
+	payer := ""
+	coupon := ""
 	extraServices := make([]*ExtraService, len(req.ExtraService))
 	for i, extraService := range req.ExtraService {
+		if extraService.Code == "PaymentBy" {
+			payer = extraService.Value
+		}
+		if extraService.Code == "Coupon" {
+			coupon = extraService.Value
+		}
 		extraServices[i] = &ExtraService{
 			Code:     extraService.Code,
 			Value:    extraService.Value,
@@ -36,6 +46,8 @@ func NewAddInfoDTO(shop *domain.Shop, client *domain.Client, req *request.GetPri
 		Client:       client,
 		Cod:          req.MoneyCollection,
 		RetailerId:   req.RetailerId,
+		Payer:        payer,
+		Coupon:       coupon,
 		Services:     services,
 		ExtraService: extraServices,
 	}

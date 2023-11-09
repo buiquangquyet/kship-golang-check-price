@@ -13,7 +13,7 @@ func BuildServiceModule() fx.Option {
 		fx.Provide(service.NewValidateService),
 		fx.Provide(service.NewPriceService),
 		fx.Provide(service.NewExtraService),
-
+		fx.Provide(service.NewVoucherService),
 		fx.Provide(strategy.NewShipStrategyFilterResolver),
 		strategy.ProvideShipStrategyFilterStrategy(ghtk.NewGHTKStrategy),
 	)

@@ -44,7 +44,8 @@ type Config struct {
 	} `mapstructure:"redis"`
 
 	ExtService struct {
-		GHTK *GHTK `mapstructure:"ghtk"`
+		GHTK    *GHTK    `mapstructure:"ghtk"`
+		Voucher *Voucher `mapstructure:"voucher"`
 	} `mapstructure:"ext_service"`
 
 	Tracer struct {
@@ -59,6 +60,10 @@ type Config struct {
 type GHTK struct {
 	Host  string `mapstructure:"host"`
 	Token string `mapstructure:"token"`
+}
+
+type Voucher struct {
+	Host string `mapstructure:"host"`
 }
 
 var common *Config

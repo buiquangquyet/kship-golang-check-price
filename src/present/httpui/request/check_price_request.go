@@ -53,6 +53,13 @@ type ExtraService struct {
 }
 
 func (g *GetPriceRequest) validate(ctx context.Context) *common.Error {
+	//Todo de tam
+	g.ExtraService = append(g.ExtraService, &ExtraService{
+		Code:     "CONN",
+		Value:    "true",
+		ViewType: "CheckList",
+		Name:     "Ket noi nhanh",
+	})
 	ierr := common.ErrBadRequest(ctx)
 	if g.SenderLocationId == 0 {
 		return ierr.SetCode(4003)

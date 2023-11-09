@@ -14,6 +14,7 @@ import (
 const (
 	expirationServiceByClientId   = 12 * time.Hour
 	expirationServiceByClientCode = 12 * time.Hour
+	expirationServiceByCode       = 1 * time.Hour
 )
 
 type ServiceRepoDecorator struct {
@@ -22,8 +23,23 @@ type ServiceRepoDecorator struct {
 }
 
 func (s ServiceRepoDecorator) GetByCode(ctx context.Context, code string) (*domain.Service, *common.Error) {
-	//TODO implement me
-	panic("implement me")
+	key := s.genKeyCacheGetServiceByCode(code)
+	var services *domain.Service
+	val, err := s.get(ctx, key).Result()
+	s.handleRedisError(ctx, err)
+	if err == nil {
+		err = json.Unmarshal([]byte(val), &services)
+		if err == nil {
+			return services, nil
+		}
+		log.Warn(ctx, "unmarshall error")
+	}
+	serviceDB, ierr := s.serviceRepo.GetByCode(ctx, code)
+	if ierr != nil {
+		return nil, ierr
+	}
+	go s.set(ctx, key, serviceDB, expirationServiceByCode)
+	return serviceDB, nil
 }
 
 func NewServiceRepoDecorator(base *baseDecorator, serviceRepo *repo.ServiceRepo) domain.ServiceRepo {

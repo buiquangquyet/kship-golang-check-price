@@ -18,6 +18,7 @@ type PriceService struct {
 	serviceRepo          domain.ServiceRepo
 	clientRepo           domain.ClientRepo
 	validateService      *ValidateService
+	voucherService       *VoucherService
 	settingShopRepo      domain.SettingShopRepo
 	shipStrategyResolver *strategy.ShipStrategyFilterResolver
 	extraService         *ExtraService
@@ -28,6 +29,7 @@ func NewPriceService(
 	serviceRepo domain.ServiceRepo,
 	clientRepo domain.ClientRepo,
 	validateService *ValidateService,
+	voucherService *VoucherService,
 	settingShopRepo domain.SettingShopRepo,
 	shipStrategyResolver *strategy.ShipStrategyFilterResolver,
 	extraService *ExtraService,
@@ -37,6 +39,7 @@ func NewPriceService(
 		serviceRepo:          serviceRepo,
 		clientRepo:           clientRepo,
 		validateService:      validateService,
+		voucherService:       voucherService,
 		settingShopRepo:      settingShopRepo,
 		shipStrategyResolver: shipStrategyResolver,
 		extraService:         extraService,
@@ -55,6 +58,7 @@ func (p *PriceService) GetPrice(ctx context.Context, req *request.GetPriceReques
 			log.Error(ctx, err.Error())
 			return nil, err
 		}
+		req.RetailerId = shop.RetailerId
 	}
 	client, ierr := p.validateService.validatePrice(ctx, shop, req)
 	if ierr != nil {
@@ -110,8 +114,23 @@ func (p *PriceService) addInfo(ctx context.Context, addInfoDto *dto.AddInfoDto, 
 		if err != nil {
 			return nil, err
 		}
-
+		p.handleTotalPrice(price, addInfoDto)
+		err = p.voucherService.checkVoucher(ctx, price, addInfoDto)
+		if err != nil {
+			return nil, err
+		}
 		prices = append(prices, price)
 	}
 	return prices, nil
+}
+
+func (p *PriceService) handleTotalPrice(price *domain.Price, addInfoDto *dto.AddInfoDto) {
+	//Todo xem lai
+	total := price.CodstFee + int64(price.ConnFee) + int64(price.CodT0Fee)
+	totalFeeExtraService := total
+	if addInfoDto.Payer == "NGUOIGUI" {
+		total = price.Fee + total
+	}
+	price.Total = total
+	price.TotalPrice += totalFeeExtraService
 }

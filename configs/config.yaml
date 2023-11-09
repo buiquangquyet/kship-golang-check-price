@@ -37,7 +37,8 @@ ext_service:
   ghtk:
     host: https://services.giaohangtietkiem.vn
     token: 88cFcAB40657e1AA1EBf852c4060E6d257a02EFf
-
+  voucher:
+    host: https://voucher-shipping-prelive.kvpos.com
 swagger:
   enabled: false
 

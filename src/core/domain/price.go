@@ -14,16 +14,16 @@ type Price struct {
 	GroupId       string  `json:"groupId"`
 	InsuranceFee  int64   `json:"insuranceFee"`
 	TransferFee   int64   `json:"transferFee"`
-	CodFee        int     `json:"codFee"`
+	CodFee        int64   `json:"codFee"`
 	Total         int64   `json:"total"`
 	Fee           int64   `json:"fee"`
 	ConnFee       float64 `json:"connFee"`
 	CodstFee      int64   `json:"codstFee"`
 	CodT0Fee      float64 `json:"codT0Fee"`
-	TotalPrice    int     `json:"totalPrice"`
-	OtherPrice    int     `json:"otherPrice"`
+	TotalPrice    int64   `json:"totalPrice"`
+	OtherFee      int64   `json:"otherFee"`
 	CouponSale    int64   `json:"couponSale"`
-	OldTotalPrice int     `json:"oldTotalPrice"`
+	OldTotalPrice int64   `json:"oldTotalPrice"`
 	Status        bool    `json:"status"`
 	Msg           string  `json:"msg"`
 	StatusCodT0   bool    `json:"status_codT0"`
@@ -58,5 +58,14 @@ func (p *Price) SetCodT0Info(status bool, message string, codStFee float64) *Pri
 	p.StatusCodT0 = status
 	p.MessageCodT0 = message
 	p.CodT0Fee = codStFee
+	return p
+}
+
+func (p *Price) SetCouponInfo(discountVoucher int64, totalPrice int64) *Price {
+	p.CouponSale = discountVoucher
+	p.OldTotalPrice = totalPrice
+	p.TotalPrice = totalPrice - discountVoucher
+	p.Total = p.TotalPrice
+	p.OtherFee = totalPrice - (p.TransferFee + p.InsuranceFee + p.CodFee)
 	return p
 }

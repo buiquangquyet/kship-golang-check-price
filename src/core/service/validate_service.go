@@ -60,7 +60,6 @@ func (v *ValidateService) validatePrice(ctx context.Context, shop *domain.Shop, 
 	return client, nil
 }
 
-// done
 func (v *ValidateService) validateShop(ctx context.Context, shop *domain.Shop, clientCode string) *common.Error {
 	ierr := common.ErrBadRequest(ctx)
 	switch clientCode {
@@ -92,7 +91,6 @@ func (v *ValidateService) validateShop(ctx context.Context, shop *domain.Shop, c
 	return nil
 }
 
-// done
 func (v *ValidateService) validateClient(ctx context.Context, clientCode string, retailerId int64) (*domain.Client, *common.Error) {
 	client, err := v.clientRepo.GetByCode(ctx, clientCode)
 	if helpers.IsInternalError(err) {
@@ -105,18 +103,6 @@ func (v *ValidateService) validateClient(ctx context.Context, clientCode string,
 	}
 	if client.Status == constant.DisableStatus {
 		return nil, ierr.SetCode(3002)
-	}
-	clientUnAllowedShop, err := v.settingShopRepo.GetByRetailerId(ctx, enums.ModelTypeClientDisableShop, retailerId)
-	if err != nil {
-		log.IErr(ctx, err)
-		return nil, err
-	}
-	clientUnAllowedShopIds := make([]int64, len(clientUnAllowedShop))
-	for i, shop := range clientUnAllowedShop {
-		clientUnAllowedShopIds[i] = shop.ModelId
-	}
-	if helpers.InArray(clientUnAllowedShopIds, client.Id) {
-		return nil, ierr.SetCode(3004)
 	}
 
 	if client.OnBoardingStatus == constant.OnboardingDisable {
@@ -133,6 +119,20 @@ func (v *ValidateService) validateClient(ctx context.Context, clientCode string,
 			return nil, ierr.SetCode(3004)
 		}
 	}
+
+	clientUnAllowedShop, err := v.settingShopRepo.GetByRetailerId(ctx, enums.ModelTypeClientDisableShop, retailerId)
+	if err != nil {
+		log.IErr(ctx, err)
+		return nil, err
+	}
+	clientUnAllowedShopIds := make([]int64, len(clientUnAllowedShop))
+	for i, shop := range clientUnAllowedShop {
+		clientUnAllowedShopIds[i] = shop.ModelId
+	}
+	if helpers.InArray(clientUnAllowedShopIds, client.Id) {
+		return nil, ierr.SetCode(3004)
+	}
+
 	return client, nil
 }
 
