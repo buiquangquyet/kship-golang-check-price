@@ -80,6 +80,7 @@ func (a *AuthMiddleware) ValidateTokenClient(c *gin.Context, token string) *comm
 	}
 	c.Set(constant.MerchantCodeKey, strings.ToUpper(source.(string)))
 	c.Set(constant.MerchantIdKey, retailerId)
+	c.Set(constant.Merchant, fmt.Sprintf("%v_%s", retailerId, strings.ToUpper(source.(string))))
 	versionLocation := 1
 	versionLocationString := c.GetHeader("version-location")
 	if versionLocationString == "" {
