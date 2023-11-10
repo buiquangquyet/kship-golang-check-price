@@ -9,6 +9,7 @@ import (
 	"errors"
 	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
+	"strings"
 )
 
 func NewServiceRepo(base *baseRepo) *ServiceRepo {
@@ -38,7 +39,7 @@ func (s ServiceRepo) GetByClientCodeAndStatus(ctx context.Context, typeService e
 	services := make([]*domain.Service, 0)
 	conds := []clause.Expression{
 		clause.Eq{Column: "type", Value: typeService.ToInt()},
-		clause.Like{Column: "clients_possible", Value: clientCode},
+		clause.Like{Column: "clients_possible", Value: "%" + strings.TrimSpace(clientCode) + "%"},
 		clause.Eq{Column: "status", Value: status},
 	}
 	if err := s.db.WithContext(ctx).Clauses(conds...).Find(&services).Error; err != nil {
