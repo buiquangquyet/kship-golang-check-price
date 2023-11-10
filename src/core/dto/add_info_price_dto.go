@@ -1,6 +1,7 @@
 package dto
 
 import (
+	"check-price/src/core/constant"
 	"check-price/src/core/domain"
 	"check-price/src/present/httpui/request"
 )
@@ -28,7 +29,7 @@ func NewAddInfoDTO(shop *domain.Shop, client *domain.Client, req *request.GetPri
 	coupon := ""
 	extraServices := make([]*ExtraService, len(req.ExtraService))
 	for i, extraService := range req.ExtraService {
-		if extraService.Code == "PaymentBy" {
+		if extraService.Code == constant.ServiceExtraCodePayment {
 			payer = extraService.Value
 		}
 		if extraService.Code == "Coupon" {
