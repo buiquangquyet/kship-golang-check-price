@@ -6,7 +6,7 @@ import (
 )
 
 func EncryptText(plainText string) string {
-	appKey := configs.Get()
+	appKey := configs.Get().AppKey
 	keyLength := len(appKey)
 	plainTextLength := len(plainText)
 	maxLength := max(plainTextLength, keyLength)

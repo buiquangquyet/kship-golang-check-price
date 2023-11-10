@@ -28,7 +28,7 @@ func (s *ShopRepo) GetByRetailerId(ctx context.Context, retailerId int64) (*doma
 		}
 		return nil, s.returnError(ctx, err)
 	}
-	return shop, nil
+	return shop.DecryptPassword(), nil
 }
 
 func (s *ShopRepo) GetByCode(ctx context.Context, code string) (*domain.Shop, *common.Error) {
@@ -40,5 +40,5 @@ func (s *ShopRepo) GetByCode(ctx context.Context, code string) (*domain.Shop, *c
 		}
 		return nil, s.returnError(ctx, err)
 	}
-	return shop, nil
+	return shop.DecryptPassword(), nil
 }

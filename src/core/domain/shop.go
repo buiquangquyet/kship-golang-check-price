@@ -3,6 +3,7 @@ package domain
 import (
 	"check-price/src/common"
 	"context"
+	"encoding/base64"
 	"time"
 )
 
@@ -50,11 +51,26 @@ type Shop struct {
 	DeletedAt time.Time `json:"deleted_at"`
 }
 
+func (s *Shop) DecryptPassword() *Shop {
+	decoded, _ := base64.StdEncoding.DecodeString(s.GHTKPass)
+	var str1 []byte
+	var str2 []byte
+
+	for i := 0; i < len(decoded); i += 2 {
+		str1 = append(str1, decoded[i])
+		if i+1 < len(decoded) {
+			str2 = append(str2, decoded[i+1])
+		}
+	}
+	s.GHTKPass = string(str1)
+	return s
+}
+
 type ShopRepo interface {
 	GetByRetailerId(ctx context.Context, retailerId int64) (*Shop, *common.Error)
 	GetByCode(ctx context.Context, shopCode string) (*Shop, *common.Error)
 }
 
-func (Shop) TableName() string {
+func (s *Shop) TableName() string {
 	return "shops"
 }

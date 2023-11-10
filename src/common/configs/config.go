@@ -5,7 +5,8 @@ import (
 )
 
 type Config struct {
-	Mode string `mapstructure:"mode"`
+	Mode   string `mapstructure:"mode"`
+	AppKey string `mapstructure:"app_key"`
 
 	Log struct {
 		EnableFile bool   `mapstructure:"enable_file"`

@@ -72,7 +72,7 @@ func (v *ValidateService) validateShop(ctx context.Context, shop *domain.Shop, c
 			return ierr.SetCode(3008)
 		}
 	case constant.GHTKDeliveryCode:
-		if shop.GHTKUsername == "" || shop.GHTKPassword == "" {
+		if shop.GHTKUsername == "" || shop.GHTKPass == "" {
 			return ierr.SetCode(3012)
 		}
 	case constant.JTFWDeliveryCode:
