@@ -1,4 +1,5 @@
 mode: dev
+app_key: 88cFcAB40657e1AA1EBf852c4060E6d257a02EFf88cFcAB40657e1AA1EBf852c4060E6d257a02EFf
 
 log:
   enable_file: false
