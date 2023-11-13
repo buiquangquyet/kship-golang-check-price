@@ -56,24 +56,11 @@ type GetPriceUnder20Output struct {
 
 func (g *GetPriceUnder20Output) ToDomainPrice() *domain.Price {
 	return &domain.Price{
-		Id:            0,
-		Code:          "",
-		Name:          "",
-		Image:         "",
-		Description:   "",
-		ClientCode:    "",
-		GroupId:       "",
-		InsuranceFee:  g.Fee.InsuranceFee,
-		TransferFee:   g.Fee.ShipFeeOnly,
-		CodFee:        0,
-		Total:         0,
-		Fee:           g.Fee.Fee,
-		ConnFee:       0,
-		CodstFee:      0,
-		TotalPrice:    g.Fee.Fee,
-		OtherFee:      0,
-		OldTotalPrice: 0,
-		Status:        g.Fee.Delivery,
-		Msg:           "Check price success",
+		InsuranceFee: g.Fee.InsuranceFee,
+		TransferFee:  g.Fee.ShipFeeOnly,
+		Fee:          g.Fee.Fee,
+		TotalPrice:   g.Fee.Fee,
+		Status:       g.Fee.Delivery,
+		Msg:          "Check price success",
 	}
 }

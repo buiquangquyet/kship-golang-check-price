@@ -1,6 +1,9 @@
 package ghtk
 
-import "check-price/src/core/dto"
+import (
+	"check-price/src/core/domain"
+	"check-price/src/core/dto"
+)
 
 type GetPriceOver20Input struct {
 	PickProvince     string     `json:"pick_province"`
@@ -56,7 +59,7 @@ func newGetPriceOver20Input(serviceCode string, p *dto.GetPriceInputDto) *GetPri
 type GetPriceOver20Output struct {
 	Success bool `json:"success"`
 	Data    struct {
-		CostId     int64   `json:"cost_id"`
+		CostId     string  `json:"cost_id"`
 		RealWeight int64   `json:"real_weight"`
 		Distance   float64 `json:"distance"`
 		Value      int64   `json:"value"`
@@ -82,4 +85,15 @@ type Fee struct {
 	Type    string `json:"type"`
 	Title   string `json:"title"`
 	Amount  int64  `json:"amount"`
+}
+
+func (g *GetPriceOver20Output) ToDomain() *domain.Price {
+	return &domain.Price{
+		InsuranceFee: g.Data.Insurance,
+		TransferFee:  g.Data.OnlyShipFee,
+		Fee:          g.Data.TotalValue,
+		TotalPrice:   g.Data.TotalValue,
+		Status:       g.Success,
+		Msg:          "Check price success",
+	}
 }

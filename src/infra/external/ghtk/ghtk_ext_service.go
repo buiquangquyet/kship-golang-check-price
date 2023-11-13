@@ -117,7 +117,7 @@ func (g *GHTKExtService) getPriceOver20(ctx context.Context, serviceCode string,
 		SetBody(newGetPriceOver20Input(serviceCode, getPriceParam)).
 		SetSuccessResult(&output).
 		SetErrorResult(&output).
-		Get(getPriceOver20Path)
+		Post(getPriceOver20Path)
 	if err != nil {
 		return nil, common.ErrSystemError(ctx, err.Error()).SetSource(common.SourceGHTKService)
 	}
@@ -128,8 +128,7 @@ func (g *GHTKExtService) getPriceOver20(ctx context.Context, serviceCode string,
 		//detail := fmt.Sprintf("http: [%d], resp: [%s]", resp.StatusCode, resp.String())
 		//return nil, g.handleError(ctx, resp.StatusCode, &output).SetSource(common.SourceGHTKService).SetDetail(detail)
 	}
-
-	return &domain.Price{}, nil
+	return output.ToDomain(), nil
 
 }
 
