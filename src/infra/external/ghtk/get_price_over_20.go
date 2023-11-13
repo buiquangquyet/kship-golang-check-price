@@ -27,15 +27,15 @@ type Product struct {
 
 func newGetPriceOver20Input(serviceCode string, p *dto.GetPriceInputDto) *GetPriceOver20Input {
 	products := make([]*Product, len(p.Products))
-	for _, product := range p.Products {
-		products = append(products, &Product{
+	for i, product := range p.Products {
+		products[i] = &Product{
 			Name:     product.Name,
 			Width:    product.Width,
 			Height:   product.Height,
 			Length:   product.Length,
 			Quantity: product.Quantity,
 			Weight:   product.Weight,
-		})
+		}
 	}
 
 	return &GetPriceOver20Input{
