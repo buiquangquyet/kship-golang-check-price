@@ -34,7 +34,7 @@ func (s *VoucherService) checkVoucher(ctx context.Context, price *domain.Price, 
 	//bo qua client_error_code
 	switch voucher.StatusCode {
 	case constant.VoucherExist:
-		if voucher.Type == constant.TypeVoucherKv && !(addInfoDto.Payer == "NGUOINHAN") {
+		if voucher.Type == constant.TypeVoucherKv && !(addInfoDto.Payer == constant.PaymentByTo) {
 			callTo = constant.UseKv
 		} else if voucher.Type == constant.TypeVoucherDelivery {
 			if helpers.InArray(constant.ClientAllowUsePromotion, addInfoDto.Client.Code) {

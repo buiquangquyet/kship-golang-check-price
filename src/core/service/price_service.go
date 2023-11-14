@@ -128,7 +128,7 @@ func (p *PriceService) handleTotalPrice(price *domain.Price, addInfoDto *dto.Add
 	//Todo xem lai
 	total := price.CodstFee + int64(price.ConnFee) + int64(price.CodT0Fee)
 	totalFeeExtraService := total
-	if addInfoDto.Payer == "NGUOIGUI" {
+	if addInfoDto.Payer == constant.PaymentByFrom {
 		total = price.Fee + total
 	}
 	price.Total = total
