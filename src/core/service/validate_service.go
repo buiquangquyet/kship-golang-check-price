@@ -9,7 +9,6 @@ import (
 	"check-price/src/helpers"
 	"check-price/src/present/httpui/request"
 	"context"
-	"fmt"
 )
 
 type ValidateService struct {
@@ -138,9 +137,6 @@ func (v *ValidateService) validateClient(ctx context.Context, clientCode string,
 
 func (v *ValidateService) validateLocation(ctx context.Context, clientCode string, req *request.GetPriceRequest) *common.Error {
 	ierr := common.ErrBadRequest(ctx)
-	var pickWard *domain.Ward
-	var receiverWard *domain.Ward
-	fmt.Print(pickWard, receiverWard)
 	isVer2 := req.VersionLocation == constant.VersionLocation2
 	if isVer2 {
 		_, ierr = v.districtRepo.GetByKmsId(ctx, req.SenderLocationId)
@@ -180,13 +176,13 @@ func (v *ValidateService) validateLocation(ctx context.Context, clientCode strin
 		return ierr.SetCode(4004)
 	}
 	if isVer2 {
-		pickWard, ierr = v.wardRepo.GetByKmsId(ctx, req.SenderWardId)
+		_, ierr = v.wardRepo.GetByKmsId(ctx, req.SenderWardId)
 		if helpers.IsInternalError(ierr) {
 			log.Error(ctx, ierr.Error())
 			return ierr
 		}
 	} else {
-		pickWard, ierr = v.wardRepo.GetByKvId(ctx, req.SenderWardId)
+		_, ierr = v.wardRepo.GetByKvId(ctx, req.SenderWardId)
 		if helpers.IsInternalError(ierr) {
 			log.Error(ctx, ierr.Error())
 			return ierr
@@ -200,13 +196,13 @@ func (v *ValidateService) validateLocation(ctx context.Context, clientCode strin
 		return ierr.SetCode(4006)
 	}
 	if isVer2 {
-		receiverWard, ierr = v.wardRepo.GetByKmsId(ctx, req.ReceiverWardId)
+		_, ierr = v.wardRepo.GetByKmsId(ctx, req.ReceiverWardId)
 		if helpers.IsInternalError(ierr) {
 			log.Error(ctx, ierr.Error())
 			return ierr
 		}
 	} else {
-		receiverWard, ierr = v.wardRepo.GetByKvId(ctx, req.ReceiverWardId)
+		_, ierr = v.wardRepo.GetByKvId(ctx, req.ReceiverWardId)
 		if helpers.IsInternalError(ierr) {
 			log.Error(ctx, ierr.Error())
 			return ierr
