@@ -9,7 +9,6 @@ import (
 	"check-price/src/core/enums"
 	"check-price/src/helpers"
 	"context"
-	"fmt"
 	"strconv"
 	"strings"
 	"time"
@@ -207,12 +206,11 @@ func (s *ExtraService) validateService(ctx context.Context, retailerId int64, cl
 		return nil, false, nil
 	}
 	if codT0Service.OnBoardingStatus == constant.OnboardingDisable {
-		shopSettings, err := s.settingShopRepo.GetByRetailerId(ctx, enums.ModelTypeServiceExtraSettingShop, retailerId)
+		_, err := s.settingShopRepo.GetByRetailerId(ctx, enums.ModelTypeServiceExtraSettingShop, retailerId)
 		if err != nil {
 			log.Error(ctx, err.Error())
 			return nil, false, err
 		}
-		fmt.Println(shopSettings)
 	}
 	idPrice := strconv.FormatInt(price.Id, 10)
 	if strings.Contains(codT0Service.ClientsPossible, clientCode) || strings.Contains(codT0Service.ClientsPossible, idPrice) {
