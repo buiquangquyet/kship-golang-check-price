@@ -1,5 +1,5 @@
 # Builder
-FROM docker.citigo.com.vn/templates/golang:builder AS builder
+FROM docker.citigo.com.vn/kship/templates/golang-21:builder AS builder
 
 ENV GO111MODULE=on \
   CGO_ENABLED=1 \
