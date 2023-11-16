@@ -54,7 +54,7 @@ func (g *GHTKExtService) GetPriceUnder20(ctx context.Context, shop *domain.Shop,
 
 	result, ierr := g.getPriceUnder20(ctx, serviceCode, getPriceParam, token)
 	if ierr != nil {
-		if fromCache && helpers.IsUnauthorizedError(err) {
+		if fromCache && helpers.IsUnauthorizedError(ierr) {
 			// retry once
 			newToken, _, err := g.getToken(ctx, shop, false)
 			if err != nil {
@@ -96,7 +96,7 @@ func (g *GHTKExtService) GetPriceOver20(ctx context.Context, shop *domain.Shop, 
 
 	result, ierr := g.getPriceOver20(ctx, serviceCode, getPriceParam, token)
 	if ierr != nil {
-		if fromCache && helpers.IsUnauthorizedError(err) {
+		if fromCache && helpers.IsUnauthorizedError(ierr) {
 			// retry once
 			newToken, _, err := g.getToken(ctx, shop, false)
 			if err != nil {

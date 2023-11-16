@@ -53,19 +53,16 @@ func (g *AhaMoveExtService) CheckPrice(ctx context.Context, shop *domain.Shop) (
 	if err != nil {
 		return nil, err
 	}
-
 	result, ierr := g.checkPrice(ctx, token)
 	if ierr != nil {
-		if fromCache && helpers.IsUnauthorizedError(err) {
-			// retry once
-			newToken, _, err := g.getToken(ctx, shop, false)
-			if err != nil {
-				return nil, err
-			}
-			return g.checkPrice(ctx, newToken)
-		} else {
+		if !fromCache || !helpers.IsUnauthorizedError(ierr) {
 			return nil, ierr
 		}
+		newToken, _, err := g.getToken(ctx, shop, false)
+		if err != nil {
+			return nil, err
+		}
+		return g.checkPrice(ctx, newToken)
 	}
 	return result, nil
 }
@@ -135,10 +132,6 @@ func (g *AhaMoveExtService) newToken(ctx context.Context, shop *domain.Shop) (st
 		return "", common.ErrSystemError(ctx, detail).SetSource(common.SourceGHTKService)
 	}
 	return output.Token, nil
-}
-
-func (g *AhaMoveExtService) success(code string) bool {
-	return code == codeSuccess
 }
 
 func (g *AhaMoveExtService) handleError(ctx context.Context) *common.Error {
