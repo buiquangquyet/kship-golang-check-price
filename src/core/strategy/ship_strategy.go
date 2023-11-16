@@ -11,7 +11,7 @@ import (
 type ShipStrategy interface {
 	Code() string
 	Validate(ctx context.Context, req *request.GetPriceRequest) *common.Error
-	GetMultiplePriceV3(ctx context.Context, shop *domain.Shop, req *request.GetPriceRequest) (map[string]*domain.Price, *common.Error)
+	GetMultiplePriceV3(ctx context.Context, shop *domain.Shop, req *request.GetPriceRequest, coupon string) (map[string]*domain.Price, *common.Error)
 }
 
 //chia folder theo các hãng

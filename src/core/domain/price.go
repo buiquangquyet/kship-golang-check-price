@@ -61,7 +61,11 @@ func (p *Price) SetCodT0Info(status bool, message string, codStFee float64) *Pri
 	return p
 }
 
-func (p *Price) SetCouponInfo(discountVoucher int64, totalPrice int64) *Price {
+func (p *Price) SetCouponInfo(discountVoucher int64) *Price {
+	totalPrice := p.TotalPrice
+	if discountVoucher > totalPrice {
+		discountVoucher = totalPrice
+	}
 	p.CouponSale = discountVoucher
 	p.OldTotalPrice = totalPrice
 	p.TotalPrice = totalPrice - discountVoucher

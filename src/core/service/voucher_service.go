@@ -4,8 +4,8 @@ import (
 	"check-price/src/common"
 	"check-price/src/common/log"
 	"check-price/src/core/constant"
-	"check-price/src/core/domain"
 	"check-price/src/core/dto"
+	"check-price/src/core/enums"
 	"check-price/src/helpers"
 	"check-price/src/infra/external/voucher"
 	"context"
@@ -21,40 +21,32 @@ func NewVoucherService(voucherExtService *voucher.VoucherExtService) *VoucherSer
 	}
 }
 
-func (s *VoucherService) checkVoucher(ctx context.Context, price *domain.Price, addInfoDto *dto.AddInfoDto) *common.Error {
+func (s *VoucherService) checkVoucher(ctx context.Context, addInfoDto *dto.AddInfoDto) (enums.TypeVoucherUse, int64, *common.Error) {
 	if addInfoDto.Coupon == "" {
-		return nil
+		return enums.TypeVoucherNotExist, 0, nil
 	}
-	voucher, err := s.voucherExtService.CheckVoucher(ctx, addInfoDto.Coupon, addInfoDto.RetailerId, addInfoDto.Client.Id)
+	voucherKv, err := s.voucherExtService.CheckVoucher(ctx, addInfoDto.Coupon, addInfoDto.RetailerId, addInfoDto.Client.Id)
 	if err != nil {
 		log.Error(ctx, err.Error())
-		return err
+		return enums.TypeVoucherNotExist, 0, err
 	}
-	callTo := 0
-	//bo qua client_error_code
-	switch voucher.StatusCode {
+	var callTo enums.TypeVoucherUse
+	switch voucherKv.StatusCode {
 	case constant.VoucherExist:
-		if voucher.Type == constant.TypeVoucherKv && !(addInfoDto.Payer == constant.PaymentByTo) {
-			callTo = constant.UseKv
-		} else if voucher.Type == constant.TypeVoucherDelivery {
-			if helpers.InArray(constant.ClientAllowUsePromotion, addInfoDto.Client.Code) {
-				callTo = constant.UseDelivery
-			}
+		if voucherKv.Type == constant.TypeVoucherKv && !(addInfoDto.Payer == constant.PaymentByTo) {
+			callTo = enums.TypeVoucherUseKv
+		}
+		if voucherKv.Type == constant.TypeVoucherDelivery && helpers.InArray(constant.ClientAllowUsePromotion, addInfoDto.Client.Code) {
+			callTo = enums.TypeVoucherUseDelivery
 		}
 	case constant.VoucherNotExist:
 		if helpers.InArray(constant.ClientAllowUsePromotion, addInfoDto.Client.Code) {
-			callTo = constant.UseDelivery
+			callTo = enums.TypeVoucherUseDelivery
 		}
 	case constant.VoucherError:
-		return nil
+		//Todo log
+		return enums.TypeVoucherNotExist, 0, nil
 	}
-	if callTo != constant.UseKv {
-		return nil
-	}
-	discountVoucher := voucher.DiscountValue
-	if discountVoucher > price.TotalPrice {
-		discountVoucher = price.TotalPrice
-	}
-	price.SetCouponInfo(discountVoucher, price.TotalPrice)
-	return nil
+
+	return callTo, voucherKv.DiscountValue, nil
 }

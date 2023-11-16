@@ -4,6 +4,7 @@ import (
 	"check-price/src/core/service"
 	"check-price/src/core/strategy"
 	"check-price/src/core/strategy/ghtk"
+	"check-price/src/infra/external/ahamove"
 	"go.uber.org/fx"
 )
 
@@ -16,5 +17,6 @@ func BuildServiceModule() fx.Option {
 		fx.Provide(service.NewVoucherService),
 		fx.Provide(strategy.NewShipStrategyFilterResolver),
 		strategy.ProvideShipStrategyFilterStrategy(ghtk.NewGHTKStrategy),
+		strategy.ProvideShipStrategyFilterStrategy(ahamove.NewAhaMoveExtService),
 	)
 }

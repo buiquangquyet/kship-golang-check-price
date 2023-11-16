@@ -63,7 +63,7 @@ func (g *GHTKStrategy) Validate(ctx context.Context, req *request.GetPriceReques
 	return nil
 }
 
-func (g *GHTKStrategy) GetMultiplePriceV3(ctx context.Context, shop *domain.Shop, req *request.GetPriceRequest) (map[string]*domain.Price, *common.Error) {
+func (g *GHTKStrategy) GetMultiplePriceV3(ctx context.Context, shop *domain.Shop, req *request.GetPriceRequest, _ string) (map[string]*domain.Price, *common.Error) {
 	var wg sync.WaitGroup
 	mapPrices := make(map[string]*domain.Price)
 	isBBS := false

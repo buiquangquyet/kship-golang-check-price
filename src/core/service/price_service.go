@@ -64,6 +64,24 @@ func (p *PriceService) GetPrice(ctx context.Context, req *request.GetPriceReques
 	if ierr != nil {
 		return nil, ierr
 	}
+	addInfoDTO := dto.NewAddInfoDTO(shop, client, req)
+	callTo, voucher, err := p.voucherService.checkVoucher(ctx, addInfoDTO)
+	if err != nil {
+		return nil, err
+	}
+	coupon := ""
+	switch callTo {
+	case enums.TypeVoucherUseKv:
+		//handle trong SetCouponInfo
+		//voucher !=0
+	case enums.TypeVoucherUseDelivery:
+		//ban sang cac hang
+		coupon = addInfoDTO.Coupon
+		voucher = 0
+	case enums.TypeVoucherNotExist:
+		//khong lam gi
+	}
+
 	shipStrategy, exist := p.shipStrategyResolver.Resolve(req.ClientCode)
 	if !exist {
 		log.Warn(ctx, "not support with partner:[%s]", req.ClientCode)
@@ -73,15 +91,18 @@ func (p *PriceService) GetPrice(ctx context.Context, req *request.GetPriceReques
 	if ierr != nil {
 		return nil, ierr
 	}
-	mapPrices, err := shipStrategy.GetMultiplePriceV3(ctx, shop, req)
+	mapPrices, err := shipStrategy.GetMultiplePriceV3(ctx, shop, req, coupon)
 	if err != nil {
 		log.IErr(ctx, err)
 		return nil, err
 	}
 
-	prices, ierr := p.addInfo(ctx, dto.NewAddInfoDTO(shop, client, req), mapPrices)
+	prices, ierr := p.addInfo(ctx, addInfoDTO, mapPrices)
 	if ierr != nil {
 		return nil, ierr
+	}
+	for _, price := range prices {
+		price.SetCouponInfo(voucher)
 	}
 	return prices, nil
 }
@@ -115,10 +136,7 @@ func (p *PriceService) addInfo(ctx context.Context, addInfoDto *dto.AddInfoDto, 
 			return nil, err
 		}
 		p.handleTotalPrice(price, addInfoDto)
-		err = p.voucherService.checkVoucher(ctx, price, addInfoDto)
-		if err != nil {
-			return nil, err
-		}
+
 		prices = append(prices, price)
 	}
 	return prices, nil

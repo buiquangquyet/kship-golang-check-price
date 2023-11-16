@@ -46,6 +46,7 @@ type Config struct {
 
 	ExtService struct {
 		GHTK    *GHTK    `mapstructure:"ghtk"`
+		AHAMOVE *AHAMOVE `mapstructure:"ahamove"`
 		Voucher *Voucher `mapstructure:"voucher"`
 	} `mapstructure:"ext_service"`
 
@@ -61,6 +62,11 @@ type Config struct {
 type GHTK struct {
 	Host  string `mapstructure:"host"`
 	Token string `mapstructure:"token"`
+}
+
+type AHAMOVE struct {
+	Host string `mapstructure:"host"`
+	Key  string `mapstructure:"key"`
 }
 
 type Voucher struct {
