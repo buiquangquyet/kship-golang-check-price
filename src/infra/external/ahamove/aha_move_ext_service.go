@@ -55,14 +55,15 @@ func (g *AhaMoveExtService) CheckPrice(ctx context.Context, shop *domain.Shop) (
 	}
 	result, ierr := g.checkPrice(ctx, token)
 	if ierr != nil {
-		if !fromCache || !helpers.IsUnauthorizedError(ierr) {
-			return nil, ierr
+		if fromCache && helpers.IsUnauthorizedError(ierr) {
+			// retry once
+			newToken, _, err := g.getToken(ctx, shop, false)
+			if err != nil {
+				return nil, err
+			}
+			return g.checkPrice(ctx, newToken)
 		}
-		newToken, _, err := g.getToken(ctx, shop, false)
-		if err != nil {
-			return nil, err
-		}
-		return g.checkPrice(ctx, newToken)
+		return nil, ierr
 	}
 	return result, nil
 }
