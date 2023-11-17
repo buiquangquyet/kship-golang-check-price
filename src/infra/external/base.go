@@ -77,10 +77,25 @@ func (b *BaseClient) GetTokenFromCache(ctx context.Context, deliveryCode string,
 	return token, nil
 }
 
+func (b *BaseClient) GetDataCache(ctx context.Context, key string) (string, error) {
+	var data string
+	if err := b.cache.Get(ctx, key).Scan(&data); err != nil {
+		return "", err
+	}
+	return data, nil
+}
+
 func (b *BaseClient) StoreToken(ctx context.Context, deliveryCode string, shop *domain.Shop, newToken string, expire time.Duration) {
 	keyOfToken := fmt.Sprintf(keyTokenFormat, deliveryCode, shop.Code)
 	if err := b.cache.Set(ctx, keyOfToken, newToken, expire).Err(); err != nil {
 		log.Warn(ctx, "Cache Token failed, delivery: [%s], err: [%s]", deliveryCode, err.Error())
+	}
+	return
+}
+
+func (b *BaseClient) StoreData(ctx context.Context, key string, newToken string, expire time.Duration) {
+	if err := b.cache.Set(ctx, key, newToken, expire).Err(); err != nil {
+		log.Warn(ctx, "Cache Token failed, err: [%s]", err.Error())
 	}
 	return
 }

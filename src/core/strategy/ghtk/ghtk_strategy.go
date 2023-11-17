@@ -15,24 +15,24 @@ import (
 	"sync"
 )
 
-type GHTKStrategy struct {
+type Strategy struct {
 	wardRepo       domain.WardRepo
 	districtRepo   domain.DistrictRepo
 	cityRepo       domain.CityRepo
 	clientRepo     domain.ClientRepo
 	serviceRepo    domain.ServiceRepo
-	ghtkExtService *ghtk.GHTKExtService
+	ghtkExtService *ghtkext.Service
 }
 
-func NewGHTKStrategy(
+func NewStrategy(
 	wardRepo domain.WardRepo,
 	districtRepo domain.DistrictRepo,
 	cityRepo domain.CityRepo,
 	clientRepo domain.ClientRepo,
 	serviceRepo domain.ServiceRepo,
-	ghtkExtService *ghtk.GHTKExtService,
+	ghtkExtService *ghtkext.Service,
 ) strategy.ShipStrategy {
-	return &GHTKStrategy{
+	return &Strategy{
 		wardRepo:       wardRepo,
 		districtRepo:   districtRepo,
 		cityRepo:       cityRepo,
@@ -42,11 +42,11 @@ func NewGHTKStrategy(
 	}
 }
 
-func (g *GHTKStrategy) Code() string {
+func (g *Strategy) Code() string {
 	return constant.GHTKDeliveryCode
 }
 
-func (g *GHTKStrategy) Validate(ctx context.Context, req *request.GetPriceRequest) *common.Error {
+func (g *Strategy) Validate(ctx context.Context, req *request.GetPriceRequest) *common.Error {
 	ierr := common.ErrBadRequest(ctx)
 	if req.ReceiverWardId == 0 {
 		return ierr.SetMessage("Vui lòng nhập xã phường người nhận")
@@ -63,7 +63,7 @@ func (g *GHTKStrategy) Validate(ctx context.Context, req *request.GetPriceReques
 	return nil
 }
 
-func (g *GHTKStrategy) GetMultiplePriceV3(ctx context.Context, shop *domain.Shop, req *request.GetPriceRequest, _ string) (map[string]*domain.Price, *common.Error) {
+func (g *Strategy) GetMultiplePriceV3(ctx context.Context, shop *domain.Shop, req *request.GetPriceRequest, _ string) (map[string]*domain.Price, *common.Error) {
 	var wg sync.WaitGroup
 	mapPrices := make(map[string]*domain.Price)
 	isBBS := false
@@ -102,7 +102,7 @@ func (g *GHTKStrategy) GetMultiplePriceV3(ctx context.Context, shop *domain.Shop
 	return mapPrices, nil
 }
 
-func (g *GHTKStrategy) getPriceInput(ctx context.Context, isBBS bool, weight int64, req *request.GetPriceRequest) (*dto.GetPriceInputDto, *common.Error) {
+func (g *Strategy) getPriceInput(ctx context.Context, isBBS bool, weight int64, req *request.GetPriceRequest) (*dto.GetPriceInputDto, *common.Error) {
 	isVer2 := req.VersionLocation == constant.VersionLocation2
 	ierr := common.ErrBadRequest(ctx)
 	var pickWard *domain.Ward

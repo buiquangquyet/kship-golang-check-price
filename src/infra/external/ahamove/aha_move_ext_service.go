@@ -1,4 +1,4 @@
-package ahamove
+package ahamoveext
 
 import (
 	"check-price/src/common"
@@ -16,7 +16,6 @@ import (
 
 const (
 	deliveryCode   = "AHAMOVE"
-	codeSuccess    = "SUCCESS"
 	timeoutAhaMove = 5 * time.Second
 	expireToken    = 24 * time.Hour
 
@@ -24,53 +23,51 @@ const (
 	checkPricePath = "/v2/order/estimated_fee"
 )
 
-type AhaMoveExtService struct {
+type Service struct {
 	*external.BaseClient
 	client *req.Client
 	key    string
 }
 
-func NewAhaMoveExtService(base *external.BaseClient) *AhaMoveExtService {
+func NewService(base *external.BaseClient) *Service {
 	cf := configs.Get().ExtService.AHAMOVE
 	cli := req.C().SetBaseURL(cf.Host).SetTimeout(timeoutAhaMove)
 	cli.SetCommonHeaders(map[string]string{
 		"Content-Type": "application/json",
 	})
 	base.SetTracer(cli)
-	return &AhaMoveExtService{
+	return &Service{
 		BaseClient: base,
 		client:     cli,
 		key:        cf.Key,
 	}
 }
 
-func (g *AhaMoveExtService) api(ctx context.Context) *req.Request {
+func (g *Service) api(ctx context.Context) *req.Request {
 	return g.client.R().SetContext(ctx)
 }
 
-func (g *AhaMoveExtService) CheckPrice(ctx context.Context, shop *domain.Shop) ([]*domain.Price, *common.Error) {
+func (g *Service) CheckPrice(ctx context.Context, shop *domain.Shop) ([]*domain.Price, *common.Error) {
 	token, fromCache, err := g.getToken(ctx, shop, true)
 	if err != nil {
 		return nil, err
 	}
-
 	result, ierr := g.checkPrice(ctx, token)
 	if ierr != nil {
-		if fromCache && helpers.IsUnauthorizedError(err) {
+		if fromCache && helpers.IsUnauthorizedError(ierr) {
 			// retry once
 			newToken, _, err := g.getToken(ctx, shop, false)
 			if err != nil {
 				return nil, err
 			}
 			return g.checkPrice(ctx, newToken)
-		} else {
-			return nil, ierr
 		}
+		return nil, ierr
 	}
 	return result, nil
 }
 
-func (g *AhaMoveExtService) checkPrice(ctx context.Context, token string) ([]*domain.Price, *common.Error) {
+func (g *Service) checkPrice(ctx context.Context, token string) ([]*domain.Price, *common.Error) {
 	var output []*PriceOuput
 	var outputErr OutputErr
 	resp, err := g.api(ctx).
@@ -95,7 +92,7 @@ func (g *AhaMoveExtService) checkPrice(ctx context.Context, token string) ([]*do
 	return prices, nil
 }
 
-func (g *AhaMoveExtService) getToken(ctx context.Context, shop *domain.Shop, allowFromCache bool) (string, bool, *common.Error) {
+func (g *Service) getToken(ctx context.Context, shop *domain.Shop, allowFromCache bool) (string, bool, *common.Error) {
 	if allowFromCache {
 		token, err := g.GetTokenFromCache(ctx, deliveryCode, shop)
 		if err == nil && token != "" {
@@ -113,7 +110,7 @@ func (g *AhaMoveExtService) getToken(ctx context.Context, shop *domain.Shop, all
 	return newToken, false, nil
 }
 
-func (g *AhaMoveExtService) newToken(ctx context.Context, shop *domain.Shop) (string, *common.Error) {
+func (g *Service) newToken(ctx context.Context, shop *domain.Shop) (string, *common.Error) {
 	var output LoginOutput
 	var outputErr OutputErr
 	resp, err := g.api(ctx).
@@ -137,11 +134,8 @@ func (g *AhaMoveExtService) newToken(ctx context.Context, shop *domain.Shop) (st
 	return output.Token, nil
 }
 
-func (g *AhaMoveExtService) success(code string) bool {
-	return code == codeSuccess
-}
-
-func (g *AhaMoveExtService) handleError(ctx context.Context) *common.Error {
+func (g *Service) handleError(_ context.Context) *common.Error {
 	//Todo code
+
 	return nil
 }

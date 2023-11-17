@@ -1,16 +1,16 @@
-package ahamove
+package ahamoveext
 
 import (
 	"check-price/src/core/domain"
 )
 
 type GetPriceInput struct {
-	Path          []*Path    `json:"path"`
-	PaymentMethod string     `json:"payment_method"`
-	PromoCode     string     `json:"promo_code"`
-	OrderTime     int        `json:"order_time"`
-	Services      []*Service `json:"services"`
-	Token         string     `json:"token"`
+	Path          []*Path         `json:"path"`
+	PaymentMethod string          `json:"payment_method"`
+	PromoCode     string          `json:"promo_code"`
+	OrderTime     int             `json:"order_time"`
+	Services      []*ServiceInput `json:"services"`
+	Token         string          `json:"token"`
 }
 
 type Path struct {
@@ -20,7 +20,7 @@ type Path struct {
 	Cod     int
 }
 
-type Service struct {
+type ServiceInput struct {
 	Id       int
 	Requests []string
 }

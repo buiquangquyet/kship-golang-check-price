@@ -14,7 +14,6 @@ server:
   address: 3456
   prefix: api/v4
 
-
 mysql:
   host: 10.24.22.234
   port: 3306
@@ -24,10 +23,6 @@ mysql:
   ssl_mode: disable
   auto_migrate: false
   max_life_time: 300
-
-mongo:
-  uri: mongodb://admin:f6XPinsVTx@10.24.22.32:27017/?readPreference=primary&directConnection=true&ssl=false
-  db: messages
 
 redis:
   expire_duration: 600
@@ -44,6 +39,10 @@ ext_service:
     key: 19ff89dd45cd02e1329c8dc381236e28
   voucher:
     host: https://voucher-shipping-prelive.kvpos.com
+  ai_eliminating:
+    host: https://datadepartment.citigo.net
+    username: kship
+    password: kCRzpjT5pY
 swagger:
   enabled: false
 

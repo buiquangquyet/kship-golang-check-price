@@ -1,4 +1,4 @@
-package voucher
+package voucherext
 
 import (
 	"check-price/src/core/dto"

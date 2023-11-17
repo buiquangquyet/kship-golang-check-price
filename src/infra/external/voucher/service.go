@@ -1,4 +1,4 @@
-package voucher
+package voucherext
 
 import (
 	"check-price/src/common"
@@ -17,29 +17,29 @@ const (
 	checkVoucherPath = "/vouchers/check"
 )
 
-type VoucherExtService struct {
+type Service struct {
 	*external.BaseClient
 	client *req.Client
 }
 
-func NewVoucherExtService(base *external.BaseClient) *VoucherExtService {
+func NewService(base *external.BaseClient) *Service {
 	cf := configs.Get().ExtService.Voucher
 	cli := req.C().SetBaseURL(cf.Host).SetTimeout(timeoutVoucher)
 	cli.SetCommonHeaders(map[string]string{
 		"Content-Type": "application/json",
 	})
 	base.SetTracer(cli)
-	return &VoucherExtService{
+	return &Service{
 		BaseClient: base,
 		client:     cli,
 	}
 }
 
-func (g *VoucherExtService) api(ctx context.Context) *req.Request {
+func (g *Service) api(ctx context.Context) *req.Request {
 	return g.client.R().SetContext(ctx)
 }
 
-func (g *VoucherExtService) CheckVoucher(ctx context.Context, code string, retailerId, clientId int64) (*dto.Voucher, *common.Error) {
+func (g *Service) CheckVoucher(ctx context.Context, code string, retailerId, clientId int64) (*dto.Voucher, *common.Error) {
 	var output checkVoucherOutput
 	resp, err := g.api(ctx).
 		SetFormData(map[string]string{
