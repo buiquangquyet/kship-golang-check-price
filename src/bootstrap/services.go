@@ -17,7 +17,7 @@ func BuildServiceModule() fx.Option {
 		fx.Provide(service.NewVoucherService),
 		fx.Provide(strategy.NewBaseStrategy),
 		fx.Provide(strategy.NewShipStrategyFilterResolver),
-		strategy.ProvideShipStrategyFilterStrategy(ghtk.NewGHTKStrategy),
-		strategy.ProvideShipStrategyFilterStrategy(ahamove.NewAhaMoveStrategy),
+		strategy.ProvideShipStrategyFilterStrategy(ghtk.NewStrategy),
+		strategy.ProvideShipStrategyFilterStrategy(ahamove.NewStrategy),
 	)
 }

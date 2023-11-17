@@ -13,7 +13,7 @@ import (
 	"fmt"
 )
 
-type AhaMoveStrategy struct {
+type Strategy struct {
 	baseStrategy            *strategy.BaseStrategy
 	clientRepo              domain.ClientRepo
 	serviceRepo             domain.ServiceRepo
@@ -21,14 +21,14 @@ type AhaMoveStrategy struct {
 	aiEliminatingExtService *aieliminating.Service
 }
 
-func NewAhaMoveStrategy(
+func NewStrategy(
 	baseStrategy *strategy.BaseStrategy,
 	clientRepo domain.ClientRepo,
 	serviceRepo domain.ServiceRepo,
 	ahaMoveExtService *ahamoveext.Service,
 	aiEliminatingExtService *aieliminating.Service,
 ) strategy.ShipStrategy {
-	return &AhaMoveStrategy{
+	return &Strategy{
 		baseStrategy:            baseStrategy,
 		clientRepo:              clientRepo,
 		serviceRepo:             serviceRepo,
@@ -37,15 +37,15 @@ func NewAhaMoveStrategy(
 	}
 }
 
-func (s *AhaMoveStrategy) Code() string {
+func (s *Strategy) Code() string {
 	return constant.AHAMOVEDeliveryCode
 }
 
-func (s *AhaMoveStrategy) Validate(_ context.Context, _ *request.GetPriceRequest) *common.Error {
+func (s *Strategy) Validate(_ context.Context, _ *request.GetPriceRequest) *common.Error {
 	return nil
 }
 
-func (s *AhaMoveStrategy) GetMultiplePriceV3(ctx context.Context, shop *domain.Shop, req *request.GetPriceRequest, coupon string) (map[string]*domain.Price, *common.Error) {
+func (s *Strategy) GetMultiplePriceV3(ctx context.Context, shop *domain.Shop, req *request.GetPriceRequest, coupon string) (map[string]*domain.Price, *common.Error) {
 	senderAddress, receiverAddress, err := s.getAddressValue(ctx, req)
 	if err != nil {
 		return nil, err
@@ -63,7 +63,7 @@ func (s *AhaMoveStrategy) GetMultiplePriceV3(ctx context.Context, shop *domain.S
 	return mapPrices, nil
 }
 
-func (s *AhaMoveStrategy) getAddressValue(ctx context.Context, req *request.GetPriceRequest) (string, string, *common.Error) {
+func (s *Strategy) getAddressValue(ctx context.Context, req *request.GetPriceRequest) (string, string, *common.Error) {
 	var senderAddress string
 	var receiverAddress string
 	address, err := s.baseStrategy.GetAddress(ctx, req)
