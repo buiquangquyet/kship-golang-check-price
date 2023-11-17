@@ -20,25 +20,27 @@ type AuthMiddleware struct {
 	publicKeys map[string]*rsa.PublicKey
 }
 
-func loadKeyMap() map[string]*rsa.PublicKey {
+var MapPublicKey map[string]*rsa.PublicKey
+
+func LoadKeyMap(pathPem string) {
 	mapPublicRsaKeys := make(map[string]*rsa.PublicKey)
-	priv, err := os.ReadFile("configs/tokens/kv-secret-key-widget-rs256.pem")
+	priv, err := os.ReadFile(pathPem)
 	if err != nil {
-		log.Fatal(err.Error())
+		panic(err)
 	}
 
 	block, _ := pem.Decode(priv)
 	key, err := x509.ParsePKIXPublicKey(block.Bytes)
 	if err != nil {
-		log.Fatal(err.Error())
+		panic(err)
 	}
 	mapPublicRsaKeys["RETAIL"] = key.(*rsa.PublicKey)
-	return mapPublicRsaKeys
+	MapPublicKey = mapPublicRsaKeys
 }
 
 func NewAuthMiddleware() *AuthMiddleware {
 	return &AuthMiddleware{
-		publicKeys: loadKeyMap(),
+		publicKeys: MapPublicKey,
 	}
 }
 

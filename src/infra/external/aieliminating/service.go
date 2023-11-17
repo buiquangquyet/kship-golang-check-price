@@ -4,7 +4,6 @@ import (
 	"check-price/src/common"
 	"check-price/src/common/configs"
 	"check-price/src/common/log"
-	"check-price/src/core/domain"
 	"check-price/src/helpers"
 	"check-price/src/infra/external"
 	"context"
@@ -47,28 +46,47 @@ func (g *Service) api(ctx context.Context) *req.Request {
 	return g.client.R().SetContext(ctx)
 }
 
-func (g *Service) FilterAddress(ctx context.Context) ([]*domain.Price, *common.Error) {
+func (g *Service) Redundancy(ctx context.Context, address, ward, province, district string) (string, *common.Error) {
 	token, fromCache, err := g.getToken(ctx, true)
 	if err != nil {
-		return nil, err
+		return "", err
 	}
-	result, ierr := g.filterAddress(ctx, token)
+	result, ierr := g.redundancy(ctx, token, address, ward, province, district)
 	if ierr != nil {
 		if fromCache && helpers.IsUnauthorizedError(ierr) {
 			// retry once
 			newToken, _, err := g.getToken(ctx, false)
 			if err != nil {
-				return nil, err
+				return "", err
 			}
-			return g.filterAddress(ctx, newToken)
+			return g.redundancy(ctx, newToken, address, ward, province, district)
 		}
-		return nil, ierr
+		return "", ierr
 	}
 	return result, nil
 }
 
-func (g *Service) filterAddress(ctx context.Context, token string) ([]*domain.Price, *common.Error) {
-	return nil, nil
+func (g *Service) redundancy(ctx context.Context, token string, address, ward, province, district string) (string, *common.Error) {
+	var output LoginOutput
+	var outputErr OutputError
+	resp, err := g.api(ctx).
+		SetFormData(map[string]string{
+			"username": g.cf.Username,
+			"password": g.cf.Password,
+		}).
+		SetSuccessResult(&output).
+		SetErrorResult(&outputErr).
+		Post(redundancy)
+	if err != nil {
+		return "", common.ErrSystemError(ctx, err.Error())
+	}
+
+	if resp.IsErrorState() {
+		log.Debug(ctx, "Call AI Eliminating failed with body: %+v", output)
+		detail := fmt.Sprintf("http: [%d], resp: [%s]", resp.StatusCode, resp.String())
+		return "", common.ErrSystemError(ctx, detail).SetSource(common.SourceGHTKService)
+	}
+	return output.Data.AccessToken, nil
 }
 
 func (g *Service) getToken(ctx context.Context, allowFromCache bool) (string, bool, *common.Error) {

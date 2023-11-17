@@ -6,6 +6,7 @@ import (
 	"check-price/src/common/configs"
 	"check-price/src/common/log"
 	"check-price/src/core/constant"
+	"check-price/src/present/httpui/middlewares"
 	"context"
 	"encoding/json"
 	"flag"
@@ -25,7 +26,10 @@ const (
 func init() {
 	var pathConfig string
 	flag.StringVar(&pathConfig, "config", "configs/config.yaml", "path to config file")
+	var pathPem string
+	flag.StringVar(&pathPem, "pem", "configs/tokens/kv-secret-key-widget-rs256.pem", "path to pem file")
 	flag.Parse()
+	middlewares.LoadKeyMap(pathPem)
 	err := configs.LoadConfig(pathConfig)
 	if err != nil {
 		panic(err)
