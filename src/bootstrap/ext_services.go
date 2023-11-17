@@ -4,17 +4,19 @@ import (
 	"check-price/src/infra/external"
 	ahamoveext "check-price/src/infra/external/ahamove"
 	"check-price/src/infra/external/aieliminating"
-	"check-price/src/infra/external/ghtk"
-	"check-price/src/infra/external/voucher"
+	ghtkext "check-price/src/infra/external/ghtk"
+	voucherext "check-price/src/infra/external/voucher"
 	"go.uber.org/fx"
 )
 
 func BuildExtServicesModules() fx.Option {
 	return fx.Options(
 		fx.Provide(external.NewBaseClient),
-		fx.Provide(ghtkext.NewGHTKExtService),
-		fx.Provide(voucher.NewVoucherExtService),
-		fx.Provide(ahamoveext.NewAhaMoveExtService),
+
+		fx.Provide(voucherext.NewService),
 		fx.Provide(aieliminating.NewService),
+
+		fx.Provide(ahamoveext.NewService),
+		fx.Provide(ghtkext.NewService),
 	)
 }

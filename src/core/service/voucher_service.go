@@ -12,10 +12,10 @@ import (
 )
 
 type VoucherService struct {
-	voucherExtService *voucher.VoucherExtService
+	voucherExtService *voucherext.Service
 }
 
-func NewVoucherService(voucherExtService *voucher.VoucherExtService) *VoucherService {
+func NewVoucherService(voucherExtService *voucherext.Service) *VoucherService {
 	return &VoucherService{
 		voucherExtService: voucherExtService,
 	}

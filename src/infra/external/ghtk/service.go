@@ -26,27 +26,27 @@ const (
 	getPriceOver20Path  = "/services/shipment/3pl/fee"
 )
 
-type GHTKExtService struct {
+type Service struct {
 	*external.BaseClient
 	client *req.Client
 	token  string
 }
 
-func NewGHTKExtService(base *external.BaseClient) *GHTKExtService {
+func NewService(base *external.BaseClient) *Service {
 	cf := configs.Get().ExtService.GHTK
 	cli := req.C().SetBaseURL(cf.Host).SetTimeout(timeoutGHTK)
 	cli.SetCommonHeaders(map[string]string{
 		"Content-Type": "application/json",
 	})
 	base.SetTracer(cli)
-	return &GHTKExtService{
+	return &Service{
 		BaseClient: base,
 		client:     cli,
 		token:      cf.Token,
 	}
 }
 
-func (g *GHTKExtService) GetPriceUnder20(ctx context.Context, shop *domain.Shop, serviceCode string, getPriceParam *dto.GetPriceInputDto) (*domain.Price, *common.Error) {
+func (g *Service) GetPriceUnder20(ctx context.Context, shop *domain.Shop, serviceCode string, getPriceParam *dto.GetPriceInputDto) (*domain.Price, *common.Error) {
 	token, fromCache, err := g.getToken(ctx, shop, true)
 	if err != nil {
 		return nil, err
@@ -68,7 +68,7 @@ func (g *GHTKExtService) GetPriceUnder20(ctx context.Context, shop *domain.Shop,
 	return result, nil
 }
 
-func (g *GHTKExtService) getPriceUnder20(ctx context.Context, serviceCode string, getPriceParam *dto.GetPriceInputDto, token string) (*domain.Price, *common.Error) {
+func (g *Service) getPriceUnder20(ctx context.Context, serviceCode string, getPriceParam *dto.GetPriceInputDto, token string) (*domain.Price, *common.Error) {
 	var output GetPriceUnder20Output
 	resp, err := g.api(ctx, token).
 		SetBody(newGetPriceUnder20Input(serviceCode, getPriceParam)).
@@ -88,7 +88,7 @@ func (g *GHTKExtService) getPriceUnder20(ctx context.Context, serviceCode string
 	return output.ToDomainPrice(), nil
 }
 
-func (g *GHTKExtService) GetPriceOver20(ctx context.Context, shop *domain.Shop, serviceCode string, getPriceParam *dto.GetPriceInputDto) (*domain.Price, *common.Error) {
+func (g *Service) GetPriceOver20(ctx context.Context, shop *domain.Shop, serviceCode string, getPriceParam *dto.GetPriceInputDto) (*domain.Price, *common.Error) {
 	token, fromCache, err := g.getToken(ctx, shop, true)
 	if err != nil {
 		return nil, err
@@ -110,7 +110,7 @@ func (g *GHTKExtService) GetPriceOver20(ctx context.Context, shop *domain.Shop, 
 	return result, nil
 }
 
-func (g *GHTKExtService) getPriceOver20(ctx context.Context, serviceCode string, getPriceParam *dto.GetPriceInputDto, token string) (*domain.Price, *common.Error) {
+func (g *Service) getPriceOver20(ctx context.Context, serviceCode string, getPriceParam *dto.GetPriceInputDto, token string) (*domain.Price, *common.Error) {
 	var output GetPriceOver20Output
 	resp, err := g.api(ctx, token).
 		//Todo fix this
@@ -132,12 +132,12 @@ func (g *GHTKExtService) getPriceOver20(ctx context.Context, serviceCode string,
 
 }
 
-func (g *GHTKExtService) api(ctx context.Context, token string) *req.Request {
+func (g *Service) api(ctx context.Context, token string) *req.Request {
 	return g.client.R().SetContext(ctx).
 		SetHeader("token", token)
 }
 
-func (g *GHTKExtService) getToken(ctx context.Context, shop *domain.Shop, allowFromCache bool) (string, bool, *common.Error) {
+func (g *Service) getToken(ctx context.Context, shop *domain.Shop, allowFromCache bool) (string, bool, *common.Error) {
 	if allowFromCache {
 		token, err := g.GetTokenFromCache(ctx, deliveryCode, shop)
 		if err == nil && token != "" {
@@ -155,7 +155,7 @@ func (g *GHTKExtService) getToken(ctx context.Context, shop *domain.Shop, allowF
 	return newToken, false, nil
 }
 
-func (g *GHTKExtService) newToken(ctx context.Context, shop *domain.Shop) (string, *common.Error) {
+func (g *Service) newToken(ctx context.Context, shop *domain.Shop) (string, *common.Error) {
 	var output LoginOutput
 	resp, err := g.client.R().SetContext(ctx).
 		SetHeader("Token", g.token).
@@ -175,11 +175,11 @@ func (g *GHTKExtService) newToken(ctx context.Context, shop *domain.Shop) (strin
 	return output.Data.Token, nil
 }
 
-func (g *GHTKExtService) success(code string) bool {
+func (g *Service) success(code string) bool {
 	return code == codeSuccess
 }
 
-func (g *GHTKExtService) handleError(ctx context.Context, code string) *common.Error {
+func (g *Service) handleError(ctx context.Context, code string) *common.Error {
 	switch code {
 	case "ERROR_INVALID_ACCOUNT":
 		return common.ErrBadRequest(ctx)

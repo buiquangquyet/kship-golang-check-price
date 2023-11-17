@@ -17,7 +17,7 @@ type AhaMoveStrategy struct {
 	baseStrategy            *strategy.BaseStrategy
 	clientRepo              domain.ClientRepo
 	serviceRepo             domain.ServiceRepo
-	ahaMoveExtService       *ahamoveext.AhaMoveExtService
+	ahaMoveExtService       *ahamoveext.Service
 	aiEliminatingExtService *aieliminating.Service
 }
 
@@ -25,7 +25,7 @@ func NewAhaMoveStrategy(
 	baseStrategy *strategy.BaseStrategy,
 	clientRepo domain.ClientRepo,
 	serviceRepo domain.ServiceRepo,
-	ahaMoveExtService *ahamoveext.AhaMoveExtService,
+	ahaMoveExtService *ahamoveext.Service,
 	aiEliminatingExtService *aieliminating.Service,
 ) strategy.ShipStrategy {
 	return &AhaMoveStrategy{
