@@ -7,7 +7,6 @@ import (
 	"check-price/src/core/domain"
 	"check-price/src/core/dto"
 	"check-price/src/core/strategy"
-	"check-price/src/helpers"
 	"check-price/src/infra/external/ghtk"
 	"check-price/src/present/httpui/request"
 	"context"
@@ -22,6 +21,7 @@ type Strategy struct {
 	clientRepo     domain.ClientRepo
 	serviceRepo    domain.ServiceRepo
 	ghtkExtService *ghtkext.Service
+	baseStrategy   *strategy.BaseStrategy
 }
 
 func NewStrategy(
@@ -103,62 +103,8 @@ func (g *Strategy) GetMultiplePriceV3(ctx context.Context, shop *domain.Shop, re
 }
 
 func (g *Strategy) getPriceInput(ctx context.Context, isBBS bool, weight int64, req *request.GetPriceRequest) (*dto.GetPriceInputDto, *common.Error) {
-	isVer2 := req.VersionLocation == constant.VersionLocation2
-	ierr := common.ErrBadRequest(ctx)
-	var pickWard *domain.Ward
-	var receiverWard *domain.Ward
-	if isVer2 {
-		pickWard, ierr = g.wardRepo.GetByKmsId(ctx, req.SenderWardId)
-		if helpers.IsInternalError(ierr) {
-			log.Error(ctx, ierr.Error())
-			return nil, ierr
-		}
-	} else {
-		pickWard, ierr = g.wardRepo.GetByKvId(ctx, req.SenderWardId)
-		if helpers.IsInternalError(ierr) {
-			log.Error(ctx, ierr.Error())
-			return nil, ierr
-		}
-	}
-	if ierr != nil {
-		return nil, ierr.SetCode(4004)
-	}
-
-	if isVer2 {
-		receiverWard, ierr = g.wardRepo.GetByKmsId(ctx, req.ReceiverWardId)
-		if helpers.IsInternalError(ierr) {
-			log.Error(ctx, ierr.Error())
-			return nil, ierr
-		}
-	} else {
-		receiverWard, ierr = g.wardRepo.GetByKvId(ctx, req.ReceiverWardId)
-		if helpers.IsInternalError(ierr) {
-			log.Error(ctx, ierr.Error())
-			return nil, ierr
-		}
-	}
-	if ierr != nil {
-		return nil, ierr.SetCode(4006)
-	}
-
-	pickDistrict, err := g.districtRepo.GetById(ctx, pickWard.DistrictId)
+	address, err := g.baseStrategy.GetAddress(ctx, req)
 	if err != nil {
-		log.Error(ctx, err.Error())
-		return nil, err
-	}
-	pickProvince, err := g.cityRepo.GetById(ctx, pickDistrict.CityId)
-	if err != nil {
-		log.Error(ctx, err.Error())
-		return nil, err
-	}
-	receiverDistrict, err := g.districtRepo.GetById(ctx, receiverWard.DistrictId)
-	if err != nil {
-		log.Error(ctx, err.Error())
-		return nil, err
-	}
-	receiverProvince, err := g.cityRepo.GetById(ctx, receiverDistrict.CityId)
-	if err != nil {
-		log.Error(ctx, err.Error())
 		return nil, err
 	}
 	products := make([]*dto.Product, 0)
@@ -189,12 +135,12 @@ func (g *Strategy) getPriceInput(ctx context.Context, isBBS bool, weight int64, 
 		}
 	}
 	return &dto.GetPriceInputDto{
-		PickProvince:     pickProvince.Name,
-		PickDistrict:     pickDistrict.Name,
-		PickWard:         pickWard.Name,
-		ReceiverProvince: receiverProvince.Name,
-		ReceiverDistrict: receiverDistrict.Name,
-		ReceiverWard:     receiverWard.Name,
+		PickProvince:     address.PickProvince.Name,
+		PickDistrict:     address.PickDistrict.Name,
+		PickWard:         address.PickWard.Name,
+		ReceiverProvince: address.ReceiverProvince.Name,
+		ReceiverDistrict: address.ReceiverDistrict.Name,
+		ReceiverWard:     address.ReceiverWard.Name,
 		Address:          req.ReceiverAddress,
 		Products:         products,
 		Weight:           weight,
