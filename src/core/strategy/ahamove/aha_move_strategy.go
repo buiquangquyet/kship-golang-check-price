@@ -9,6 +9,7 @@ import (
 	ahamoveext "check-price/src/infra/external/ahamove"
 	"check-price/src/present/httpui/request"
 	"context"
+	"fmt"
 )
 
 type AhaMoveStrategy struct {
@@ -41,6 +42,11 @@ func (s *AhaMoveStrategy) Validate(_ context.Context, _ *request.GetPriceRequest
 }
 
 func (s *AhaMoveStrategy) GetMultiplePriceV3(ctx context.Context, shop *domain.Shop, req *request.GetPriceRequest, coupon string) (map[string]*domain.Price, *common.Error) {
+	senderAddress, receiverAddress, err := s.getAddressValue(ctx, req)
+	if err != nil {
+		return nil, err
+	}
+	fmt.Println(senderAddress, receiverAddress)
 	mapPrices := make(map[string]*domain.Price)
 	prices, err := s.ahaMoveExtService.CheckPrice(ctx, shop)
 	if err != nil {
@@ -53,6 +59,6 @@ func (s *AhaMoveStrategy) GetMultiplePriceV3(ctx context.Context, shop *domain.S
 	return mapPrices, nil
 }
 
-func (s *AhaMoveStrategy) getAddressValue(ctx context.Context, req *request.GetPriceRequest) (string, string, string, *common.Error) {
-	return "", "", "", nil
+func (s *AhaMoveStrategy) getAddressValue(ctx context.Context, req *request.GetPriceRequest) (string, string, *common.Error) {
+	return "", "", nil
 }

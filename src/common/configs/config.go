@@ -33,11 +33,6 @@ type Config struct {
 		MaxLifeTime int    `mapstructure:"max_life_time"`
 	} `mapstructure:"mysql"`
 
-	Mongo struct {
-		Uri string `mapstructure:"uri"`
-		DB  string `mapstructure:"db"`
-	} `mapstructure:"mongo"`
-
 	Redis struct {
 		Hosts    []string `mapstructure:"hosts"`
 		Username string   `mapstructure:"username"`
@@ -47,7 +42,9 @@ type Config struct {
 	ExtService struct {
 		GHTK    *GHTK    `mapstructure:"ghtk"`
 		AHAMOVE *AHAMOVE `mapstructure:"ahamove"`
-		Voucher *Voucher `mapstructure:"voucher"`
+
+		Voucher       *Voucher       `mapstructure:"voucher"`
+		AIEliminating *AIEliminating `mapstructure:"ai_eliminating"`
 	} `mapstructure:"ext_service"`
 
 	Tracer struct {
@@ -71,6 +68,12 @@ type AHAMOVE struct {
 
 type Voucher struct {
 	Host string `mapstructure:"host"`
+}
+
+type AIEliminating struct {
+	Host     string `mapstructure:"host"`
+	Username string `mapstructure:"username"`
+	Password string `mapstructure:"password"`
 }
 
 var common *Config
