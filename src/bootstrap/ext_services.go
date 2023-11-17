@@ -2,10 +2,10 @@ package bootstrap
 
 import (
 	"check-price/src/infra/external"
-	ahamoveext "check-price/src/infra/external/ahamove"
+	"check-price/src/infra/external/ahamove"
 	"check-price/src/infra/external/aieliminating"
-	ghtkext "check-price/src/infra/external/ghtk"
-	voucherext "check-price/src/infra/external/voucher"
+	"check-price/src/infra/external/ghtk"
+	"check-price/src/infra/external/voucher"
 	"go.uber.org/fx"
 )
 
