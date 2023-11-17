@@ -7,16 +7,18 @@ import (
 	"check-price/src/core/domain"
 	"check-price/src/core/strategy"
 	ahamoveext "check-price/src/infra/external/ahamove"
+	"check-price/src/infra/external/aieliminating"
 	"check-price/src/present/httpui/request"
 	"context"
 	"fmt"
 )
 
 type AhaMoveStrategy struct {
-	baseStrategy      *strategy.BaseStrategy
-	clientRepo        domain.ClientRepo
-	serviceRepo       domain.ServiceRepo
-	ahaMoveExtService *ahamoveext.AhaMoveExtService
+	baseStrategy            *strategy.BaseStrategy
+	clientRepo              domain.ClientRepo
+	serviceRepo             domain.ServiceRepo
+	ahaMoveExtService       *ahamoveext.AhaMoveExtService
+	aiEliminatingExtService *aieliminating.Service
 }
 
 func NewAhaMoveStrategy(
@@ -24,12 +26,14 @@ func NewAhaMoveStrategy(
 	clientRepo domain.ClientRepo,
 	serviceRepo domain.ServiceRepo,
 	ahaMoveExtService *ahamoveext.AhaMoveExtService,
+	aiEliminatingExtService *aieliminating.Service,
 ) strategy.ShipStrategy {
 	return &AhaMoveStrategy{
-		baseStrategy:      baseStrategy,
-		clientRepo:        clientRepo,
-		serviceRepo:       serviceRepo,
-		ahaMoveExtService: ahaMoveExtService,
+		baseStrategy:            baseStrategy,
+		clientRepo:              clientRepo,
+		serviceRepo:             serviceRepo,
+		ahaMoveExtService:       ahaMoveExtService,
+		aiEliminatingExtService: aiEliminatingExtService,
 	}
 }
 
@@ -60,5 +64,26 @@ func (s *AhaMoveStrategy) GetMultiplePriceV3(ctx context.Context, shop *domain.S
 }
 
 func (s *AhaMoveStrategy) getAddressValue(ctx context.Context, req *request.GetPriceRequest) (string, string, *common.Error) {
-	return "", "", nil
+	var senderAddress string
+	var receiverAddress string
+	address, err := s.baseStrategy.GetAddress(ctx, req)
+	if err != nil {
+		return "", "", err
+	}
+	if req.SenderAddress != "" {
+		senderAddress, err = s.aiEliminatingExtService.Redundancy(ctx, req.SenderAddress, address.PickWard.Name, address.PickDistrict.Name, address.PickProvince.Name)
+		if err != nil {
+			log.Error(ctx, err.Error())
+			return "", "", err
+		}
+	}
+	if req.ReceiverAddress != "" {
+		receiverAddress, err = s.aiEliminatingExtService.Redundancy(ctx, req.ReceiverAddress, address.ReceiverWard.Name, address.ReceiverDistrict.Name, address.ReceiverProvince.Name)
+		if err != nil {
+			log.Error(ctx, err.Error())
+			return "", "", err
+		}
+	}
+
+	return senderAddress, receiverAddress, nil
 }

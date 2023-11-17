@@ -46,12 +46,12 @@ func (g *Service) api(ctx context.Context) *req.Request {
 	return g.client.R().SetContext(ctx)
 }
 
-func (g *Service) Redundancy(ctx context.Context, address, ward, province, district string) (string, *common.Error) {
+func (g *Service) Redundancy(ctx context.Context, address, ward, district, province string) (string, *common.Error) {
 	token, fromCache, err := g.getToken(ctx, true)
 	if err != nil {
 		return "", err
 	}
-	result, ierr := g.redundancy(ctx, token, address, ward, province, district)
+	result, ierr := g.redundancy(ctx, token, address, ward, district, province)
 	if ierr != nil {
 		if fromCache && helpers.IsUnauthorizedError(ierr) {
 			// retry once
@@ -59,20 +59,23 @@ func (g *Service) Redundancy(ctx context.Context, address, ward, province, distr
 			if err != nil {
 				return "", err
 			}
-			return g.redundancy(ctx, newToken, address, ward, province, district)
+			return g.redundancy(ctx, newToken, address, ward, district, province)
 		}
 		return "", ierr
 	}
 	return result, nil
 }
 
-func (g *Service) redundancy(ctx context.Context, token string, address, ward, province, district string) (string, *common.Error) {
+func (g *Service) redundancy(ctx context.Context, token string, address, ward, district, province string) (string, *common.Error) {
 	var output LoginOutput
 	var outputErr OutputError
 	resp, err := g.api(ctx).
+		SetBearerAuthToken(token).
 		SetFormData(map[string]string{
-			"username": g.cf.Username,
-			"password": g.cf.Password,
+			"address":       address,
+			"ward_name":     ward,
+			"district_name": district,
+			"province_name": province,
 		}).
 		SetSuccessResult(&output).
 		SetErrorResult(&outputErr).
