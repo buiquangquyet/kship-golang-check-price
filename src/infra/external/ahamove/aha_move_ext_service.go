@@ -1,4 +1,4 @@
-package ahamove
+package ahamoveext
 
 import (
 	"check-price/src/common"
@@ -16,7 +16,6 @@ import (
 
 const (
 	deliveryCode   = "AHAMOVE"
-	codeSuccess    = "SUCCESS"
 	timeoutAhaMove = 5 * time.Second
 	expireToken    = 24 * time.Hour
 
@@ -137,5 +136,6 @@ func (g *AhaMoveExtService) newToken(ctx context.Context, shop *domain.Shop) (st
 
 func (g *AhaMoveExtService) handleError(ctx context.Context) *common.Error {
 	//Todo code
+
 	return nil
 }

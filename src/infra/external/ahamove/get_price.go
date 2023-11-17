@@ -1,4 +1,4 @@
-package ahamove
+package ahamoveext
 
 import (
 	"check-price/src/core/domain"

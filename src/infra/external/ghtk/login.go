@@ -1,4 +1,4 @@
-package ghtk
+package ghtkext
 
 import "check-price/src/core/domain"
 

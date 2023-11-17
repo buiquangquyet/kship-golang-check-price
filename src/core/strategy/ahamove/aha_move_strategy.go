@@ -1,4 +1,4 @@
-package aha_move
+package ahamove
 
 import (
 	"check-price/src/common"
@@ -6,49 +6,43 @@ import (
 	"check-price/src/core/constant"
 	"check-price/src/core/domain"
 	"check-price/src/core/strategy"
-	"check-price/src/infra/external/ahamove"
+	ahamoveext "check-price/src/infra/external/ahamove"
 	"check-price/src/present/httpui/request"
 	"context"
 )
 
 type AhaMoveStrategy struct {
-	wardRepo          domain.WardRepo
-	districtRepo      domain.DistrictRepo
-	cityRepo          domain.CityRepo
+	baseStrategy      *strategy.BaseStrategy
 	clientRepo        domain.ClientRepo
 	serviceRepo       domain.ServiceRepo
-	ahaMoveExtService *ahamove.AhaMoveExtService
+	ahaMoveExtService *ahamoveext.AhaMoveExtService
 }
 
 func NewAhaMoveStrategy(
-	wardRepo domain.WardRepo,
-	districtRepo domain.DistrictRepo,
-	cityRepo domain.CityRepo,
+	baseStrategy *strategy.BaseStrategy,
 	clientRepo domain.ClientRepo,
 	serviceRepo domain.ServiceRepo,
-	ahaMoveExtService *ahamove.AhaMoveExtService,
+	ahaMoveExtService *ahamoveext.AhaMoveExtService,
 ) strategy.ShipStrategy {
 	return &AhaMoveStrategy{
-		wardRepo:          wardRepo,
-		districtRepo:      districtRepo,
-		cityRepo:          cityRepo,
+		baseStrategy:      baseStrategy,
 		clientRepo:        clientRepo,
 		serviceRepo:       serviceRepo,
 		ahaMoveExtService: ahaMoveExtService,
 	}
 }
 
-func (g *AhaMoveStrategy) Code() string {
+func (s *AhaMoveStrategy) Code() string {
 	return constant.AHAMOVEDeliveryCode
 }
 
-func (g *AhaMoveStrategy) Validate(_ context.Context, _ *request.GetPriceRequest) *common.Error {
+func (s *AhaMoveStrategy) Validate(_ context.Context, _ *request.GetPriceRequest) *common.Error {
 	return nil
 }
 
-func (g *AhaMoveStrategy) GetMultiplePriceV3(ctx context.Context, shop *domain.Shop, req *request.GetPriceRequest, coupon string) (map[string]*domain.Price, *common.Error) {
+func (s *AhaMoveStrategy) GetMultiplePriceV3(ctx context.Context, shop *domain.Shop, req *request.GetPriceRequest, coupon string) (map[string]*domain.Price, *common.Error) {
 	mapPrices := make(map[string]*domain.Price)
-	prices, err := g.ahaMoveExtService.CheckPrice(ctx, shop)
+	prices, err := s.ahaMoveExtService.CheckPrice(ctx, shop)
 	if err != nil {
 		log.Error(ctx, err.Error())
 		return nil, err
@@ -57,4 +51,8 @@ func (g *AhaMoveStrategy) GetMultiplePriceV3(ctx context.Context, shop *domain.S
 		mapPrices[price.Code] = price
 	}
 	return mapPrices, nil
+}
+
+func (s *AhaMoveStrategy) getAddressValue(ctx context.Context, req *request.GetPriceRequest) (string, string, string, *common.Error) {
+	return "", "", "", nil
 }

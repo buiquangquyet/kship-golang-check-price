@@ -1,4 +1,4 @@
-package ahamove
+package ahamoveext
 
 type LoginOutput struct {
 	Token        string `json:"token"`
