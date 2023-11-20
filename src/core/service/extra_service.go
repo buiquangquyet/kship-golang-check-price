@@ -47,7 +47,7 @@ func (s *ExtraService) handlePriceSpecialService(ctx context.Context, price *dom
 		extraServiceCode[i] = service.Code
 	}
 	if helpers.InArray(extraServiceCode, constant.ServiceExtraCODST) && s.checkServiceExtraIsPossible(ctx, addInfoDto, constant.ServiceExtraCODST) {
-		s.addCodStPrice(price, addInfoDto.Shop, addInfoDto.Cod)
+		price.SetCodStFee(addInfoDto.Shop, addInfoDto.Cod)
 	}
 	if helpers.InArray(extraServiceCode, constant.ServiceExtraCODT0) {
 		err := s.addCodT0Price(ctx, price, addInfoDto)
@@ -62,21 +62,6 @@ func (s *ExtraService) handlePriceSpecialService(ctx context.Context, price *dom
 		}
 	}
 	return nil
-}
-
-func (s *ExtraService) addCodStPrice(price *domain.Price, shop *domain.Shop, cod int64) {
-	var codStFee int64
-	isShopType := shop.Type == constant.ShopVip
-	for i := 0; i < constant.MaxLevel; i++ {
-		if constant.CodLevelMin[i] <= cod && cod <= constant.CodLevelMax[i] {
-			if isShopType {
-				codStFee = constant.PriceVip[i]
-			} else {
-				codStFee = constant.PriceNormal[i]
-			}
-		}
-	}
-	price.SetCodStFee(codStFee)
 }
 
 func (s *ExtraService) addCodConnPrice(ctx context.Context, price *domain.Price, shop *domain.Shop) *common.Error {

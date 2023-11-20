@@ -55,7 +55,18 @@ func (p *Price) SetConnFee(connFee float64) *Price {
 	return p
 }
 
-func (p *Price) SetCodStFee(codStFee int64) *Price {
+func (p *Price) SetCodStFee(shop *Shop, cod int64) *Price {
+	var codStFee int64
+	isShopType := shop.Type == constant.ShopVip
+	for i := 0; i < constant.MaxLevel; i++ {
+		if constant.CodLevelMin[i] <= cod && cod <= constant.CodLevelMax[i] {
+			if isShopType {
+				codStFee = constant.PriceVip[i]
+			} else {
+				codStFee = constant.PriceNormal[i]
+			}
+		}
+	}
 	p.CodstFee = codStFee
 	return p
 }
