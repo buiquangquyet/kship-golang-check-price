@@ -31,6 +31,7 @@ func NewStrategy(
 	clientRepo domain.ClientRepo,
 	serviceRepo domain.ServiceRepo,
 	ghtkExtService *ghtkext.Service,
+	baseStrategy *strategy.BaseStrategy,
 ) strategy.ShipStrategy {
 	return &Strategy{
 		wardRepo:       wardRepo,
@@ -39,6 +40,7 @@ func NewStrategy(
 		clientRepo:     clientRepo,
 		serviceRepo:    serviceRepo,
 		ghtkExtService: ghtkExtService,
+		baseStrategy:   baseStrategy,
 	}
 }
 

@@ -73,3 +73,9 @@ func (p *Price) SetCouponInfo(discountVoucher int64) *Price {
 	p.OtherFee = totalPrice - (p.TransferFee + p.InsuranceFee + p.CodFee)
 	return p
 }
+
+func (p *Price) SetOtherFee() *Price {
+	p.OtherFee = p.TotalPrice - (p.TransferFee + p.InsuranceFee + p.CodFee) + p.CouponSale +
+		p.CodstFee + int64(p.ConnFee) + int64(p.CodT0Fee)
+	return p
+}

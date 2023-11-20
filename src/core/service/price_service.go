@@ -102,7 +102,11 @@ func (p *PriceService) GetPrice(ctx context.Context, req *request.GetPriceReques
 		return nil, ierr
 	}
 	for _, price := range prices {
-		price.SetCouponInfo(voucher)
+		if callTo == enums.TypeVoucherUseKv {
+			price.SetCouponInfo(voucher)
+		} else {
+			price.SetOtherFee()
+		}
 	}
 	return prices, nil
 }

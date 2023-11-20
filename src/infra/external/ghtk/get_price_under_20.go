@@ -45,7 +45,6 @@ type GetPriceUnder20Output struct {
 		IncludeVat   string `json:"include_vat"`
 		CostId       string `json:"cost_id"`
 		DeliveryType string `json:"delivery_type"`
-		A            int    `json:"a"`
 		Dt           string `json:"dt"`
 		ExtFees      []*Fee `json:"ext_fees"`
 		ShipFeeOnly  int64  `json:"ship_fee_only"`
