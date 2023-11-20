@@ -11,8 +11,6 @@ func newLoginInput(shop *domain.Shop) *LoginInput {
 	return &LoginInput{
 		Email:    shop.GHTKUsername,
 		Password: shop.GHTKPass,
-		//Email:    "giaovan@citigo.com.vn",
-		//Password: "Giaovan@123456KV",
 	}
 }
 
