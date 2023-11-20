@@ -112,16 +112,11 @@ func (p *PriceService) GetPrice(ctx context.Context, req *request.GetPriceReques
 }
 
 func (p *PriceService) addInfo(ctx context.Context, addInfoDto *dto.AddInfoDto, mapPrices map[string]*domain.Price) ([]*domain.Price, *common.Error) {
-	client, ierr := p.clientRepo.GetByCode(ctx, addInfoDto.Client.Code)
-	if ierr != nil {
-		log.Error(ctx, ierr.Error())
-		return nil, ierr
-	}
 	servicesCode := make([]string, len(addInfoDto.Services))
 	for i, service := range addInfoDto.Services {
 		servicesCode[i] = service.Code
 	}
-	services, ierr := p.serviceRepo.GetByClientIdAndCodes(ctx, enums.TypeServiceDV, servicesCode, client.Id)
+	services, ierr := p.serviceRepo.GetByClientIdAndCodes(ctx, enums.TypeServiceDV, servicesCode, addInfoDto.Client.Id)
 	if ierr != nil {
 		log.Error(ctx, ierr.Error())
 		return nil, ierr
@@ -132,27 +127,15 @@ func (p *PriceService) addInfo(ctx context.Context, addInfoDto *dto.AddInfoDto, 
 	}
 	prices := make([]*domain.Price, 0)
 	for serviceCode, price := range mapPrices {
-		price.Code = serviceCode
-		price.SetClientInfo(client)
+		price.SetCode(serviceCode)
+		price.SetClientInfo(addInfoDto.Client)
 		price.SetServiceInfo(mapServices[serviceCode])
 		err := p.extraService.handlePriceSpecialService(ctx, price, addInfoDto)
 		if err != nil {
 			return nil, err
 		}
-		p.handleTotalPrice(price, addInfoDto)
-
+		price.SetTotalPrice(addInfoDto.Payer)
 		prices = append(prices, price)
 	}
 	return prices, nil
-}
-
-func (p *PriceService) handleTotalPrice(price *domain.Price, addInfoDto *dto.AddInfoDto) {
-	//Todo xem lai
-	total := price.CodstFee + int64(price.ConnFee) + int64(price.CodT0Fee)
-	totalFeeExtraService := total
-	if addInfoDto.Payer == constant.PaymentByFrom {
-		total = price.Fee + total
-	}
-	price.Total = total
-	price.TotalPrice += totalFeeExtraService
 }

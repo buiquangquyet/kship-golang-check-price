@@ -1,6 +1,7 @@
 package domain
 
 import (
+	"check-price/src/core/constant"
 	"strconv"
 )
 
@@ -28,6 +29,11 @@ type Price struct {
 	Msg           string  `json:"msg"`
 	StatusCodT0   bool    `json:"status_codT0"`
 	MessageCodT0  string  `json:"message_codT0"`
+}
+
+func (p *Price) SetCode(code string) *Price {
+	p.Code = code
+	return p
 }
 
 func (p *Price) SetClientInfo(client *Client) *Price {
@@ -58,6 +64,17 @@ func (p *Price) SetCodT0Info(status bool, message string, codStFee float64) *Pri
 	p.StatusCodT0 = status
 	p.MessageCodT0 = message
 	p.CodT0Fee = codStFee
+	return p
+}
+
+func (p *Price) SetTotalPrice(payer string) *Price {
+	total := p.CodstFee + int64(p.ConnFee) + int64(p.CodT0Fee)
+	totalFeeExtraService := total
+	if payer == constant.PaymentByFrom {
+		total = p.Fee + total
+	}
+	p.Total = total
+	p.TotalPrice += totalFeeExtraService
 	return p
 }
 
