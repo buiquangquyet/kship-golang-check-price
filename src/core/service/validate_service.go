@@ -172,9 +172,10 @@ func (v *ValidateService) validateLocation(ctx context.Context, clientCode strin
 		return ierr.SetCode(4005)
 	}
 
-	if !helpers.InArray(constant.SenderWardIdDeliveryCode, clientCode) && req.ReceiverWardId != 0 {
-		return ierr.SetCode(4004)
+	if !helpers.InArray(constant.SenderWardIdDeliveryCode, clientCode) && req.ReceiverWardId == 0 {
+		return common.ErrBadRequest(ctx).SetCode(4004)
 	}
+
 	if isVer2 {
 		_, ierr = v.wardRepo.GetByKmsId(ctx, req.SenderWardId)
 		if helpers.IsInternalError(ierr) {

@@ -67,7 +67,7 @@ func (g *Service) Redundancy(ctx context.Context, address, ward, district, provi
 }
 
 func (g *Service) redundancy(ctx context.Context, token string, address, ward, district, province string) (string, *common.Error) {
-	var output LoginOutput
+	var output RedundancyOutput
 	var outputErr OutputError
 	resp, err := g.api(ctx).
 		SetBearerAuthToken(token).
@@ -89,7 +89,7 @@ func (g *Service) redundancy(ctx context.Context, token string, address, ward, d
 		detail := fmt.Sprintf("http: [%d], resp: [%s]", resp.StatusCode, resp.String())
 		return "", common.ErrSystemError(ctx, detail).SetSource(common.SourceGHTKService)
 	}
-	return output.Data.AccessToken, nil
+	return output.Data.AddressNew, nil
 }
 
 func (g *Service) getToken(ctx context.Context, allowFromCache bool) (string, bool, *common.Error) {
