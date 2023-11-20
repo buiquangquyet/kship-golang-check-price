@@ -12,7 +12,7 @@ log:
 server:
   name: check-price
   address: 3456
-  prefix: api/v4
+  prefix: api/v4/check-price
 
 mysql:
   host: 10.24.22.234

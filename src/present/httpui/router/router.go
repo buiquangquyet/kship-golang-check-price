@@ -20,6 +20,6 @@ func RegisterRouters(in RoutersIn) {
 	group.GET("/ping", middlewares.HealthCheckEndpoint)
 	group.Use(in.AuthMiddleware.Authenticate())
 	{
-		group.POST("/check-price/:client", in.PriceController.GetPrice)
+		group.POST("/:client", in.PriceController.GetPrice)
 	}
 }
