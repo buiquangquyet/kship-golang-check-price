@@ -76,15 +76,15 @@ func (v *ValidateService) validateShop(ctx context.Context, shop *domain.Shop, c
 		}
 	case constant.JTFWDeliveryCode:
 		if shop.JtCustomerId == "" {
-			return ierr.SetCode(3005)
+			return ierr.SetCode(3013)
 		}
 	case constant.GHNFWDeliveryCode:
 		if shop.GHNGWShopId == "" || shop.GHNFWPhone == "" {
-			return ierr.SetCode(3005)
+			return ierr.SetCode(3014)
 		}
 	case constant.BESTFWDeliveryCode:
 		if shop.UsernameBestFw == "" || shop.PasswordBestFw == "" {
-			return ierr.SetCode(3005)
+			return ierr.SetCode(3015)
 		}
 	}
 	return nil
