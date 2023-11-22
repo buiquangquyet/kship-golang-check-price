@@ -120,7 +120,8 @@ func (g *Strategy) getPriceInput(ctx context.Context, isBBS bool, weight int64, 
 			Height:   req.ProductHeight,
 		})
 	}
-	var value int64 = 0
+	var value int64
+	var tip int64
 	tags := make([]int, 0)
 	for _, extraService := range req.ExtraService {
 		if extraService.Code == constant.ServiceExtraGbh {
@@ -130,9 +131,16 @@ func (g *Strategy) getPriceInput(ctx context.Context, isBBS bool, weight int64, 
 			}
 			value = valueString
 		}
-
 		if tag, exist := constant.MapGHTKTag[extraService.Value]; exist {
 			tags = append(tags, tag)
+		}
+		if extraService.Code == constant.ServiceExtraCodeTip {
+			valueString, err := strconv.ParseInt(extraService.Value, 10, 64)
+			if err != nil {
+				return nil, common.ErrBadRequest(ctx).SetDetail("value extra service invalid")
+			}
+			value = valueString
+			tip = g.getTipValue(value)
 		}
 	}
 	return &dto.GetPriceInputDto{
@@ -147,5 +155,16 @@ func (g *Strategy) getPriceInput(ctx context.Context, isBBS bool, weight int64, 
 		Weight:           weight,
 		Value:            value,
 		Tags:             tags,
+		NotDeliveredFee:  tip,
 	}, nil
+}
+
+func (g *Strategy) getTipValue(tip int64) int64 {
+	if tip < constant.MinFailDeliveryTaking {
+		tip = constant.MinFailDeliveryTaking
+	}
+	if tip > constant.MaxFailDeliveryTaking {
+		tip = constant.MaxFailDeliveryTaking
+	}
+	return tip
 }

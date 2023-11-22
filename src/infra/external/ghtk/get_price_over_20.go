@@ -17,6 +17,7 @@ type GetPriceOver20Input struct {
 	Products         []*Product `json:"products"`
 	Transport        string     `json:"transport"`
 	Tags             []int      `json:"tags"`
+	NotDeliveredFee  int64      `json:"not_delivered_fee"`
 }
 
 type Product struct {
@@ -53,6 +54,7 @@ func newGetPriceOver20Input(serviceCode string, p *dto.GetPriceInputDto) *GetPri
 		Products:         products,
 		Transport:        serviceCode,
 		Tags:             p.Tags,
+		NotDeliveredFee:  p.NotDeliveredFee,
 	}
 }
 

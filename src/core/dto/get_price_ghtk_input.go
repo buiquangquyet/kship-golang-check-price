@@ -12,6 +12,7 @@ type GetPriceInputDto struct {
 	Weight           int64      //no BBS
 	Value            int64
 	Tags             []int
+	NotDeliveredFee  int64
 }
 
 type Product struct {

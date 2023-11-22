@@ -6,32 +6,34 @@ import (
 )
 
 type GetPriceUnder20Input struct {
-	Address      string `json:"address"`
-	PickProvince string `json:"pick_province"`
-	PickDistrict string `json:"pick_district"`
-	PickWard     string `json:"pick_ward"`
-	Province     string `json:"province"`
-	District     string `json:"district"`
-	Ward         string `json:"ward"`
-	Weight       int64  `json:"weight"`
-	Value        int64  `json:"value"`
-	Transport    string `json:"transport"`
-	Tags         []int  `json:"tags"`
+	Address         string `json:"address"`
+	PickProvince    string `json:"pick_province"`
+	PickDistrict    string `json:"pick_district"`
+	PickWard        string `json:"pick_ward"`
+	Province        string `json:"province"`
+	District        string `json:"district"`
+	Ward            string `json:"ward"`
+	Weight          int64  `json:"weight"`
+	Value           int64  `json:"value"`
+	Transport       string `json:"transport"`
+	Tags            []int  `json:"tags"`
+	NotDeliveredFee int64  `json:"not_delivered_fee"`
 }
 
 func newGetPriceUnder20Input(serviceCode string, p *dto.GetPriceInputDto) *GetPriceUnder20Input {
 	return &GetPriceUnder20Input{
-		Address:      p.Address,
-		PickProvince: p.PickProvince,
-		PickDistrict: p.PickDistrict,
-		PickWard:     p.PickWard,
-		Province:     p.ReceiverProvince,
-		District:     p.ReceiverDistrict,
-		Ward:         p.ReceiverWard,
-		Weight:       p.Weight,
-		Value:        p.Value,
-		Transport:    serviceCode,
-		Tags:         p.Tags,
+		Address:         p.Address,
+		PickProvince:    p.PickProvince,
+		PickDistrict:    p.PickDistrict,
+		PickWard:        p.PickWard,
+		Province:        p.ReceiverProvince,
+		District:        p.ReceiverDistrict,
+		Ward:            p.ReceiverWard,
+		Weight:          p.Weight,
+		Value:           p.Value,
+		Transport:       serviceCode,
+		Tags:            p.Tags,
+		NotDeliveredFee: p.NotDeliveredFee,
 	}
 }
 
