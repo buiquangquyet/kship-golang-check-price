@@ -114,14 +114,14 @@ func (g *Service) newToken(ctx context.Context, shop *domain.Shop) (string, *com
 	var output LoginOutput
 	var outputErr OutputErr
 	resp, err := g.api(ctx).
-		SetPathParams(map[string]string{
+		SetQueryParams(map[string]string{
 			"name":    "Kiotviet.vn",
 			"api_key": g.key,
 			"mobile":  shop.Phone,
 		}).
 		SetSuccessResult(&output).
 		SetErrorResult(&outputErr).
-		Post(loginPath)
+		Get(loginPath)
 	if err != nil {
 		return "", common.ErrSystemError(ctx, err.Error())
 	}

@@ -46,6 +46,9 @@ func (s *Strategy) Validate(_ context.Context, _ *request.GetPriceRequest) *comm
 }
 
 func (s *Strategy) GetMultiplePriceV3(ctx context.Context, shop *domain.Shop, req *request.GetPriceRequest, coupon string) (map[string]*domain.Price, *common.Error) {
+	if shop.Code == constant.ShopDefaultTrial {
+		return nil, common.ErrBadRequest(ctx).SetCode(2002)
+	}
 	senderAddress, receiverAddress, err := s.getAddressValue(ctx, req)
 	if err != nil {
 		return nil, err
