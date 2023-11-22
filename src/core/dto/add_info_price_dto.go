@@ -3,6 +3,7 @@ package dto
 import (
 	"check-price/src/core/constant"
 	"check-price/src/core/domain"
+	"check-price/src/core/enums"
 	"check-price/src/present/httpui/request"
 )
 
@@ -13,6 +14,8 @@ type AddInfoDto struct {
 	RetailerId   int64
 	Payer        string
 	Coupon       string
+	CallTo       enums.TypeVoucherUse
+	Voucher      int64
 	Services     []*Service
 	ExtraService []*ExtraService
 }

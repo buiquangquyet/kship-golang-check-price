@@ -27,8 +27,8 @@ type Price struct {
 	OldTotalPrice int64   `json:"oldTotalPrice"`
 	Status        bool    `json:"status"`
 	Msg           string  `json:"msg"`
-	StatusCodT0   bool    `json:"status_codT0"`
-	MessageCodT0  string  `json:"message_codT0"`
+	StatusCodT0   bool    `json:"status_codT0,omitempty"`
+	MessageCodT0  string  `json:"message_codT0,omitempty"`
 }
 
 func (p *Price) SetCode(code string) *Price {
@@ -105,5 +105,10 @@ func (p *Price) SetCouponInfo(discountVoucher int64) *Price {
 func (p *Price) SetOtherFee() *Price {
 	p.OtherFee = p.TotalPrice - (p.TransferFee + p.InsuranceFee + p.CodFee) + p.CouponSale +
 		p.CodstFee + int64(p.ConnFee) + int64(p.CodT0Fee)
+	return p
+}
+
+func (p *Price) HandleFeeGHTK() *Price {
+	p.Total = p.InsuranceFee - (p.CodstFee + int64(p.ConnFee) + int64(p.CodT0Fee))
 	return p
 }

@@ -81,6 +81,8 @@ func (p *PriceService) GetPrice(ctx context.Context, req *request.GetPriceReques
 	case enums.TypeVoucherNotExist:
 		//khong lam gi
 	}
+	addInfoDTO.CallTo = callTo
+	addInfoDTO.Voucher = voucher
 
 	shipStrategy, exist := p.shipStrategyResolver.Resolve(req.ClientCode)
 	if !exist {
@@ -100,13 +102,6 @@ func (p *PriceService) GetPrice(ctx context.Context, req *request.GetPriceReques
 	prices, ierr := p.addInfo(ctx, addInfoDTO, mapPrices)
 	if ierr != nil {
 		return nil, ierr
-	}
-	for _, price := range prices {
-		if callTo == enums.TypeVoucherUseKv {
-			price.SetCouponInfo(voucher)
-		} else {
-			price.SetOtherFee()
-		}
 	}
 	return prices, nil
 }
@@ -135,7 +130,16 @@ func (p *PriceService) addInfo(ctx context.Context, addInfoDto *dto.AddInfoDto, 
 			return nil, err
 		}
 		price.SetTotalPrice(addInfoDto.Payer)
+		if addInfoDto.CallTo == enums.TypeVoucherUseKv {
+			price.SetCouponInfo(addInfoDto.Voucher)
+		} else {
+			price.SetOtherFee()
+		}
+		if addInfoDto.Client.Code == constant.GHTKDeliveryCode && addInfoDto.Payer == constant.PaymentByTo {
+			price.HandleFeeGHTK()
+		}
 		prices = append(prices, price)
 	}
+
 	return prices, nil
 }
