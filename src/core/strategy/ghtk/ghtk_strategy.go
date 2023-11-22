@@ -121,18 +121,17 @@ func (g *Strategy) getPriceInput(ctx context.Context, isBBS bool, weight int64, 
 		})
 	}
 	var value int64 = 0
+	tags := make([]int, 0)
 	for _, extraService := range req.ExtraService {
-		if extraService.Code == "GBH" {
+		if extraService.Code == constant.ServiceExtraGbh {
 			valueString, err := strconv.ParseInt(extraService.Value, 10, 64)
 			if err != nil {
 				return nil, common.ErrBadRequest(ctx).SetDetail("value extra service invalid")
 			}
 			value = valueString
 		}
-	}
-	tags := make([]int, 0)
-	for _, service := range req.ExtraService {
-		if tag, exist := constant.MapGHTKExtraService[service.Code]; exist {
+
+		if tag, exist := constant.MapGHTKTag[extraService.Value]; exist {
 			tags = append(tags, tag)
 		}
 	}
