@@ -5,12 +5,12 @@ import (
 	"check-price/src/common/log"
 	"check-price/src/core/constant"
 	"check-price/src/core/domain"
+	"check-price/src/core/dto"
 	"check-price/src/core/strategy"
 	ahamoveext "check-price/src/infra/external/ahamove"
 	"check-price/src/infra/external/aieliminating"
 	"check-price/src/present/httpui/request"
 	"context"
-	"fmt"
 )
 
 type Strategy struct {
@@ -53,7 +53,24 @@ func (s *Strategy) GetMultiplePriceV3(ctx context.Context, shop *domain.Shop, re
 	if err != nil {
 		return nil, err
 	}
-	fmt.Println(senderAddress, receiverAddress)
+
+	paymentMethod := "CASH"
+	for _, extraService := range req.ExtraService {
+		if extraService.Code == constant.ServiceExtraPrepaid {
+			paymentMethod = "BALANCE"
+		}
+	}
+	_ = &dto.GetPriceInputAhaMoveDto{
+		Path: [2]*dto.Path{
+			{Address: senderAddress},
+			{Address: receiverAddress, Cod: req.MoneyCollection},
+		},
+		PaymentMethod: paymentMethod,
+		PromoCode:     coupon,
+		OrderTime:     0,
+		Services:      nil,
+	}
+
 	mapPrices := make(map[string]*domain.Price)
 	prices, err := s.ahaMoveExtService.CheckPrice(ctx, shop)
 	if err != nil {
