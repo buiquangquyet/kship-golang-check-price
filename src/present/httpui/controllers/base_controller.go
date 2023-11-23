@@ -24,7 +24,7 @@ func NewBaseController(validate *validator.Validate) *BaseController {
 }
 
 func (b *BaseController) Success(c *gin.Context, data interface{}) {
-	c.JSON(http.StatusOK, data)
+	c.JSON(http.StatusOK, dto.NewSuccessResponse(data))
 }
 
 func (b *BaseController) ErrorData(c *gin.Context, err *common.Error) {

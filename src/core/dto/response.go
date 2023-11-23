@@ -35,3 +35,19 @@ func ConvertErrorToResponse(err *common.Error) *ErrorResponse {
 func isInternalError(err *common.Error) bool {
 	return err.GetHttpStatus() >= http.StatusInternalServerError
 }
+
+type SuccessResponse struct {
+	StatusCode int         `json:"status_code"`
+	Data       interface{} `json:"data"`
+	Msg        string      `json:"msg"`
+	Message    string      `json:"message"`
+}
+
+func NewSuccessResponse(data interface{}) *SuccessResponse {
+	return &SuccessResponse{
+		StatusCode: 200,
+		Data:       data,
+		Msg:        "Thành công",
+		Message:    "Thành công",
+	}
+}
