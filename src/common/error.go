@@ -5,14 +5,17 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"strconv"
 	"time"
 )
 
 type ErrorCode int
 
+func (e ErrorCode) ToString() string {
+	return strconv.Itoa(int(e))
+}
+
 const (
-	//internal
-	Success               ErrorCode = 0
 	ErrorCodeBadRequest   ErrorCode = 400
 	ErrorCodeNotFound     ErrorCode = 404
 	ErrorCodeUnauthorized ErrorCode = 401
@@ -35,16 +38,6 @@ type Error struct {
 	Source     Source    `json:"source"`
 	HTTPStatus int       `json:"http_status"`
 	Lang       string    `json:"lang"`
-}
-
-func NewError(ctx context.Context, code ErrorCode, message string, httpStatus int) *Error {
-	traceId := GetTraceId(ctx)
-	return &Error{
-		Code:       code,
-		Message:    message,
-		TraceID:    traceId,
-		HTTPStatus: httpStatus,
-	}
 }
 
 func (e *Error) Error() string {
