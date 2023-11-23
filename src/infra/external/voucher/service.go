@@ -49,7 +49,7 @@ func (g *Service) CheckVoucher(ctx context.Context, code string, retailerId, cli
 		}).
 		SetSuccessResult(&output).
 		SetErrorResult(&output).
-		Get(checkVoucherPath)
+		Post(checkVoucherPath)
 	if err != nil {
 		return nil, common.ErrSystemError(ctx, err.Error()).SetSource(common.SourceGHTKService)
 	}
