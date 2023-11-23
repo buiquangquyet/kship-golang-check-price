@@ -131,7 +131,11 @@ func (g *Strategy) getPriceInput(ctx context.Context, isBBS bool, weight int64, 
 			}
 			value = valueString
 		}
-		if tag, exist := constant.MapGHTKTag[extraService.Value]; exist {
+		if tag, exist := constant.MapGHTKTagByServiceExtra[extraService.Code]; exist {
+			tags = append(tags, tag)
+		}
+
+		if tag, exist := constant.MapGHTKTagByShipperNote[extraService.Value]; exist {
 			tags = append(tags, tag)
 		}
 		if extraService.Code == constant.ServiceExtraCodeTip {
