@@ -11,6 +11,7 @@ import (
 	"check-price/src/infra/external/aieliminating"
 	"check-price/src/present/httpui/request"
 	"context"
+	"time"
 )
 
 type Strategy struct {
@@ -55,11 +56,22 @@ func (s *Strategy) GetMultiplePriceV3(ctx context.Context, shop *domain.Shop, re
 	}
 
 	paymentMethod := "CASH"
+	var orderTime int64 = 0
 	for _, extraService := range req.ExtraService {
 		if extraService.Code == constant.ServiceExtraPrepaid {
 			paymentMethod = "BALANCE"
 		}
+		if extraService.Code == constant.ServiceExtraScheduled {
+			dateString := "02-01-2006 15:04"
+			orderTimeParse, err := time.Parse(dateString, extraService.Value)
+			if err != nil {
+				//log
+				return nil, common.ErrBadRequest(ctx).SetCode(1111)
+			}
+			orderTime = orderTimeParse.Unix()
+		}
 	}
+
 	_ = &dto.GetPriceInputAhaMoveDto{
 		Path: [2]*dto.Path{
 			{Address: senderAddress},
@@ -67,7 +79,7 @@ func (s *Strategy) GetMultiplePriceV3(ctx context.Context, shop *domain.Shop, re
 		},
 		PaymentMethod: paymentMethod,
 		PromoCode:     coupon,
-		OrderTime:     0,
+		OrderTime:     orderTime,
 		Services:      nil,
 	}
 

@@ -30,4 +30,5 @@ const (
 	ServiceExtraGHTK4       = "GHTK_4"
 	ServiceExtraGHTK5       = "GHTK_5"
 	ServiceExtraGHTK6       = "GHTK_6"
+	ServiceExtraScheduled   = "Scheduled"
 )
