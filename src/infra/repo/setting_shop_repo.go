@@ -8,7 +8,7 @@ import (
 	"gorm.io/gorm/clause"
 )
 
-func NewSettingShopRepo(base *baseRepo) domain.SettingShopRepo {
+func NewSettingShopRepo(base *baseRepo) *SettingShopRepo {
 	return &SettingShopRepo{
 		base,
 	}

@@ -2,13 +2,14 @@ package ahamoveext
 
 import (
 	"check-price/src/core/domain"
+	"check-price/src/core/param"
 )
 
 type GetPriceInput struct {
-	Path          []*Path         `json:"path"`
+	Path          [2]*Path        `json:"path"`
 	PaymentMethod string          `json:"payment_method"`
 	PromoCode     string          `json:"promo_code"`
-	OrderTime     int             `json:"order_time"`
+	OrderTime     int64           `json:"order_time"`
 	Services      []*ServiceInput `json:"services"`
 	Token         string          `json:"token"`
 }
@@ -17,21 +18,31 @@ type Path struct {
 	Address string
 	Name    string
 	Mobile  string
-	Cod     int
+	Cod     int64
 }
 
 type ServiceInput struct {
-	Id       int
+	Id       string
 	Requests []string
 }
 
-func newGetPriceInput(token string) *GetPriceInput {
+func newGetPriceInput(token string, p *param.GetPriceAhaMoveParam) *GetPriceInput {
+	services := make([]*ServiceInput, len(p.Services))
+	for i, s := range p.Services {
+		services[i] = &ServiceInput{
+			Id:       s.Id,
+			Requests: s.Requests,
+		}
+	}
 	return &GetPriceInput{
-		Path:          nil,
-		PaymentMethod: "",
-		PromoCode:     "",
-		OrderTime:     0,
-		Services:      nil,
+		Path: [2]*Path{
+			{Address: p.Path[0].Address},
+			{Address: p.Path[1].Address, Cod: p.Path[1].Cod},
+		},
+		PaymentMethod: p.PaymentMethod,
+		PromoCode:     p.PromoCode,
+		OrderTime:     p.OrderTime,
+		Services:      services,
 		Token:         token,
 	}
 }

@@ -5,6 +5,7 @@ import (
 	"check-price/src/common/configs"
 	"check-price/src/common/log"
 	"check-price/src/core/domain"
+	"check-price/src/core/param"
 	"check-price/src/helpers"
 	"check-price/src/infra/external"
 	"context"
@@ -47,12 +48,12 @@ func (g *Service) api(ctx context.Context) *req.Request {
 	return g.client.R().SetContext(ctx)
 }
 
-func (g *Service) CheckPrice(ctx context.Context, shop *domain.Shop) ([]*domain.Price, *common.Error) {
+func (g *Service) CheckPrice(ctx context.Context, shop *domain.Shop, p *param.GetPriceAhaMoveParam) ([]*domain.Price, *common.Error) {
 	token, fromCache, err := g.getToken(ctx, shop, true)
 	if err != nil {
 		return nil, err
 	}
-	result, ierr := g.checkPrice(ctx, token)
+	result, ierr := g.checkPrice(ctx, token, p)
 	if ierr != nil {
 		if fromCache && helpers.IsUnauthorizedError(ierr) {
 			// retry once
@@ -60,18 +61,18 @@ func (g *Service) CheckPrice(ctx context.Context, shop *domain.Shop) ([]*domain.
 			if err != nil {
 				return nil, err
 			}
-			return g.checkPrice(ctx, newToken)
+			return g.checkPrice(ctx, newToken, p)
 		}
 		return nil, ierr
 	}
 	return result, nil
 }
 
-func (g *Service) checkPrice(ctx context.Context, token string) ([]*domain.Price, *common.Error) {
+func (g *Service) checkPrice(ctx context.Context, token string, p *param.GetPriceAhaMoveParam) ([]*domain.Price, *common.Error) {
 	var output []*PriceOuput
 	var outputErr OutputErr
 	resp, err := g.api(ctx).
-		SetBody(newGetPriceInput(token)).
+		SetBody(newGetPriceInput(token, p)).
 		SetSuccessResult(&output).
 		SetErrorResult(&outputErr).
 		Get(checkPricePath)

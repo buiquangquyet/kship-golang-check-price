@@ -25,11 +25,13 @@ type Strategy struct {
 }
 
 func NewStrategy(
+	settingShop domain.SettingShopRepo,
 	baseStrategy *strategy.BaseStrategy,
 	ahaMoveExtService *ahamoveext.Service,
 	aiEliminatingExtService *aieliminating.Service,
 ) strategy.ShipStrategy {
 	return &Strategy{
+		settingShop:             settingShop,
 		baseStrategy:            baseStrategy,
 		ahaMoveExtService:       ahaMoveExtService,
 		aiEliminatingExtService: aiEliminatingExtService,
@@ -52,28 +54,15 @@ func (s *Strategy) GetMultiplePriceV3(ctx context.Context, shop *domain.Shop, re
 	if err != nil {
 		return nil, err
 	}
-
-	paymentMethod := "CASH"
-	var orderTime int64 = 0
-	for _, extraService := range req.ExtraService {
-		if extraService.Code == constant.ServiceExtraPrepaid {
-			paymentMethod = "BALANCE"
-		}
-		if extraService.Code == constant.ServiceExtraScheduled {
-			dateString := "02-01-2006 15:04"
-			orderTimeParse, err := time.Parse(dateString, extraService.Value)
-			if err != nil {
-				//log
-				return nil, common.ErrBadRequest(ctx).SetCode(1111)
-			}
-			orderTime = orderTimeParse.Unix()
-		}
+	paymentMethod, orderTime, err := s.getExtraService(ctx, req.ExtraService)
+	if err != nil {
+		return nil, err
 	}
 	services, err := s.getServices(ctx, req.Services, provinceId)
 	if err != nil {
 		return nil, err
 	}
-	_ = &param.GetPriceAhaMoveParam{
+	getPriceParam := &param.GetPriceAhaMoveParam{
 		Path: [2]*param.Path{
 			{Address: senderAddress},
 			{Address: receiverAddress, Cod: req.MoneyCollection},
@@ -85,7 +74,7 @@ func (s *Strategy) GetMultiplePriceV3(ctx context.Context, shop *domain.Shop, re
 	}
 
 	mapPrices := make(map[string]*domain.Price)
-	prices, err := s.ahaMoveExtService.CheckPrice(ctx, shop)
+	prices, err := s.ahaMoveExtService.CheckPrice(ctx, shop, getPriceParam)
 	if err != nil {
 		log.Error(ctx, err.Error())
 		return nil, err
@@ -120,10 +109,30 @@ func (s *Strategy) getAddressValue(ctx context.Context, req *request.GetPriceReq
 	senderAddress = fmt.Sprintf("%s, %s, %s, %s", senderAddress, address.PickWard.Name, address.PickDistrict.Name, address.PickProvince.Name)
 	receiverAddress = fmt.Sprintf("%s, %s, %s, %s", receiverAddress, address.ReceiverWard.Name, address.ReceiverDistrict.Name, address.ReceiverProvince.Name)
 	if address.PickProvince.Name != address.ReceiverProvince.Name {
-		log.Error(ctx, "")
-		//return
+		log.Error(ctx, "province invalid")
+		return 0, "", "", common.ErrBadRequest(ctx).SetCode(1002)
 	}
 	return address.PickProvince.Id, senderAddress, receiverAddress, nil
+}
+
+func (s *Strategy) getExtraService(ctx context.Context, extraServices []*request.ExtraService) (string, int64, *common.Error) {
+	paymentMethod := "CASH"
+	var orderTime int64 = 0
+	for _, extraService := range extraServices {
+		if extraService.Code == constant.ServiceExtraPrepaid {
+			paymentMethod = "BALANCE"
+		}
+		if extraService.Code == constant.ServiceExtraScheduled {
+			dateString := "02-01-2006 15:04"
+			orderTimeParse, err := time.Parse(dateString, extraService.Value)
+			if err != nil {
+				log.Error(ctx, "scheduled invalid, scheduled:[%s]", extraService.Value)
+				return "", 0, common.ErrBadRequest(ctx).SetCode(1111)
+			}
+			orderTime = orderTimeParse.Unix()
+		}
+	}
+	return paymentMethod, orderTime, nil
 }
 
 func (s *Strategy) getServices(ctx context.Context, services []*request.Service, provinceId int64) ([]*param.ServiceAhaMove, *common.Error) {

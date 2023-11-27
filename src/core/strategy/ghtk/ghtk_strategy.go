@@ -29,11 +29,11 @@ func NewStrategy(
 	}
 }
 
-func (g *Strategy) Code() string {
+func (s *Strategy) Code() string {
 	return constant.GHTKDeliveryCode
 }
 
-func (g *Strategy) Validate(ctx context.Context, req *request.GetPriceRequest) *common.Error {
+func (s *Strategy) Validate(ctx context.Context, req *request.GetPriceRequest) *common.Error {
 	ierr := common.ErrBadRequest(ctx)
 	if req.ReceiverWardId == 0 {
 		return ierr.SetMessage("Vui lòng nhập xã phường người nhận")
@@ -50,89 +50,18 @@ func (g *Strategy) Validate(ctx context.Context, req *request.GetPriceRequest) *
 	return nil
 }
 
-func (g *Strategy) GetMultiplePriceV3(ctx context.Context, shop *domain.Shop, req *request.GetPriceRequest, _ string) (map[string]*domain.Price, *common.Error) {
-	var wg sync.WaitGroup
-	mapPrices := make(map[string]*domain.Price)
-	isBBS := false
-	product := req.Product
-	weight := int64(product.ProductLength * product.ProductWidth * product.ProductHeight / 6)
-	if weight < product.ProductWeight {
-		weight = product.ProductWeight
-	}
-	if weight > 20000 {
-		isBBS = true
-	}
-
-	getPriceParam, err := g.getPriceInput(ctx, isBBS, weight, req)
+func (s *Strategy) GetMultiplePriceV3(ctx context.Context, shop *domain.Shop, req *request.GetPriceRequest, _ string) (map[string]*domain.Price, *common.Error) {
+	address, err := s.baseStrategy.GetAddress(ctx, req)
 	if err != nil {
 		return nil, err
 	}
-	for _, service := range req.Services {
-		wg.Add(1)
-		go func(service *request.Service) {
-			defer wg.Done()
-			var price *domain.Price
-			var err *common.Error
-			if isBBS {
-				price, err = g.ghtkExtService.GetPriceOver20(ctx, shop, service.Code, getPriceParam)
-			} else {
-				price, err = g.ghtkExtService.GetPriceUnder20(ctx, shop, service.Code, getPriceParam)
-			}
-			if err != nil {
-				log.Error(ctx, err.Error())
-				return
-			}
-			mapPrices[service.Code] = price
-		}(service)
-	}
-	wg.Wait()
-	return mapPrices, nil
-}
-
-func (g *Strategy) getPriceInput(ctx context.Context, isBBS bool, weight int64, req *request.GetPriceRequest) (*param.GetPriceGHTKParam, *common.Error) {
-	address, err := g.baseStrategy.GetAddress(ctx, req)
+	value, tip, tags, err := s.getExtraService(ctx, req.ExtraService)
 	if err != nil {
 		return nil, err
 	}
-	products := make([]*param.ProductGHTK, 0)
-	if isBBS {
-		products = append(products, &param.ProductGHTK{
-			Name:     "kiện hàng",
-			Quantity: 1,
-			Weight:   req.ProductWeight / 1000,
-			Width:    req.ProductWidth,
-			Length:   req.ProductLength,
-			Height:   req.ProductHeight,
-		})
-	}
-	var value int64
-	var tip int64
-	tags := make([]int, 0)
-	for _, extraService := range req.ExtraService {
-		if extraService.Code == constant.ServiceExtraGbh {
-			valueString, err := strconv.ParseInt(extraService.Value, 10, 64)
-			if err != nil {
-				return nil, common.ErrBadRequest(ctx).SetDetail("value extra service invalid")
-			}
-			value = valueString
-		}
-		if tag, exist := constant.MapGHTKTagByServiceExtra[extraService.Code]; exist {
-			tags = append(tags, tag)
-		}
-
-		if tag, exist := constant.MapGHTKTagByShipperNote[extraService.Value]; exist {
-			tags = append(tags, tag)
-		}
-		if extraService.Code == constant.ServiceExtraCodeTip {
-			valueString, err := strconv.ParseInt(extraService.Value, 10, 64)
-			if err != nil {
-				return nil, common.ErrBadRequest(ctx).SetDetail("value extra service invalid")
-			}
-			value = valueString
-			tip = g.getTipValue(value)
-		}
-	}
-	return &param.GetPriceGHTKParam{
+	isBBS, weight := s.getWeight(req)
+	products := s.getProduct(req, isBBS)
+	p := &param.GetPriceGHTKParam{
 		PickProvince:     address.PickProvince.Name,
 		PickDistrict:     address.PickDistrict.Name,
 		PickWard:         address.PickWard.Name,
@@ -145,15 +74,92 @@ func (g *Strategy) getPriceInput(ctx context.Context, isBBS bool, weight int64, 
 		Value:            value,
 		Tags:             tags,
 		NotDeliveredFee:  tip,
-	}, nil
+	}
+
+	var wg sync.WaitGroup
+	mapPrices := make(map[string]*domain.Price)
+	for _, service := range req.Services {
+		wg.Add(1)
+		go func(service *request.Service) {
+			defer wg.Done()
+			var price *domain.Price
+			var err *common.Error
+			if isBBS {
+				price, err = s.ghtkExtService.GetPriceOver20(ctx, shop, service.Code, p)
+			} else {
+				price, err = s.ghtkExtService.GetPriceUnder20(ctx, shop, service.Code, p)
+			}
+			if err != nil {
+				log.Error(ctx, err.Error())
+				return
+			}
+			mapPrices[service.Code] = price
+		}(service)
+	}
+	wg.Wait()
+	return mapPrices, nil
 }
 
-func (g *Strategy) getTipValue(tip int64) int64 {
-	if tip < constant.MinFailDeliveryTaking {
-		tip = constant.MinFailDeliveryTaking
+func (s *Strategy) getWeight(req *request.GetPriceRequest) (bool, int64) {
+	isBBS := false
+	product := req.Product
+	weight := int64(product.ProductLength * product.ProductWidth * product.ProductHeight / 6)
+	if weight < product.ProductWeight {
+		weight = product.ProductWeight
 	}
-	if tip > constant.MaxFailDeliveryTaking {
-		tip = constant.MaxFailDeliveryTaking
+	if weight > 20000 {
+		isBBS = true
 	}
-	return tip
+	return isBBS, weight
+}
+
+func (s *Strategy) getProduct(req *request.GetPriceRequest, isBBS bool) []*param.ProductGHTK {
+	products := make([]*param.ProductGHTK, 0)
+	if isBBS {
+		products = append(products, &param.ProductGHTK{
+			Name:     "kiện hàng",
+			Quantity: 1,
+			Weight:   req.ProductWeight / 1000,
+			Width:    req.ProductWidth,
+			Length:   req.ProductLength,
+			Height:   req.ProductHeight,
+		})
+	}
+	return products
+}
+
+func (s *Strategy) getExtraService(ctx context.Context, extraServices []*request.ExtraService) (int64, int64, []int, *common.Error) {
+	var value int64
+	var tip int64
+	tags := make([]int, 0)
+	for _, extraService := range extraServices {
+		if extraService.Code == constant.ServiceExtraGbh {
+			valueString, err := strconv.ParseInt(extraService.Value, 10, 64)
+			if err != nil {
+				return 0, 0, nil, common.ErrBadRequest(ctx).SetDetail("value extra service invalid")
+			}
+			value = valueString
+		}
+		if tag, exist := constant.MapGHTKTagByServiceExtra[extraService.Code]; exist {
+			tags = append(tags, tag)
+		}
+
+		if tag, exist := constant.MapGHTKTagByShipperNote[extraService.Value]; exist {
+			tags = append(tags, tag)
+		}
+		if extraService.Code == constant.ServiceExtraCodeTip {
+			valueTip, err := strconv.ParseInt(extraService.Value, 10, 64)
+			if err != nil {
+				return 0, 0, nil, common.ErrBadRequest(ctx).SetDetail("value extra service invalid")
+			}
+			if valueTip < constant.MinFailDeliveryTaking {
+				valueTip = constant.MinFailDeliveryTaking
+			}
+			if valueTip > constant.MaxFailDeliveryTaking {
+				valueTip = constant.MaxFailDeliveryTaking
+			}
+			tip = valueTip
+		}
+	}
+	return value, tip, tags, nil
 }
