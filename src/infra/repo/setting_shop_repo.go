@@ -8,7 +8,7 @@ import (
 	"gorm.io/gorm/clause"
 )
 
-func NewSettingShopRepo(base *baseRepo) *SettingShopRepo {
+func NewSettingShopRepo(base *baseRepo) domain.SettingShopRepo {
 	return &SettingShopRepo{
 		base,
 	}
@@ -35,6 +35,18 @@ func (s SettingShopRepo) GetByRetailerId(ctx context.Context, modelType enums.Mo
 	settingShops := make([]*domain.SettingShop, 0)
 	conds := []clause.Expression{
 		clause.Eq{Column: "retailer_id", Value: retailerId},
+		clause.Eq{Column: "model_type", Value: modelType.ToString()},
+	}
+	if err := s.db.WithContext(ctx).Clauses(conds...).Find(&settingShops).Error; err != nil {
+		return nil, s.returnError(ctx, err)
+	}
+	return settingShops, nil
+}
+
+func (s SettingShopRepo) GetByValue(ctx context.Context, modelType enums.ModelTypeSettingShop, value string) ([]*domain.SettingShop, *common.Error) {
+	settingShops := make([]*domain.SettingShop, 0)
+	conds := []clause.Expression{
+		clause.Eq{Column: "value", Value: value},
 		clause.Eq{Column: "model_type", Value: modelType.ToString()},
 	}
 	if err := s.db.WithContext(ctx).Clauses(conds...).Find(&settingShops).Error; err != nil {

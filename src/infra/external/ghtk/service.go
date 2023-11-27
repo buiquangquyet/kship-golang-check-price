@@ -113,7 +113,6 @@ func (g *Service) GetPriceOver20(ctx context.Context, shop *domain.Shop, service
 func (g *Service) getPriceOver20(ctx context.Context, serviceCode string, getPriceParam *param.GetPriceGHTKParam, token string) (*domain.Price, *common.Error) {
 	var output GetPriceOver20Output
 	resp, err := g.api(ctx, token).
-		//Todo fix this
 		SetBody(newGetPriceOver20Input(serviceCode, getPriceParam)).
 		SetSuccessResult(&output).
 		SetErrorResult(&output).

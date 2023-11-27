@@ -31,7 +31,6 @@ func InitTracer(lc fx.Lifecycle, logger *zap.SugaredLogger) {
 	)
 	opts := make([]sdktrace.TracerProviderOption, 0)
 	opts = append(opts, sdktrace.WithResource(res),
-		//Todo set sampler
 		sdktrace.WithSampler(sdktrace.AlwaysSample()))
 
 	if cf.Tracer.Jaeger.Active {

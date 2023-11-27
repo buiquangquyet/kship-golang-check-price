@@ -334,7 +334,6 @@ func (v *ValidateService) validateExtraService(ctx context.Context, clientCode s
 			if extraService.Value != "" {
 				serviceExtraValue = extraService.Value
 			}
-			//Todo nho xem lai
 			notAllow := !helpers.InArray(clientExtraServicesPaymentByAllow, serviceExtraValue)
 			ierr := common.ErrBadRequest(ctx)
 			if serviceExtraValue == constant.PaymentByFrom && notAllow {

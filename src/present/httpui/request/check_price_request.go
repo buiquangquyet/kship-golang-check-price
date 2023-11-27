@@ -53,7 +53,6 @@ type ExtraService struct {
 }
 
 func (g *GetPriceRequest) validate(ctx context.Context) *common.Error {
-	//Todo de tam
 	g.ExtraService = append(g.ExtraService, &ExtraService{
 		Code:     "CONN",
 		Value:    "true",

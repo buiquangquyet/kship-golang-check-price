@@ -5,6 +5,7 @@ import (
 	"check-price/src/common/log"
 	"check-price/src/core/constant"
 	"check-price/src/core/domain"
+	"check-price/src/core/enums"
 	"check-price/src/core/param"
 	"check-price/src/core/strategy"
 	ahamoveext "check-price/src/infra/external/ahamove"
@@ -12,10 +13,12 @@ import (
 	"check-price/src/present/httpui/request"
 	"context"
 	"fmt"
+	"strconv"
 	"time"
 )
 
 type Strategy struct {
+	settingShop             domain.SettingShopRepo
 	baseStrategy            *strategy.BaseStrategy
 	ahaMoveExtService       *ahamoveext.Service
 	aiEliminatingExtService *aieliminating.Service
@@ -45,7 +48,7 @@ func (s *Strategy) GetMultiplePriceV3(ctx context.Context, shop *domain.Shop, re
 	if shop.Code == constant.ShopDefaultTrial {
 		return nil, common.ErrBadRequest(ctx).SetCode(2002)
 	}
-	senderAddress, receiverAddress, err := s.getAddressValue(ctx, req)
+	provinceId, senderAddress, receiverAddress, err := s.getAddressValue(ctx, req)
 	if err != nil {
 		return nil, err
 	}
@@ -66,7 +69,10 @@ func (s *Strategy) GetMultiplePriceV3(ctx context.Context, shop *domain.Shop, re
 			orderTime = orderTimeParse.Unix()
 		}
 	}
-
+	services, err := s.getServices(ctx, req.Services, provinceId)
+	if err != nil {
+		return nil, err
+	}
 	_ = &param.GetPriceAhaMoveParam{
 		Path: [2]*param.Path{
 			{Address: senderAddress},
@@ -75,7 +81,7 @@ func (s *Strategy) GetMultiplePriceV3(ctx context.Context, shop *domain.Shop, re
 		PaymentMethod: paymentMethod,
 		PromoCode:     coupon,
 		OrderTime:     orderTime,
-		Services:      nil,
+		Services:      services,
 	}
 
 	mapPrices := make(map[string]*domain.Price)
@@ -90,25 +96,25 @@ func (s *Strategy) GetMultiplePriceV3(ctx context.Context, shop *domain.Shop, re
 	return mapPrices, nil
 }
 
-func (s *Strategy) getAddressValue(ctx context.Context, req *request.GetPriceRequest) (string, string, *common.Error) {
+func (s *Strategy) getAddressValue(ctx context.Context, req *request.GetPriceRequest) (int64, string, string, *common.Error) {
 	var senderAddress string
 	var receiverAddress string
 	address, err := s.baseStrategy.GetAddress(ctx, req)
 	if err != nil {
-		return "", "", err
+		return 0, "", "", err
 	}
 	if req.SenderAddress != "" {
 		senderAddress, err = s.aiEliminatingExtService.Redundancy(ctx, req.SenderAddress, address.PickWard.Name, address.PickDistrict.Name, address.PickProvince.Name)
 		if err != nil {
 			log.Error(ctx, err.Error())
-			return "", "", err
+			return 0, "", "", err
 		}
 	}
 	if req.ReceiverAddress != "" {
 		receiverAddress, err = s.aiEliminatingExtService.Redundancy(ctx, req.ReceiverAddress, address.ReceiverWard.Name, address.ReceiverDistrict.Name, address.ReceiverProvince.Name)
 		if err != nil {
 			log.Error(ctx, err.Error())
-			return "", "", err
+			return 0, "", "", err
 		}
 	}
 	senderAddress = fmt.Sprintf("%s, %s, %s, %s", senderAddress, address.PickWard.Name, address.PickDistrict.Name, address.PickProvince.Name)
@@ -117,9 +123,15 @@ func (s *Strategy) getAddressValue(ctx context.Context, req *request.GetPriceReq
 		log.Error(ctx, "")
 		//return
 	}
-	return senderAddress, receiverAddress, nil
+	return address.PickProvince.Id, senderAddress, receiverAddress, nil
 }
 
-func (s *Strategy) getServices(ctx context.Context, services []*request.Service) ([]param.ServiceAhaMove, *common.Error) {
+func (s *Strategy) getServices(ctx context.Context, services []*request.Service, provinceId int64) ([]*param.ServiceAhaMove, *common.Error) {
+	_, err := s.settingShop.GetByValue(ctx, enums.ModelTypeCitiesPossible, strconv.FormatInt(provinceId, 10))
+	if err != nil {
+		log.Error(ctx, err.Error())
+		return nil, err
+	}
+
 	return nil, nil
 }
