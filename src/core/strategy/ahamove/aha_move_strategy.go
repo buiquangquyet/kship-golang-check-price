@@ -5,34 +5,29 @@ import (
 	"check-price/src/common/log"
 	"check-price/src/core/constant"
 	"check-price/src/core/domain"
-	"check-price/src/core/dto"
+	"check-price/src/core/param"
 	"check-price/src/core/strategy"
 	ahamoveext "check-price/src/infra/external/ahamove"
 	"check-price/src/infra/external/aieliminating"
 	"check-price/src/present/httpui/request"
 	"context"
+	"fmt"
 	"time"
 )
 
 type Strategy struct {
 	baseStrategy            *strategy.BaseStrategy
-	clientRepo              domain.ClientRepo
-	serviceRepo             domain.ServiceRepo
 	ahaMoveExtService       *ahamoveext.Service
 	aiEliminatingExtService *aieliminating.Service
 }
 
 func NewStrategy(
 	baseStrategy *strategy.BaseStrategy,
-	clientRepo domain.ClientRepo,
-	serviceRepo domain.ServiceRepo,
 	ahaMoveExtService *ahamoveext.Service,
 	aiEliminatingExtService *aieliminating.Service,
 ) strategy.ShipStrategy {
 	return &Strategy{
 		baseStrategy:            baseStrategy,
-		clientRepo:              clientRepo,
-		serviceRepo:             serviceRepo,
 		ahaMoveExtService:       ahaMoveExtService,
 		aiEliminatingExtService: aiEliminatingExtService,
 	}
@@ -72,8 +67,8 @@ func (s *Strategy) GetMultiplePriceV3(ctx context.Context, shop *domain.Shop, re
 		}
 	}
 
-	_ = &dto.GetPriceInputAhaMoveDto{
-		Path: [2]*dto.Path{
+	_ = &param.GetPriceAhaMoveParam{
+		Path: [2]*param.Path{
 			{Address: senderAddress},
 			{Address: receiverAddress, Cod: req.MoneyCollection},
 		},
@@ -116,6 +111,15 @@ func (s *Strategy) getAddressValue(ctx context.Context, req *request.GetPriceReq
 			return "", "", err
 		}
 	}
-
+	senderAddress = fmt.Sprintf("%s, %s, %s, %s", senderAddress, address.PickWard.Name, address.PickDistrict.Name, address.PickProvince.Name)
+	receiverAddress = fmt.Sprintf("%s, %s, %s, %s", receiverAddress, address.ReceiverWard.Name, address.ReceiverDistrict.Name, address.ReceiverProvince.Name)
+	if address.PickProvince.Name != address.ReceiverProvince.Name {
+		log.Error(ctx, "")
+		//return
+	}
 	return senderAddress, receiverAddress, nil
+}
+
+func (s *Strategy) getServices(ctx context.Context, services []*request.Service) ([]param.ServiceAhaMove, *common.Error) {
+	return nil, nil
 }

@@ -2,7 +2,7 @@ package ghtkext
 
 import (
 	"check-price/src/core/domain"
-	"check-price/src/core/dto"
+	"check-price/src/core/param"
 )
 
 type GetPriceUnder20Input struct {
@@ -20,7 +20,7 @@ type GetPriceUnder20Input struct {
 	NotDeliveredFee int64  `json:"not_delivered_fee"`
 }
 
-func newGetPriceUnder20Input(serviceCode string, p *dto.GetPriceInputDto) *GetPriceUnder20Input {
+func newGetPriceUnder20Input(serviceCode string, p *param.GetPriceGHTKParam) *GetPriceUnder20Input {
 	return &GetPriceUnder20Input{
 		Address:         p.Address,
 		PickProvince:    p.PickProvince,

@@ -1,6 +1,6 @@
-package dto
+package param
 
-type GetPriceInputAhaMoveDto struct {
+type GetPriceAhaMoveParam struct {
 	Path          [2]*Path
 	PaymentMethod string
 	PromoCode     string

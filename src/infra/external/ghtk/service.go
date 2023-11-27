@@ -5,7 +5,7 @@ import (
 	"check-price/src/common/configs"
 	"check-price/src/common/log"
 	"check-price/src/core/domain"
-	"check-price/src/core/dto"
+	"check-price/src/core/param"
 	"check-price/src/helpers"
 	"check-price/src/infra/external"
 	"context"
@@ -46,7 +46,7 @@ func NewService(base *external.BaseClient) *Service {
 	}
 }
 
-func (g *Service) GetPriceUnder20(ctx context.Context, shop *domain.Shop, serviceCode string, getPriceParam *dto.GetPriceInputDto) (*domain.Price, *common.Error) {
+func (g *Service) GetPriceUnder20(ctx context.Context, shop *domain.Shop, serviceCode string, getPriceParam *param.GetPriceGHTKParam) (*domain.Price, *common.Error) {
 	token, fromCache, err := g.getToken(ctx, shop, true)
 	if err != nil {
 		return nil, err
@@ -68,7 +68,7 @@ func (g *Service) GetPriceUnder20(ctx context.Context, shop *domain.Shop, servic
 	return result, nil
 }
 
-func (g *Service) getPriceUnder20(ctx context.Context, serviceCode string, getPriceParam *dto.GetPriceInputDto, token string) (*domain.Price, *common.Error) {
+func (g *Service) getPriceUnder20(ctx context.Context, serviceCode string, getPriceParam *param.GetPriceGHTKParam, token string) (*domain.Price, *common.Error) {
 	var output GetPriceUnder20Output
 	resp, err := g.api(ctx, token).
 		SetBody(newGetPriceUnder20Input(serviceCode, getPriceParam)).
@@ -88,7 +88,7 @@ func (g *Service) getPriceUnder20(ctx context.Context, serviceCode string, getPr
 	return output.ToDomainPrice(), nil
 }
 
-func (g *Service) GetPriceOver20(ctx context.Context, shop *domain.Shop, serviceCode string, getPriceParam *dto.GetPriceInputDto) (*domain.Price, *common.Error) {
+func (g *Service) GetPriceOver20(ctx context.Context, shop *domain.Shop, serviceCode string, getPriceParam *param.GetPriceGHTKParam) (*domain.Price, *common.Error) {
 	token, fromCache, err := g.getToken(ctx, shop, true)
 	if err != nil {
 		return nil, err
@@ -110,7 +110,7 @@ func (g *Service) GetPriceOver20(ctx context.Context, shop *domain.Shop, service
 	return result, nil
 }
 
-func (g *Service) getPriceOver20(ctx context.Context, serviceCode string, getPriceParam *dto.GetPriceInputDto, token string) (*domain.Price, *common.Error) {
+func (g *Service) getPriceOver20(ctx context.Context, serviceCode string, getPriceParam *param.GetPriceGHTKParam, token string) (*domain.Price, *common.Error) {
 	var output GetPriceOver20Output
 	resp, err := g.api(ctx, token).
 		//Todo fix this

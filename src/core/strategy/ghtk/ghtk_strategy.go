@@ -5,7 +5,7 @@ import (
 	"check-price/src/common/log"
 	"check-price/src/core/constant"
 	"check-price/src/core/domain"
-	"check-price/src/core/dto"
+	"check-price/src/core/param"
 	"check-price/src/core/strategy"
 	"check-price/src/infra/external/ghtk"
 	"check-price/src/present/httpui/request"
@@ -15,30 +15,15 @@ import (
 )
 
 type Strategy struct {
-	wardRepo       domain.WardRepo
-	districtRepo   domain.DistrictRepo
-	cityRepo       domain.CityRepo
-	clientRepo     domain.ClientRepo
-	serviceRepo    domain.ServiceRepo
 	ghtkExtService *ghtkext.Service
 	baseStrategy   *strategy.BaseStrategy
 }
 
 func NewStrategy(
-	wardRepo domain.WardRepo,
-	districtRepo domain.DistrictRepo,
-	cityRepo domain.CityRepo,
-	clientRepo domain.ClientRepo,
-	serviceRepo domain.ServiceRepo,
 	ghtkExtService *ghtkext.Service,
 	baseStrategy *strategy.BaseStrategy,
 ) strategy.ShipStrategy {
 	return &Strategy{
-		wardRepo:       wardRepo,
-		districtRepo:   districtRepo,
-		cityRepo:       cityRepo,
-		clientRepo:     clientRepo,
-		serviceRepo:    serviceRepo,
 		ghtkExtService: ghtkExtService,
 		baseStrategy:   baseStrategy,
 	}
@@ -104,14 +89,14 @@ func (g *Strategy) GetMultiplePriceV3(ctx context.Context, shop *domain.Shop, re
 	return mapPrices, nil
 }
 
-func (g *Strategy) getPriceInput(ctx context.Context, isBBS bool, weight int64, req *request.GetPriceRequest) (*dto.GetPriceInputDto, *common.Error) {
+func (g *Strategy) getPriceInput(ctx context.Context, isBBS bool, weight int64, req *request.GetPriceRequest) (*param.GetPriceGHTKParam, *common.Error) {
 	address, err := g.baseStrategy.GetAddress(ctx, req)
 	if err != nil {
 		return nil, err
 	}
-	products := make([]*dto.Product, 0)
+	products := make([]*param.ProductGHTK, 0)
 	if isBBS {
-		products = append(products, &dto.Product{
+		products = append(products, &param.ProductGHTK{
 			Name:     "kiện hàng",
 			Quantity: 1,
 			Weight:   req.ProductWeight / 1000,
@@ -147,7 +132,7 @@ func (g *Strategy) getPriceInput(ctx context.Context, isBBS bool, weight int64, 
 			tip = g.getTipValue(value)
 		}
 	}
-	return &dto.GetPriceInputDto{
+	return &param.GetPriceGHTKParam{
 		PickProvince:     address.PickProvince.Name,
 		PickDistrict:     address.PickDistrict.Name,
 		PickWard:         address.PickWard.Name,

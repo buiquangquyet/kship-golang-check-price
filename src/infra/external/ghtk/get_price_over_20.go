@@ -2,7 +2,7 @@ package ghtkext
 
 import (
 	"check-price/src/core/domain"
-	"check-price/src/core/dto"
+	"check-price/src/core/param"
 )
 
 type GetPriceOver20Input struct {
@@ -29,7 +29,7 @@ type Product struct {
 	Weight   int64  `json:"weight"`
 }
 
-func newGetPriceOver20Input(serviceCode string, p *dto.GetPriceInputDto) *GetPriceOver20Input {
+func newGetPriceOver20Input(serviceCode string, p *param.GetPriceGHTKParam) *GetPriceOver20Input {
 	products := make([]*Product, len(p.Products))
 	for i, product := range p.Products {
 		products[i] = &Product{

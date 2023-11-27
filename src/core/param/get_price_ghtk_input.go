@@ -1,6 +1,6 @@
-package dto
+package param
 
-type GetPriceInputDto struct {
+type GetPriceGHTKParam struct {
 	PickProvince     string
 	PickDistrict     string
 	PickWard         string
@@ -8,14 +8,14 @@ type GetPriceInputDto struct {
 	ReceiverDistrict string
 	ReceiverWard     string
 	Address          string
-	Products         []*Product //BBS
-	Weight           int64      //no BBS
+	Products         []*ProductGHTK //BBS
+	Weight           int64          //no BBS
 	Value            int64
 	Tags             []int
 	NotDeliveredFee  int64
 }
 
-type Product struct {
+type ProductGHTK struct {
 	Name     string
 	Quantity int
 	Weight   int64
