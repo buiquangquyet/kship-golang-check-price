@@ -14,5 +14,11 @@ type Path struct {
 
 type ServiceAhaMove struct {
 	Id       string
-	Requests []string
+	Requests []*Request
+}
+
+type Request struct {
+	Id       string
+	Num      int
+	TierCode string
 }

@@ -20,7 +20,7 @@ type SettingShop struct {
 type SettingShopRepo interface {
 	GetByRetailerId(ctx context.Context, modelType enums.ModelTypeSettingShop, retailerId int64) ([]*SettingShop, *common.Error)
 	GetByRetailerIdAndModelId(ctx context.Context, modelType enums.ModelTypeSettingShop, retailerId int64, modelId int64) ([]*SettingShop, *common.Error)
-	GetByValue(ctx context.Context, modelType enums.ModelTypeSettingShop, value string) ([]*SettingShop, *common.Error)
+	GetByModelIdsAndValue(ctx context.Context, modelType enums.ModelTypeSettingShop, modelIds []int64, value string) ([]*SettingShop, *common.Error)
 }
 
 func (SettingShop) TableName() string {

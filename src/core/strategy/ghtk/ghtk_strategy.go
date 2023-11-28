@@ -50,7 +50,7 @@ func (s *Strategy) Validate(ctx context.Context, req *request.GetPriceRequest) *
 	return nil
 }
 
-func (s *Strategy) GetMultiplePriceV3(ctx context.Context, shop *domain.Shop, req *request.GetPriceRequest, _ string) (map[string]*domain.Price, *common.Error) {
+func (s *Strategy) GetMultiplePriceV3(ctx context.Context, shop *domain.Shop, _ *domain.Client, req *request.GetPriceRequest, _ string) (map[string]*domain.Price, *common.Error) {
 	address, err := s.baseStrategy.GetAddress(ctx, req)
 	if err != nil {
 		return nil, err

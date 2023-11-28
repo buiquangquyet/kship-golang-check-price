@@ -19,6 +19,7 @@ import (
 
 type Strategy struct {
 	settingShop             domain.SettingShopRepo
+	serviceRepo             domain.ServiceRepo
 	baseStrategy            *strategy.BaseStrategy
 	ahaMoveExtService       *ahamoveext.Service
 	aiEliminatingExtService *aieliminating.Service
@@ -26,12 +27,14 @@ type Strategy struct {
 
 func NewStrategy(
 	settingShop domain.SettingShopRepo,
+	serviceRepo domain.ServiceRepo,
 	baseStrategy *strategy.BaseStrategy,
 	ahaMoveExtService *ahamoveext.Service,
 	aiEliminatingExtService *aieliminating.Service,
 ) strategy.ShipStrategy {
 	return &Strategy{
 		settingShop:             settingShop,
+		serviceRepo:             serviceRepo,
 		baseStrategy:            baseStrategy,
 		ahaMoveExtService:       ahaMoveExtService,
 		aiEliminatingExtService: aiEliminatingExtService,
@@ -46,7 +49,7 @@ func (s *Strategy) Validate(_ context.Context, _ *request.GetPriceRequest) *comm
 	return nil
 }
 
-func (s *Strategy) GetMultiplePriceV3(ctx context.Context, shop *domain.Shop, req *request.GetPriceRequest, coupon string) (map[string]*domain.Price, *common.Error) {
+func (s *Strategy) GetMultiplePriceV3(ctx context.Context, shop *domain.Shop, client *domain.Client, req *request.GetPriceRequest, coupon string) (map[string]*domain.Price, *common.Error) {
 	if shop.Code == constant.ShopDefaultTrial {
 		return nil, common.ErrBadRequest(ctx).SetCode(2002)
 	}
@@ -58,7 +61,7 @@ func (s *Strategy) GetMultiplePriceV3(ctx context.Context, shop *domain.Shop, re
 	if err != nil {
 		return nil, err
 	}
-	services, err := s.getServices(ctx, req.Services, provinceId)
+	services, err := s.getServices(ctx, req.Services, req.ExtraService, client, provinceId)
 	if err != nil {
 		return nil, err
 	}
@@ -135,12 +138,66 @@ func (s *Strategy) getExtraService(ctx context.Context, extraServices []*request
 	return paymentMethod, orderTime, nil
 }
 
-func (s *Strategy) getServices(ctx context.Context, services []*request.Service, provinceId int64) ([]*param.ServiceAhaMove, *common.Error) {
-	_, err := s.settingShop.GetByValue(ctx, enums.ModelTypeCitiesPossible, strconv.FormatInt(provinceId, 10))
+func (s *Strategy) getServices(ctx context.Context, services []*request.Service, extraServices []*request.ExtraService, client *domain.Client, provinceId int64) ([]*param.ServiceAhaMove, *common.Error) {
+	//get client by client code -> client id
+	//get service id by client code, service code, table: services
+	// get setting shop by model type, model id (service id), value (province id) -> list, if empty -> get all
+	codes := make([]string, len(services))
+	for i, service := range services {
+		codes[i] = service.Code
+	}
+	servicesDB, err := s.serviceRepo.GetByClientIdAndCodes(ctx, enums.TypeServiceDV, codes, client.Id)
 	if err != nil {
 		log.Error(ctx, err.Error())
 		return nil, err
 	}
-
-	return nil, nil
+	servicesMap := make(map[int64]*domain.Service)
+	serviceIds := make([]int64, len(servicesDB))
+	for i, service := range servicesDB {
+		servicesMap[service.Id] = service
+		serviceIds[i] = service.Id
+	}
+	settingShops, err := s.settingShop.GetByModelIdsAndValue(ctx, enums.ModelTypeCitiesPossible, serviceIds, strconv.FormatInt(provinceId, 10))
+	if err != nil {
+		log.Error(ctx, err.Error())
+		return nil, err
+	}
+	servicesParam := make([]string, 0)
+	if len(settingShops) == 0 {
+		servicesParam = codes
+	} else {
+		for _, settingShop := range settingShops {
+			servicesParam = append(servicesParam, servicesMap[settingShop.ModelId].Code)
+		}
+	}
+	servicesAhaMoveParam := make([]*param.ServiceAhaMove, len(servicesParam))
+	requestParam := make([]*param.Request, 0)
+	for i, service := range servicesParam {
+		for _, extraService := range extraServices {
+			switch extraService.Code {
+			case "TIP", "ROUND-TRIP", "BOCXEP-2", "BOCXEP-3", "THERMALBAG":
+				num, err := strconv.Atoi(extraService.Value)
+				if err != nil {
+					log.Error(ctx, "value extra service invalid, scheduled:[%s]", extraService.Value)
+					return nil, common.ErrBadRequest(ctx).SetCode(1111)
+				}
+				requestParam = append(requestParam, &param.Request{
+					Id:  fmt.Sprintf("%s-%s", service, extraService.Code),
+					Num: num,
+				})
+			case "BULKY":
+				requestParam = append(requestParam, &param.Request{
+					Id:       fmt.Sprintf("%s-%s", service, extraService.Code),
+					TierCode: extraService.Value,
+				})
+			default:
+				continue
+			}
+		}
+		servicesAhaMoveParam[i] = &param.ServiceAhaMove{
+			Id:       service,
+			Requests: requestParam,
+		}
+	}
+	return servicesAhaMoveParam, nil
 }

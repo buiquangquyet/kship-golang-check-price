@@ -14,7 +14,7 @@ import (
 const (
 	expirationSettingShopByRetailerId           = 12 * time.Hour
 	expirationSettingShopByRetailerIdAndModelId = 1 * time.Hour
-	expirationSettingShopByValue                = 1 * time.Hour
+	expirationSettingShopByModelsAndValue       = 1 * time.Hour
 )
 
 type SettingShopRepoDecorator struct {
@@ -49,7 +49,6 @@ func (s SettingShopRepoDecorator) GetByRetailerId(ctx context.Context, modelType
 	return settingShopDB, nil
 }
 
-// GetByRetailerIdAndModelId Todo fix find one
 func (s SettingShopRepoDecorator) GetByRetailerIdAndModelId(ctx context.Context, modelType enums.ModelTypeSettingShop, retailerId int64, modelId int64) ([]*domain.SettingShop, *common.Error) {
 	key := s.genKeyCacheGetSettingShopByRetailerIdAndModelId(modelType, retailerId, modelId)
 	var settingShops []*domain.SettingShop
@@ -70,8 +69,8 @@ func (s SettingShopRepoDecorator) GetByRetailerIdAndModelId(ctx context.Context,
 	return settingShopDB, nil
 }
 
-func (s SettingShopRepoDecorator) GetByValue(ctx context.Context, modelType enums.ModelTypeSettingShop, value string) ([]*domain.SettingShop, *common.Error) {
-	key := s.genKeyCacheGetSettingShopByValue(modelType, value)
+func (s SettingShopRepoDecorator) GetByModelIdsAndValue(ctx context.Context, modelType enums.ModelTypeSettingShop, modelIds []int64, value string) ([]*domain.SettingShop, *common.Error) {
+	key := s.genKeyCacheGetSettingShopByModelsAndValue(modelType, value)
 	var settingShops []*domain.SettingShop
 	val, err := s.get(ctx, key).Result()
 	s.handleRedisError(ctx, err)
@@ -82,10 +81,10 @@ func (s SettingShopRepoDecorator) GetByValue(ctx context.Context, modelType enum
 		}
 		log.Warn(ctx, "unmarshall error")
 	}
-	settingShopDB, ierr := s.settingShop.GetByValue(ctx, modelType, value)
+	settingShopDB, ierr := s.settingShop.GetByModelIdsAndValue(ctx, modelType, modelIds, value)
 	if ierr != nil {
 		return nil, ierr
 	}
-	go s.set(ctx, key, settingShopDB, expirationSettingShopByValue)
+	go s.set(ctx, key, settingShopDB, expirationSettingShopByModelsAndValue)
 	return settingShopDB, nil
 }

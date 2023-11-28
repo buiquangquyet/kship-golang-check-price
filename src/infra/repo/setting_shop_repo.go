@@ -4,6 +4,7 @@ import (
 	"check-price/src/common"
 	"check-price/src/core/domain"
 	"check-price/src/core/enums"
+	"check-price/src/helpers"
 	"context"
 	"gorm.io/gorm/clause"
 )
@@ -43,11 +44,12 @@ func (s SettingShopRepo) GetByRetailerId(ctx context.Context, modelType enums.Mo
 	return settingShops, nil
 }
 
-func (s SettingShopRepo) GetByValue(ctx context.Context, modelType enums.ModelTypeSettingShop, value string) ([]*domain.SettingShop, *common.Error) {
+func (s SettingShopRepo) GetByModelIdsAndValue(ctx context.Context, modelType enums.ModelTypeSettingShop, modelIds []int64, value string) ([]*domain.SettingShop, *common.Error) {
 	settingShops := make([]*domain.SettingShop, 0)
 	conds := []clause.Expression{
-		clause.Eq{Column: "value", Value: value},
 		clause.Eq{Column: "model_type", Value: modelType.ToString()},
+		clause.IN{Column: "model_id", Values: helpers.ConvertTypesToInterfaces(modelIds)},
+		clause.Eq{Column: "value", Value: value},
 	}
 	if err := s.db.WithContext(ctx).Clauses(conds...).Find(&settingShops).Error; err != nil {
 		return nil, s.returnError(ctx, err)

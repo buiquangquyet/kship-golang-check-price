@@ -77,14 +77,13 @@ func (g *Service) checkPrice(ctx context.Context, token string, p *param.GetPric
 		SetErrorResult(&outputErr).
 		Get(checkPricePath)
 	if err != nil {
-		return nil, common.ErrSystemError(ctx, err.Error()).SetSource(common.SourceGHTKService)
+		return nil, common.ErrSystemError(ctx, err.Error()).SetSource(common.SourceAHAMOVEService)
 	}
 
 	if resp.IsErrorState() {
-		log.Debug(ctx, "Call GetCompany MISA failed with body: %+v", output)
-		//Todo consider error code
-		//detail := fmt.Sprintf("http: [%d], resp: [%s]", resp.StatusCode, resp.String())
-		//return nil, g.handleError(ctx, resp.StatusCode, &output).SetSource(common.SourceGHTKService).SetDetail(detail)
+		log.Debug(ctx, "Call AHAMOVE failed with body: %+v", output)
+		detail := fmt.Sprintf("http: [%d], resp: [%s]", resp.StatusCode, resp.String())
+		return nil, common.ErrSystemError(ctx, detail).SetSource(common.SourceAHAMOVEService)
 	}
 	prices := make([]*domain.Price, len(output))
 	for i, p := range output {
@@ -128,9 +127,9 @@ func (g *Service) newToken(ctx context.Context, shop *domain.Shop) (string, *com
 	}
 
 	if resp.IsErrorState() {
-		log.Debug(ctx, "Call ghtk failed with body: %+v", output)
+		log.Debug(ctx, "Call AHAMOVE failed with body: %+v", output)
 		detail := fmt.Sprintf("http: [%d], resp: [%s]", resp.StatusCode, resp.String())
-		return "", common.ErrSystemError(ctx, detail).SetSource(common.SourceGHTKService)
+		return "", common.ErrSystemError(ctx, detail).SetSource(common.SourceAHAMOVEService)
 	}
 	return output.Token, nil
 }

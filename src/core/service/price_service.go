@@ -93,7 +93,7 @@ func (p *PriceService) GetPrice(ctx context.Context, req *request.GetPriceReques
 	if ierr != nil {
 		return nil, ierr
 	}
-	mapPrices, err := shipStrategy.GetMultiplePriceV3(ctx, shop, req, coupon)
+	mapPrices, err := shipStrategy.GetMultiplePriceV3(ctx, shop, client, req, coupon)
 	if err != nil {
 		log.IErr(ctx, err)
 		return nil, err

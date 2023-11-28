@@ -10,6 +10,7 @@ import (
 	"fmt"
 	"github.com/imroc/req/v3"
 	"github.com/redis/go-redis/v9"
+	"net/http"
 	"time"
 )
 
@@ -85,6 +86,10 @@ func (g *Service) redundancy(ctx context.Context, token string, address, ward, d
 	}
 
 	if resp.IsErrorState() {
+		//Todo tam
+		if resp.StatusCode == http.StatusUnauthorized {
+			return "", common.ErrUnauthorized(ctx)
+		}
 		log.Debug(ctx, "Call AI Eliminating failed with body: %+v", output)
 		detail := fmt.Sprintf("http: [%d], resp: [%s]", resp.StatusCode, resp.String())
 		return "", common.ErrSystemError(ctx, detail).SetSource(common.SourceGHTKService)
@@ -133,7 +138,7 @@ func (g *Service) newToken(ctx context.Context) (string, *common.Error) {
 	return output.Data.AccessToken, nil
 }
 
-func (g *Service) handleError(ctx context.Context) *common.Error {
+func (g *Service) handleError(_ context.Context) *common.Error {
 	//Todo code
 
 	return nil

@@ -109,7 +109,6 @@ func (p *Price) SetOtherFee() *Price {
 }
 
 func (p *Price) HandleFeeGHTK() *Price {
-
 	p.Total = p.InsuranceFee - (p.CodstFee + int64(p.ConnFee) + int64(p.CodT0Fee))
 	return p
 }

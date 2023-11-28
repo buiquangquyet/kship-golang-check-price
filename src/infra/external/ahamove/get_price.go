@@ -1,6 +1,7 @@
 package ahamoveext
 
 import (
+	"check-price/src/core/constant"
 	"check-price/src/core/domain"
 	"check-price/src/core/param"
 )
@@ -15,29 +16,47 @@ type GetPriceInput struct {
 }
 
 type Path struct {
-	Address string
-	Name    string
-	Mobile  string
-	Cod     int64
+	Address string `json:"address,omitempty"`
+	Name    string `json:"name,omitempty"`
+	Mobile  string `json:"mobile,omitempty"`
+	Cod     int64  `json:"cod,omitempty"`
 }
 
 type ServiceInput struct {
-	Id       string
-	Requests []string
+	Id       string     `json:"_id,omitempty"`
+	Requests []*Request `json:"requests"`
+}
+
+type Request struct {
+	Id       string `json:"_id,omitempty"`
+	Num      int    `json:"num,omitempty"`
+	TierCode string `json:"tier_code,omitempty"`
 }
 
 func newGetPriceInput(token string, p *param.GetPriceAhaMoveParam) *GetPriceInput {
 	services := make([]*ServiceInput, len(p.Services))
 	for i, s := range p.Services {
+		requests := make([]*Request, len(s.Requests))
+		for j, request := range s.Requests {
+			requests[j] = &Request{
+				Id:       request.Id,
+				Num:      request.Num,
+				TierCode: request.TierCode,
+			}
+		}
 		services[i] = &ServiceInput{
 			Id:       s.Id,
-			Requests: s.Requests,
+			Requests: requests,
 		}
+	}
+	cod := p.Path[1].Cod
+	if constant.IsDevEnv() {
+		cod = 0
 	}
 	return &GetPriceInput{
 		Path: [2]*Path{
 			{Address: p.Path[0].Address},
-			{Address: p.Path[1].Address, Cod: p.Path[1].Cod},
+			{Address: p.Path[1].Address, Cod: cod},
 		},
 		PaymentMethod: p.PaymentMethod,
 		PromoCode:     p.PromoCode,
@@ -78,9 +97,9 @@ func (g *PriceOuput) ToDomain() *domain.Price {
 		ConnFee:       0,
 		CodstFee:      0,
 		CodT0Fee:      0,
-		TotalPrice:    0,
+		TotalPrice:    g.SubtotalPrice,
 		OtherFee:      0,
-		CouponSale:    0,
+		CouponSale:    g.VoucherDiscount,
 		OldTotalPrice: 0,
 		Status:        false,
 		Msg:           "",

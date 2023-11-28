@@ -25,9 +25,10 @@ const (
 type Source string
 
 const (
-	SourceAPIService   Source = "API_Service"
-	SourceGHTKService  Source = "GHTK_service"
-	SourceInfraService Source = "Infra_Service"
+	SourceAPIService     Source = "API_Service"
+	SourceGHTKService    Source = "GHTK_service"
+	SourceInfraService   Source = "Infra_Service"
+	SourceAHAMOVEService Source = "AHAMOVE_Service"
 )
 
 type Error struct {
