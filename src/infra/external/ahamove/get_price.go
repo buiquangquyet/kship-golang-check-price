@@ -81,6 +81,7 @@ type PriceOuput struct {
 }
 
 func (g *PriceOuput) ToDomain() *domain.Price {
+
 	return &domain.Price{
 		Id:            0,
 		Code:          "",

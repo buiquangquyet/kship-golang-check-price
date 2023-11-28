@@ -36,6 +36,11 @@ func (p *Price) SetCode(code string) *Price {
 	return p
 }
 
+func (p *Price) SetOldTotalPrice(oldTotalPrice int64) *Price {
+	p.OldTotalPrice = oldTotalPrice
+	return p
+}
+
 func (p *Price) SetClientInfo(client *Client) *Price {
 	p.ClientCode = client.Code
 	p.Image = client.Image

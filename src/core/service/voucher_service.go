@@ -23,13 +23,13 @@ func NewVoucherService(voucherExtService *voucherext.Service) *VoucherService {
 
 func (s *VoucherService) checkVoucher(ctx context.Context, addInfoDto *dto.AddInfoDto) (enums.TypeVoucherUse, int64, *common.Error) {
 	if addInfoDto.Coupon == "" {
-		return enums.TypeVoucherNotExist, 0, nil
+		return enums.TypeVoucherNotUse, 0, nil
 	}
 	voucherKv, err := s.voucherExtService.CheckVoucher(ctx, addInfoDto.Coupon, addInfoDto.RetailerId, addInfoDto.Client.Id)
 	if err != nil {
 		log.Error(ctx, err.Error())
 		//chay tiep
-		return enums.TypeVoucherNotExist, 0, err
+		return enums.TypeVoucherNotUse, 0, err
 	}
 	var callTo enums.TypeVoucherUse
 	switch voucherKv.StatusCode {
@@ -46,7 +46,7 @@ func (s *VoucherService) checkVoucher(ctx context.Context, addInfoDto *dto.AddIn
 		}
 	case constant.VoucherError:
 		//Todo log
-		return enums.TypeVoucherNotExist, 0, nil
+		return enums.TypeVoucherNotUse, 0, nil
 	}
 
 	return callTo, voucherKv.DiscountValue, nil
