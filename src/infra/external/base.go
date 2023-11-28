@@ -12,11 +12,12 @@ import (
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/codes"
 	"go.opentelemetry.io/otel/trace"
+	"strings"
 	"time"
 )
 
 const (
-	keyTokenFormat = "%s-token-%s"
+	keyTokenFormat = "shipping:%s-token-%s"
 )
 
 type BaseClient struct {
@@ -69,7 +70,7 @@ func (b *BaseClient) SetTracer(c *req.Client) {
 }
 
 func (b *BaseClient) GetTokenFromCache(ctx context.Context, deliveryCode string, shop *domain.Shop) (string, error) {
-	keyOfToken := fmt.Sprintf(keyTokenFormat, deliveryCode, shop.Code)
+	keyOfToken := fmt.Sprintf(keyTokenFormat, strings.ToLower(deliveryCode), shop.Code)
 	var token string
 	if err := b.cache.Get(ctx, keyOfToken).Scan(&token); err != nil {
 		return "", err
@@ -86,7 +87,7 @@ func (b *BaseClient) GetDataCache(ctx context.Context, key string) (string, erro
 }
 
 func (b *BaseClient) StoreToken(ctx context.Context, deliveryCode string, shop *domain.Shop, newToken string, expire time.Duration) {
-	keyOfToken := fmt.Sprintf(keyTokenFormat, deliveryCode, shop.Code)
+	keyOfToken := fmt.Sprintf(keyTokenFormat, strings.ToLower(deliveryCode), shop.Code)
 	if err := b.cache.Set(ctx, keyOfToken, newToken, expire).Err(); err != nil {
 		log.Warn(ctx, "Cache Token failed, delivery: [%s], err: [%s]", deliveryCode, err.Error())
 	}
