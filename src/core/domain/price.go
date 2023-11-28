@@ -41,6 +41,11 @@ func (p *Price) SetOldTotalPrice(oldTotalPrice int64) *Price {
 	return p
 }
 
+func (p *Price) SetFee() *Price {
+	p.Fee = p.TotalPrice
+	return p
+}
+
 func (p *Price) SetClientInfo(client *Client) *Price {
 	p.ClientCode = client.Code
 	p.Image = client.Image

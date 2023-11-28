@@ -67,44 +67,28 @@ func newGetPriceInput(token string, p *param.GetPriceAhaMoveParam) *GetPriceInpu
 }
 
 type PriceOuput struct {
-	VoucherDiscount int64 `json:"voucher_discount"`
-	Discount        int64 `json:"discount"`
-	DistancePrice   int64 `json:"distance_price"`
-	DistanceFee     int64 `json:"distance_fee"`
-	StoppointPrice  int64 `json:"stoppoint_price"`
-	StopFee         int64 `json:"stop_fee"`
-	Vat             int64 `json:"vat"`
-	VatFee          int64 `json:"vat_fee"`
-	SubtotalPrice   int64 `json:"subtotal_price"`
-	TotalFee        int64 `json:"total_fee"`
-	Surchage        int64 `json:"surchage"`
+	VoucherDiscount int64  `json:"voucher_discount"`
+	Discount        int64  `json:"discount"`
+	DistancePrice   int64  `json:"distance_price"`
+	DistanceFee     int64  `json:"distance_fee"`
+	StoppointPrice  int64  `json:"stoppoint_price"`
+	StopFee         int64  `json:"stop_fee"`
+	Vat             int64  `json:"vat"`
+	VatFee          int64  `json:"vat_fee"`
+	SubtotalPrice   int64  `json:"subtotal_price"`
+	TotalFee        int64  `json:"total_fee"`
+	TotalPrice      int64  `json:"total_price"`
+	Id              string `json:"_id"`
 }
 
 func (g *PriceOuput) ToDomain() *domain.Price {
-
 	return &domain.Price{
-		Id:            0,
-		Code:          "",
-		Name:          "",
-		Image:         "",
-		Description:   "",
-		ClientCode:    "",
-		GroupId:       "",
-		InsuranceFee:  0,
-		TransferFee:   0,
-		CodFee:        0,
-		Total:         0,
-		Fee:           0,
-		ConnFee:       0,
-		CodstFee:      0,
-		CodT0Fee:      0,
-		TotalPrice:    g.SubtotalPrice,
-		OtherFee:      0,
+		Code:          g.Id,
+		TransferFee:   g.DistancePrice + g.StoppointPrice + g.VatFee,
+		TotalPrice:    g.TotalPrice,
 		CouponSale:    g.VoucherDiscount,
-		OldTotalPrice: 0,
-		Status:        false,
-		Msg:           "",
-		StatusCodT0:   false,
-		MessageCodT0:  "",
+		OldTotalPrice: g.SubtotalPrice,
+		Status:        true,
+		Msg:           "Check price success",
 	}
 }

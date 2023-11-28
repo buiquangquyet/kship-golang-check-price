@@ -139,9 +139,6 @@ func (s *Strategy) getExtraService(ctx context.Context, extraServices []*request
 }
 
 func (s *Strategy) getServices(ctx context.Context, services []*request.Service, extraServices []*request.ExtraService, client *domain.Client, provinceId int64) ([]*param.ServiceAhaMove, *common.Error) {
-	//get client by client code -> client id
-	//get service id by client code, service code, table: services
-	// get setting shop by model type, model id (service id), value (province id) -> list, if empty -> get all
 	codes := make([]string, len(services))
 	for i, service := range services {
 		codes[i] = service.Code

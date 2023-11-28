@@ -122,10 +122,10 @@ func (p *PriceService) addInfo(ctx context.Context, addInfoDto *dto.AddInfoDto, 
 	}
 	prices := make([]*domain.Price, 0)
 	for serviceCode, price := range mapPrices {
-		//Todo consider
-		//if addInfoDto.Voucher == 0 && addInfoDto.CallTo == enums.TypeVoucherNotUse {
-		//	price.SetOldTotalPrice(0)
-		//}
+		price.SetFee()
+		if addInfoDto.Voucher == 0 && addInfoDto.CallTo == enums.TypeVoucherNotUse {
+			price.SetOldTotalPrice(0)
+		}
 		price.SetCode(serviceCode)
 		price.SetClientInfo(addInfoDto.Client)
 		price.SetServiceInfo(mapServices[serviceCode])

@@ -59,4 +59,7 @@ var mapErrorMsg = map[int]string{
 	3002: "Hãng vận chuyển không được bật",
 	3004: "Shop không được phép check giá",
 	3012: "Vui lòng đăng nhập tài khoản GHTK",
+
+	4004: "Vui lòng nhập phường/xã người gửi",
+	4009: "Dịch vụ không tồn tại hoặc không được bật cho hãng vận chuyển",
 }

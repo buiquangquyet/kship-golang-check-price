@@ -59,7 +59,6 @@ func (g *GetPriceUnder20Output) ToDomainPrice() *domain.Price {
 	return &domain.Price{
 		InsuranceFee: g.Fee.InsuranceFee,
 		TransferFee:  g.Fee.ShipFeeOnly,
-		Fee:          g.Fee.Fee,
 		TotalPrice:   g.Fee.Fee,
 		Status:       g.Fee.Delivery,
 		Msg:          "Check price success",

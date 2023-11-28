@@ -93,7 +93,6 @@ func (g *GetPriceOver20Output) ToDomain() *domain.Price {
 	return &domain.Price{
 		InsuranceFee: g.Data.Insurance,
 		TransferFee:  g.Data.OnlyShipFee,
-		Fee:          g.Data.TotalValue,
 		TotalPrice:   g.Data.TotalValue,
 		Status:       g.Success,
 		Msg:          "Check price success",
