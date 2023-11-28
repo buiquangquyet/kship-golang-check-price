@@ -95,7 +95,6 @@ func (p *PriceService) GetPrice(ctx context.Context, req *request.GetPriceReques
 	}
 	mapPrices, err := shipStrategy.GetMultiplePriceV3(ctx, shop, client, req, coupon)
 	if err != nil {
-		log.IErr(ctx, err)
 		return nil, err
 	}
 

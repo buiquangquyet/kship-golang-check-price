@@ -35,8 +35,8 @@ ext_service:
     host: https://services.giaohangtietkiem.vn
     token: 88cFcAB40657e1AA1EBf852c4060E6d257a02EFf
   ahamove:
-    host: https://apistg.ahamove.com
-    key: 19ff89dd45cd02e1329c8dc381236e28
+    host: https://api.ahamove.com
+    key: ced8e6c1d3375d098aa3f4329a6ba983
   voucher:
     host: https://voucher-shipping-prelive.kvpos.com
   ai_eliminating:
