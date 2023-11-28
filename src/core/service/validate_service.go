@@ -277,6 +277,7 @@ func (v *ValidateService) validateExtraService(ctx context.Context, clientCode s
 			}
 		}
 	}
+	ierr = common.ErrBadRequest(ctx)
 	for _, extraService := range extraServices {
 		extraServiceCode := extraService.Code
 		if extraServiceCode == constant.ServiceExtraPickShift && !helpers.InArray(constant.PickShiftExtraClientCode, extraServiceCode) {
@@ -335,7 +336,6 @@ func (v *ValidateService) validateExtraService(ctx context.Context, clientCode s
 				serviceExtraValue = extraService.Value
 			}
 			notAllow := !helpers.InArray(clientExtraServicesPaymentByAllow, serviceExtraValue)
-			ierr := common.ErrBadRequest(ctx)
 			if serviceExtraValue == constant.PaymentByFrom && notAllow {
 				return ierr.SetCode(4001)
 			}
