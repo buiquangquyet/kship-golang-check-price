@@ -56,6 +56,7 @@ func NewSuccessResponse(data interface{}) *SuccessResponse {
 }
 
 var mapErrorMsg = map[int]string{
+	422:  "Token không hợp lệ.",
 	3002: "Hãng vận chuyển không được bật",
 	3004: "Shop không được phép check giá",
 	3012: "Vui lòng đăng nhập tài khoản GHTK",

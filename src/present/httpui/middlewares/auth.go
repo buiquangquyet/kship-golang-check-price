@@ -11,6 +11,7 @@ import (
 	"fmt"
 	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt/v5"
+	"net/http"
 	"os"
 	"strconv"
 	"strings"
@@ -59,7 +60,7 @@ func (a *AuthMiddleware) Authenticate() gin.HandlerFunc {
 }
 
 func (a *AuthMiddleware) ValidateTokenClient(c *gin.Context, token string) *common.Error {
-	ierr := common.ErrUnauthorized(c).SetSource(common.SourceAPIService)
+	ierr := common.ErrUnauthorized(c).SetSource(common.SourceAPIService).SetCode(422).SetHTTPStatus(http.StatusUnprocessableEntity)
 
 	tok, err := jwt.Parse(token, a.keyFunc)
 	if err != nil {
