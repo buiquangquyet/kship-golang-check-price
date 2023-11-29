@@ -98,6 +98,7 @@ func newCacheRedis() redis.UniversalClient {
 			Addr:     hosts[0],
 			Username: cf.Username,
 			Password: cf.Password,
+			DB:       cf.DB,
 		})
 	}
 

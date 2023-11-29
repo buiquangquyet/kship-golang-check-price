@@ -21,6 +21,12 @@ type GetPriceUnder20Input struct {
 }
 
 func newGetPriceUnder20Input(serviceCode string, p *param.GetPriceGHTKParam) *GetPriceUnder20Input {
+	if serviceCode == "EXPRESS_ROAD" {
+		serviceCode = "road"
+	}
+	if serviceCode == "EXPRESS_FLY" {
+		serviceCode = "fly"
+	}
 	return &GetPriceUnder20Input{
 		Address:         p.Address,
 		PickProvince:    p.PickProvince,
