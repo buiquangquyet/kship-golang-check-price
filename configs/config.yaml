@@ -15,18 +15,18 @@ server:
   prefix: api/v4/check-price
 
 mysql:
-  host: 10.24.22.234
+  host: 10.24.22.244
   port: 3306
   user: shipping
   password: cC1usteR@citigo
-  db_name: kvshipping_prelive
+  db_name: kvshipping_staging
   ssl_mode: disable
   auto_migrate: false
   max_life_time: 300
 
 redis:
   expire_duration: 600
-  hosts: 10.24.22.236:6379
+  hosts: 10.24.22.246:6379
   username: ""
   password: ""
   db: 0
