@@ -62,6 +62,7 @@ var mapErrorMsg = map[int]string{
 	3012: "Vui lòng đăng nhập tài khoản GHTK",
 
 	4004: "Vui lòng nhập phường/xã người gửi",
+	4006: "Vui lòng nhập phường/xã người nhận",
 	4009: "Dịch vụ không tồn tại hoặc không được bật cho hãng vận chuyển",
 	4406: "Chỉ nhận khai giá tối đa 20,000,000",
 }
