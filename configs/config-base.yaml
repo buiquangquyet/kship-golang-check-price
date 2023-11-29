@@ -4,7 +4,7 @@ mode:
 server:
   name: check-price
   address: 3456
-  prefix: api/v3
+  prefix: api/v4
 
 
 token:
@@ -32,6 +32,7 @@ redis:
   hosts: 10.24.32.11:6379
   username: ""
   password: ""
+  db: 0
 
 ext_service:
   zalo:

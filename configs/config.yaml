@@ -29,6 +29,7 @@ redis:
   hosts: 10.24.22.236:6379
   username: ""
   password: ""
+  db: 0
 
 ext_service:
   ghtk:
