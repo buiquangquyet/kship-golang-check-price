@@ -17,7 +17,7 @@ import (
 )
 
 const (
-	keyTokenFormat = "shipping:%s-token-%s"
+	keyTokenFormat = "%s-token-%s"
 )
 
 type BaseClient struct {
