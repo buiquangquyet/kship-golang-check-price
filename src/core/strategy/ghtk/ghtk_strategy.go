@@ -44,8 +44,16 @@ func (s *Strategy) Validate(ctx context.Context, req *request.GetPriceRequest) *
 	if req.MoneyCollection != 0 && req.MoneyCollection > 20000000 {
 		return ierr.SetMessage("Chỉ nhận thu hộ COD tối đa 20,000,000")
 	}
-	if req.ProductPrice != 0 && req.ProductPrice > 20000000 {
-		return ierr.SetMessage("Chỉ nhận Khai giá tối đa 20,000,000")
+	for _, extraService := range req.ExtraService {
+		if extraService.Code == constant.ServiceExtraGbh {
+			value, err := strconv.ParseInt(extraService.Value, 10, 64)
+			if err != nil {
+				return common.ErrBadRequest(ctx).SetDetail("value extra service invalid")
+			}
+			if value > 20000000 {
+				return common.ErrBadRequest(ctx).SetCode(4406)
+			}
+		}
 	}
 	return nil
 }
