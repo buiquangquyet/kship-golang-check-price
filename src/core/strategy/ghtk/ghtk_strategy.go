@@ -42,7 +42,7 @@ func (s *Strategy) Validate(ctx context.Context, req *request.GetPriceRequest) *
 		return ierr.SetMessage("Vui lòng nhập quận huyện người nhận")
 	}
 	if req.MoneyCollection != 0 && req.MoneyCollection > 20000000 {
-		return ierr.SetMessage("Chỉ nhận thu hộ COD tối đa 20,000,000")
+		return ierr.SetMessage("Chỉ nhận thu hộ COD tối đa 20,000,000").SetCode(4405)
 	}
 	for _, extraService := range req.ExtraService {
 		if extraService.Code == constant.ServiceExtraGbh {
