@@ -4,7 +4,7 @@ import (
 	"check-price/src/common"
 	"check-price/src/common/log"
 	"check-price/src/core/dto"
-	"context"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"github.com/gin-gonic/gin"
@@ -40,10 +40,12 @@ func (b *BaseController) BindAndValidateRequest(c *gin.Context, req interface{})
 		log.Warn(c, "bind request err, err:[%s]", err)
 		return common.ErrBadRequest(c).SetDetail(err.Error())
 	}
+	data, _ := json.Marshal(req)
+	log.Info(c, "request: [%v]", string(data))
 	return b.ValidateRequest(c, req)
 }
 
-func (b *BaseController) ValidateRequest(ctx context.Context, req interface{}) *common.Error {
+func (b *BaseController) ValidateRequest(ctx *gin.Context, req interface{}) *common.Error {
 	err := b.validate.Struct(req)
 
 	if err != nil {

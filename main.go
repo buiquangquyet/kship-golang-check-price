@@ -78,7 +78,7 @@ func interruptHandle(app *fx.App, logger *zap.SugaredLogger) {
 	c := make(chan os.Signal, 1)
 	signal.Notify(c, os.Interrupt, syscall.SIGINT, syscall.SIGTERM)
 
-	logger.Debugf("Listening Signal...")
+	logger.Infof("Listening Signal...")
 	s := <-c
 	logger.Infof("Received signal: %s. Shutting down Server ...", s)
 
