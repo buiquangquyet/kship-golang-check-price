@@ -3,6 +3,7 @@ package log
 import (
 	"check-price/src/common/configs"
 	"check-price/src/core/constant"
+	"check-price/src/core/enums"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
 	"gopkg.in/natefinch/lumberjack.v2"
@@ -56,20 +57,20 @@ func NewLogger() {
 	return
 }
 
-func (l *logger) Info(msg string, args ...interface{}) {
-	l.zap.Infof(msg, args...)
+func (l *logger) Info(msg string, traceId enums.TraceId, merchant enums.Merchant) {
+	l.zap.Infow(msg, zap.Inline(traceId), zap.Inline(merchant))
 }
 
-func (l *logger) Debug(msg string, args ...interface{}) {
-	l.zap.Debugf(msg, args...)
+func (l *logger) Debug(msg string, traceId enums.TraceId, merchant enums.Merchant) {
+	l.zap.Debugf(msg, zap.Inline(traceId), zap.Inline(merchant))
 }
 
-func (l *logger) Warn(msg string, args ...interface{}) {
-	l.zap.Warnf(msg, args...)
+func (l *logger) Warn(msg string, traceId enums.TraceId, merchant enums.Merchant) {
+	l.zap.Warnf(msg, zap.Inline(traceId), zap.Inline(merchant))
 }
 
-func (l *logger) Error(msg string, args ...interface{}) {
-	l.zap.Errorf(msg, args...)
+func (l *logger) Error(msg string, traceId enums.TraceId, merchant enums.Merchant) {
+	l.zap.Errorf(msg, zap.Inline(traceId), zap.Inline(merchant))
 }
 
 func (l *logger) Fatal(msg string, args ...interface{}) {
