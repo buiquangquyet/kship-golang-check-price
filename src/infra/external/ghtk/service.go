@@ -80,10 +80,8 @@ func (g *Service) getPriceUnder20(ctx context.Context, serviceCode string, getPr
 	}
 
 	if !output.Success || resp.IsErrorState() {
-		log.Debug(ctx, "Call GetCompany MISA failed with body: %+v", output)
-		//Todo consider error code
-		//detail := fmt.Sprintf("http: [%d], resp: [%s]", resp.StatusCode, resp.String())
-		//return nil, g.handleError(ctx, resp.StatusCode, &output).SetSource(common.SourceGHTKService).SetDetail(detail)
+		detail := fmt.Sprintf("http: [%d], resp: [%s]", resp.StatusCode, resp.String())
+		return nil, common.ErrSystemError(ctx, detail).SetMessage(output.Message).SetSource(common.SourceGHTKService)
 	}
 	return output.ToDomainPrice(), nil
 }
@@ -122,13 +120,10 @@ func (g *Service) getPriceOver20(ctx context.Context, serviceCode string, getPri
 	}
 
 	if !output.Success || resp.IsErrorState() {
-		log.Debug(ctx, "Call GetCompany MISA failed with body: %+v", output)
-		//Todo consider error code
-		//detail := fmt.Sprintf("http: [%d], resp: [%s]", resp.StatusCode, resp.String())
-		//return nil, g.handleError(ctx, resp.StatusCode, &output).SetSource(common.SourceGHTKService).SetDetail(detail)
+		detail := fmt.Sprintf("http: [%d], resp: [%s]", resp.StatusCode, resp.String())
+		return nil, common.ErrSystemError(ctx, detail).SetMessage(resp.String()).SetSource(common.SourceGHTKService)
 	}
 	return output.ToDomain(), nil
-
 }
 
 func (g *Service) api(ctx context.Context, token string) *req.Request {
@@ -167,7 +162,6 @@ func (g *Service) newToken(ctx context.Context, shop *domain.Shop) (string, *com
 	}
 
 	if resp.IsErrorState() || !g.success(output.Code) {
-		log.Debug(ctx, "Call ghtk failed with body: %+v", output)
 		detail := fmt.Sprintf("http: [%d], resp: [%s]", resp.StatusCode, resp.String())
 		return "", common.ErrSystemError(ctx, detail).SetSource(common.SourceGHTKService)
 	}
@@ -176,14 +170,4 @@ func (g *Service) newToken(ctx context.Context, shop *domain.Shop) (string, *com
 
 func (g *Service) success(code string) bool {
 	return code == codeSuccess
-}
-
-func (g *Service) handleError(ctx context.Context, code string) *common.Error {
-	switch code {
-	case "ERROR_INVALID_ACCOUNT":
-		return common.ErrBadRequest(ctx)
-	default:
-		detail := fmt.Sprintf("call ghtk error:[%s]", code)
-		return common.ErrSystemError(ctx, detail)
-	}
 }

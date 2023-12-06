@@ -36,12 +36,15 @@ func (b *BaseClient) SetTracer(c *req.Client) {
 	c.WrapRoundTripFunc(func(rt req.RoundTripper) req.RoundTripFunc {
 		return func(req *req.Request) (resp *req.Response, err error) {
 			apiName := req.URL.Path
-			_, span := b.tracer.Start(req.Context(), apiName)
+			ctx := req.Context()
+			_, span := b.tracer.Start(ctx, apiName)
 			defer span.End()
 			span.SetAttributes(
 				attribute.String("http.url", req.URL.String()),
 				attribute.String("http.method", req.Method),
 			)
+			log.Info(ctx, "http request param: [%v], body: [%s]", req.PathParams, string(req.Body))
+
 			if len(req.Body) > 0 {
 				span.SetAttributes(
 					attribute.String("http.req.body", string(req.Body)),
@@ -58,6 +61,7 @@ func (b *BaseClient) SetTracer(c *req.Client) {
 			span.SetAttributes(
 				attribute.Int("http.status_code", resp.StatusCode),
 			)
+			log.Info(ctx, "http response: [%s]", resp.String())
 			if !resp.IsSuccessState() {
 				span.SetAttributes(
 					attribute.String("http.resp.header", resp.HeaderToString()),

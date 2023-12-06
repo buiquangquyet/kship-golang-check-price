@@ -21,8 +21,6 @@ func Log() gin.HandlerFunc {
 		blw := &bodyLogWriter{body: bytes.NewBufferString(""), ResponseWriter: c.Writer}
 		c.Writer = blw
 		c.Next()
-		log.Info(c, "path: [%v], status: [%v], method: [%v], user_agent: [%v]",
-			c.Request.URL.Path, c.Writer.Status(), c.Request.Method, c.Request.UserAgent())
-		log.Info(c, "response: [%s]", blw.body.String())
+		log.Info(c, "response: [%s], path: [%v], status: [%v]", blw.body.String(), c.Request.URL.Path, c.Writer.Status())
 	}
 }

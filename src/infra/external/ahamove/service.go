@@ -118,16 +118,16 @@ func (g *Service) newToken(ctx context.Context, shop *domain.Shop) (string, *com
 			"name":    "Kiotviet.vn",
 			"api_key": g.key,
 			"mobile":  shop.Phone,
+			"address": shop.Address,
 		}).
 		SetSuccessResult(&output).
 		SetErrorResult(&outputErr).
-		Get(loginPath)
+		Post(loginPath)
 	if err != nil {
 		return "", common.ErrSystemError(ctx, err.Error())
 	}
 
 	if resp.IsErrorState() {
-		log.Debug(ctx, "Call AHAMOVE failed with body: %+v", output)
 		detail := fmt.Sprintf("http: [%d], resp: [%s]", resp.StatusCode, resp.String())
 		return "", common.ErrSystemError(ctx, detail).SetSource(common.SourceAHAMOVEService)
 	}
