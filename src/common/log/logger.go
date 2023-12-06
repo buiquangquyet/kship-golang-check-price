@@ -62,15 +62,15 @@ func (l *logger) Info(msg string, traceId enums.TraceId, merchant enums.Merchant
 }
 
 func (l *logger) Debug(msg string, traceId enums.TraceId, merchant enums.Merchant) {
-	l.zap.Debugf(msg, zap.Inline(traceId), zap.Inline(merchant))
+	l.zap.Debugw(msg, zap.Inline(traceId), zap.Inline(merchant))
 }
 
 func (l *logger) Warn(msg string, traceId enums.TraceId, merchant enums.Merchant) {
-	l.zap.Warnf(msg, zap.Inline(traceId), zap.Inline(merchant))
+	l.zap.Warnw(msg, zap.Inline(traceId), zap.Inline(merchant))
 }
 
 func (l *logger) Error(msg string, traceId enums.TraceId, merchant enums.Merchant) {
-	l.zap.Errorf(msg, zap.Inline(traceId), zap.Inline(merchant))
+	l.zap.Errorw(msg, zap.Inline(traceId), zap.Inline(merchant))
 }
 
 func (l *logger) Fatal(msg string, args ...interface{}) {

@@ -10,19 +10,19 @@ import (
 var globalLogger *logger
 
 func Info(ctx context.Context, msg string, args ...interface{}) {
-	globalLogger.Info(addCtxValue(ctx, msg, args))
+	globalLogger.Info(addCtxValue(ctx, msg, args...))
 }
 
 func Debug(ctx context.Context, msg string, args ...interface{}) {
-	globalLogger.Debug(addCtxValue(ctx, msg, args))
+	globalLogger.Debug(addCtxValue(ctx, msg, args...))
 }
 
 func Warn(ctx context.Context, msg string, args ...interface{}) {
-	globalLogger.Warn(addCtxValue(ctx, msg, args))
+	globalLogger.Warn(addCtxValue(ctx, msg, args...))
 }
 
 func Error(ctx context.Context, msg string, args ...interface{}) {
-	globalLogger.Error(addCtxValue(ctx, msg, args))
+	globalLogger.Error(addCtxValue(ctx, msg, args...))
 }
 
 func Fatal(msg string, args ...interface{}) {
