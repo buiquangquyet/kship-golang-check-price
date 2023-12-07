@@ -19,7 +19,7 @@ const (
 	deliveryCode = "GHTK"
 	codeSuccess  = "SUCCESS"
 	timeoutGHTK  = 5 * time.Second
-	expireToken  = 24 * 30 * time.Hour
+	expireToken  = 24 * 28 * time.Hour
 
 	loginPath           = "/services/shops/token"
 	getPriceUnder20Path = "/services/shipment/fee"
