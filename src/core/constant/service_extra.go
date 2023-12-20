@@ -5,7 +5,7 @@ const (
 	PaymentByTo   = "NGUOINHAN"
 
 	ServiceExtraCodePayment = "PaymentBy"
-	ServiceExtraCodeTip     = "TIP"
+	ServiceExtraInspectFee  = "InspectFee"
 	ServiceExtraXmg         = "XMG"
 	ServiceExtraPickShift   = "PickShift"
 	ServiceExtraCODT0       = "CODT0"

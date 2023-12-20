@@ -172,7 +172,7 @@ func (s *Strategy) getServices(ctx context.Context, services []*request.Service,
 	for i, service := range servicesParam {
 		for _, extraService := range extraServices {
 			switch extraService.Code {
-			case "TIP", "ROUND-TRIP", "BOCXEP-2", "BOCXEP-3", "THERMALBAG":
+			case constant.ServiceExtraInspectFee, constant.ServiceExtraRoundTrip, "BOCXEP-2", "BOCXEP-3", constant.ServiceExtraThermalBag:
 				num, err := strconv.Atoi(extraService.Value)
 				if err != nil {
 					log.Error(ctx, "value extra service invalid, scheduled:[%s]", extraService.Value)

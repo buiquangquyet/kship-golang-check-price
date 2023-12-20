@@ -63,7 +63,7 @@ func (s *Strategy) GetMultiplePriceV3(ctx context.Context, shop *domain.Shop, _ 
 	if err != nil {
 		return nil, err
 	}
-	value, tip, tags, err := s.getExtraService(ctx, req.ExtraService)
+	value, inspectFee, tags, err := s.getExtraService(ctx, req.ExtraService)
 	if err != nil {
 		return nil, err
 	}
@@ -81,7 +81,7 @@ func (s *Strategy) GetMultiplePriceV3(ctx context.Context, shop *domain.Shop, _ 
 		Weight:           weight,
 		Value:            value,
 		Tags:             tags,
-		NotDeliveredFee:  tip,
+		NotDeliveredFee:  inspectFee,
 	}
 
 	var wg sync.WaitGroup
@@ -137,8 +137,8 @@ func (s *Strategy) getProduct(req *request.GetPriceRequest, isBBS bool) []*param
 }
 
 func (s *Strategy) getExtraService(ctx context.Context, extraServices []*request.ExtraService) (int64, int64, []int, *common.Error) {
-	var value int64
-	var tip int64
+	var value, inspectFee int64
+	var err error
 	tags := make([]int, 0)
 	for _, extraService := range extraServices {
 		if extraService.Code == constant.ServiceExtraGbh {
@@ -155,19 +155,18 @@ func (s *Strategy) getExtraService(ctx context.Context, extraServices []*request
 		if tag, exist := constant.MapGHTKTagByShipperNote[extraService.Value]; exist {
 			tags = append(tags, tag)
 		}
-		if extraService.Code == constant.ServiceExtraCodeTip {
-			valueTip, err := strconv.ParseInt(extraService.Value, 10, 64)
+		if extraService.Code == constant.ServiceExtraInspectFee {
+			inspectFee, err = strconv.ParseInt(extraService.Value, 10, 64)
 			if err != nil {
 				return 0, 0, nil, common.ErrBadRequest(ctx).SetDetail("value extra service invalid")
 			}
-			if valueTip < constant.MinFailDeliveryTaking {
-				valueTip = constant.MinFailDeliveryTaking
+			if inspectFee < constant.MinFailDeliveryTaking {
+				inspectFee = constant.MinFailDeliveryTaking
 			}
-			if valueTip > constant.MaxFailDeliveryTaking {
-				valueTip = constant.MaxFailDeliveryTaking
+			if inspectFee > constant.MaxFailDeliveryTaking {
+				inspectFee = constant.MaxFailDeliveryTaking
 			}
-			tip = valueTip
 		}
 	}
-	return value, tip, tags, nil
+	return value, inspectFee, tags, nil
 }

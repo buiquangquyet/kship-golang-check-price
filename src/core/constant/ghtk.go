@@ -2,14 +2,14 @@ package constant
 
 var (
 	MapGHTKTagByServiceExtra = map[string]int{
-		ServiceExtraGHTK1:   1,
-		ServiceExtraGHTK7:   7,
-		ServiceExtraGHTK2:   13,
-		ServiceExtraGHTK3:   17,
-		ServiceExtraGHTK4:   18,
-		ServiceExtraCodeTip: 19,
-		ServiceExtraGHTK5:   20,
-		ServiceExtraGHTK6:   22,
+		ServiceExtraGHTK1:      1,
+		ServiceExtraGHTK7:      7,
+		ServiceExtraGHTK2:      13,
+		ServiceExtraGHTK3:      17,
+		ServiceExtraGHTK4:      18,
+		ServiceExtraInspectFee: 19,
+		ServiceExtraGHTK5:      20,
+		ServiceExtraGHTK6:      22,
 	}
 )
 

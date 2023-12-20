@@ -18,7 +18,7 @@ import (
 const (
 	deliveryCode   = "AHAMOVE"
 	timeoutAhaMove = 5 * time.Second
-	expireToken    = 24 * time.Hour
+	expireToken    = 22 * time.Hour
 
 	loginPath      = "/v1/partner/register_account"
 	checkPricePath = "/v2/order/estimated_fee"
