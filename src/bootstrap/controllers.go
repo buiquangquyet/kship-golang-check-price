@@ -10,6 +10,7 @@ func BuildControllerModule() fx.Option {
 	return fx.Options(
 		fx.Provide(controllers.NewBaseController),
 		fx.Provide(controllers.NewPriceController),
+		fx.Provide(controllers.NewLogController),
 	)
 }
 

@@ -23,3 +23,4 @@ go.work
 /configs/config.yaml
 configs/config.yaml
 configs/tokens
+configs/tokens/kv-secret-key-widget-rs256.pem
